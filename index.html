@@ -115,5 +115,11 @@ list.append(card);
 document.getElementById(id).addEventListener("input",render));
 render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://qwmraeabwlnkwsaqwqg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 </body>
 </html>
