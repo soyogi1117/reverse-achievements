@@ -120,6 +120,27 @@ render();
 const SUPABASE_URL = "https://qwmraeabwlnkwsaqwqg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
+async function loadAchievements() {
+  const { data, error } = await db
+    .from("achievements")
+    .select("*")
+    .eq("is_published", true)
+    .order("id");
+
+  if (error) {
+    console.error("実績の取得に失敗:", error);
+    return;
+  }
+
+  if (data && data.length > 0) {
+    achievements = data.map(a => ({
+      ...a,
+      rarity: a.rarity,
+      role: a.role || ""
+    }));
+    render();
+  }
+}  
+loadAchievements();</script>
 </body>
 </html>
