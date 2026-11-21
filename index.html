@@ -127,7 +127,7 @@ async function loadAchievements() {
     .select("*")
     .eq("is_published", true)
     .order("id");
-
+alert("取得件数：" + (data ? data.length : "不明") + " / エラー：" + (error ? error.message : "なし"));
   if (error) {
     alert("Supabaseエラー：" + error.message);
     return;
