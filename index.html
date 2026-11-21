@@ -129,7 +129,7 @@ async function loadAchievements() {
     .order("id");
 
   if (error) {
-    console.error("実績の取得に失敗:", error);
+    alert("Supabaseエラー：" + error.message);
     return;
   }
 
