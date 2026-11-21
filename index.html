@@ -56,13 +56,7 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 </main>
 <footer>猫逆トロフィー | 実績は自己申告制</footer>
 <script>
-let achievements=[
-{id:1,name:"魔女2w毒殺",description:"人狼・賢狼を毒殺して勝利する",rarity:"金",role:"魔女"},
-{id:2,name:"独裁ワンナイト",description:"2日目に独裁者COし、その日のうちに勝利する",rarity:"伝説",role:"独裁者"},
-{id:3,name:"サイコ5本指定",description:"2日目の5本指定でわら人形以外の全ての市民陣営を指定する",rarity:"伝説",role:"サイコ"},
-{id:4,name:"村PPからの救出",description:"処刑されて村PP盤面から人狼陣営を救出する",rarity:"金",role:"黒猫"},
-{id:5,name:"戦略的特攻",description:"潜伏しつつ特攻し、奇数にしてRPPに持ち込み勝利する",rarity:"伝説",role:"賢者"}
-];
+let achievements = [];
 const key="neko-trophy-progress-v1";
 let completed={};
 try{completed=JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(e){}
