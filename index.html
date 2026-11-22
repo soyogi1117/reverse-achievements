@@ -88,6 +88,11 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   <p>🥈 銀：<strong id="silverCount">0</strong> 個</p>
   <p>🥇 金：<strong id="goldCount">0</strong> 個</p>
   <p>🏆 伝説：<strong id="legendCount">0</strong> 個</p>
+
+<div id="rarityProgress" style="margin-top:20px;">
+  <h4>📊 レアリティ別達成率</h4>
+  <div id="rarityProgressBars"></div>
+</div>
 </div>
 </div>
 
@@ -161,6 +166,50 @@ document.getElementById("bronzeCount").textContent = rarityCounts["銅"];
 document.getElementById("silverCount").textContent = rarityCounts["銀"];
 document.getElementById("goldCount").textContent = rarityCounts["金"];
 document.getElementById("legendCount").textContent = rarityCounts["伝説"];
+
+const raritySettings = [
+  { name: "銅", icon: "🥉", color: "#cd7f32" },
+  { name: "銀", icon: "🥈", color: "#c0c0c0" },
+  { name: "金", icon: "🥇", color: "#ffd700" },
+  { name: "伝説", icon: "🌈", color: "#a569ff" }
+];
+
+const progressContainer =
+  document.getElementById("rarityProgressBars");
+
+progressContainer.replaceChildren();
+
+raritySettings.forEach(({ name, icon, color }) => {
+  const total = achievements.filter(
+    a => a.rarity === name
+  ).length;
+
+  const unlocked = rarityCounts[name];
+  const rate = total
+    ? Math.round(unlocked / total * 100)
+    : 0;
+
+  const label = document.createElement("p");
+  label.textContent =
+    `${icon} ${name}：${unlocked}/${total}（${rate}%）`;
+
+  const track = document.createElement("div");
+  track.style.cssText =
+    "height:10px;background:#343c4c;" +
+    "border-radius:20px;overflow:hidden;" +
+    "margin-bottom:16px;";
+
+  const fill = document.createElement("div");
+  fill.style.height = "100%";
+  fill.style.width = rate + "%";
+  fill.style.background = name === "伝説"
+    ? "linear-gradient(90deg,red,orange,yellow,lime,cyan,blue,violet)"
+    : color;
+  fill.style.borderRadius = "20px";
+
+  track.append(fill);
+  progressContainer.append(label, track);
+});
   
 document.getElementById("profileUnlocked").textContent = done;
 document.getElementById("profileRate").textContent = pct + "%";
