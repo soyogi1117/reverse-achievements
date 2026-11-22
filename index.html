@@ -535,7 +535,22 @@ function showTrophyEffect(achievement) {
 
   clearTimeout(trophyEffectTimer);
 
-  effect.classList.toggle("legendary", isLegend);
+  
+effect.classList.remove(
+  "bronze", "silver", "gold", "legendary"
+);
+
+const effectClasses = {
+  "銅": "bronze",
+  "銀": "silver",
+  "金": "gold",
+  "伝説": "legendary"
+};
+
+effect.classList.add(
+  effectClasses[achievement.rarity] || "gold"
+);
+
 
   document.getElementById("trophyEffectIcon").textContent =
     isLegend ? "🌈🏆" : "🏆";
