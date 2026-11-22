@@ -215,40 +215,7 @@ async function loadAchievements() {
 }  
 loadAchievements();</script>
 
-<section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#e5c16c">
-  <h2>🏆 ユーザーアカウント</h2>
-  <div id="authForm">
-    <input id="userEmail" type="email" placeholder="メールアドレス" autocomplete="email" style="width:100%;padding:12px;margin:6px 0">
-    <input id="userPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0">
-    <button id="signupBtn" type="button">新規登録</button>
-    <button id="signinBtn" type="button">ログイン</button>
-  </div>
-  <div id="signedIn" hidden>
-    
-<div id="profileStats" style="margin-top:20px;">
-<h3 id="profileTitle">🏆 マイプロフィール</h3>
-  <p>獲得トロフィー：<strong id="profileUnlocked">0</strong> 個</p>
-  <p>達成率：<strong id="profileRate">0%</strong></p>
 
-<div id="rarityStats" style="margin-top:16px;">
-  <h4>🏅 レアリティ別の獲得状況</h4>
-  <p>🥉 銅：<strong id="bronzeCount">0</strong> 個</p>
-  <p>🥈 銀：<strong id="silverCount">0</strong> 個</p>
-  <p>🥇 金：<strong id="goldCount">0</strong> 個</p>
-  <p>🏆 伝説：<strong id="legendCount">0</strong> 個</p>
-</div>
-</div>
-
-    <p id="signedInEmail"></p>
-    <button id="signoutBtn" type="button">ログアウト</button>
- 
-<div style="margin-top:12px;">
-  <input id="profileUsername" type="text" maxlength="20" placeholder="ユーザー名（20文字以内）">
-  <button id="saveUsernameBtn" type="button">ユーザー名を保存</button>
-  <p id="profileMessage" role="status"></p>
-</div>
- </div>
-  <p id="authMessage" role="status"></p>
 </section>
 
 <script>
