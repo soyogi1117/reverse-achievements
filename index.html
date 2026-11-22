@@ -163,7 +163,18 @@ const filtered=achievements.filter(a=>
 if(!filtered.length){list.textContent="該当する実績がありません";return}
 filtered.forEach(a=>{
 const card=document.createElement("article");
-card.className="achievement"+(completed[a.id]?" done":"");
+
+const rarityClass = {
+  "銅": "rarity-bronze",
+  "銀": "rarity-silver",
+  "金": "rarity-gold",
+  "伝説": "rarity-legend"
+};
+
+card.className = "achievement " +
+  (rarityClass[a.rarity] || "") +
+  (completed[a.id] ? " done" : "");
+
 const check=document.createElement("input");
 check.type="checkbox";
 check.checked=!!completed[a.id];
