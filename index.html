@@ -136,5 +136,82 @@ async function loadAchievements() {
   }
 }  
 loadAchievements();</script>
+
+<section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#e5c16c">
+  <h2>🏆 ユーザーアカウント</h2>
+  <div id="authForm">
+    <input id="userEmail" type="email" placeholder="メールアドレス" autocomplete="email" style="width:100%;padding:12px;margin:6px 0">
+    <input id="userPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0">
+    <button id="signupBtn" type="button">新規登録</button>
+    <button id="signinBtn" type="button">ログイン</button>
+  </div>
+  <div id="signedIn" hidden>
+    <p id="signedInEmail"></p>
+    <button id="signoutBtn" type="button">ログアウト</button>
+  </div>
+  <p id="authMessage" role="status"></p>
+</section>
+
+<script>
+const authMessage = document.getElementById("authMessage");
+const authForm = document.getElementById("authForm");
+const signedIn = document.getElementById("signedIn");
+
+async function refreshUserAuth(){
+  const {data:{user}} = await db.auth.getUser();
+  authForm.hidden = !!user;
+  signedIn.hidden = !user;
+  document.getElementById("signedInEmail").textContent =
+    user ? "ログイン中：" + user.email : "";
+}
+
+document.getElementById("signupBtn").onclick = async()=>{
+  const email = document.getElementById("userEmail").value.trim();
+  const password = document.getElementById("userPassword").value;
+  if(!email || password.length < 6){
+    authMessage.textContent = "メールアドレスと6文字以上のパスワードを入力してください。";
+    return;
+  }
+  authMessage.textContent = "登録処理中...";
+  const {data,error} = await db.auth.signUp({
+    email,password,
+    options:{
+      emailRedirectTo: "https://soyogi1117.github.io/reverse-achievements/"
+    }
+  });
+  authMessage.textContent = error
+    ? "登録失敗：" + error.message
+    : data.session
+      ? "登録してログインしました。"
+      : "確認メールを送信しました。メール内のリンクを開いてください。";
+  document.getElementById("userPassword").value = "";
+  await refreshUserAuth();
+};
+
+document.getElementById("signinBtn").onclick = async()=>{
+  const email = document.getElementById("userEmail").value.trim();
+  const password = document.getElementById("userPassword").value;
+  authMessage.textContent = "ログイン中...";
+  const {error} = await db.auth.signInWithPassword({email,password});
+  authMessage.textContent = error
+    ? "ログイン失敗：" + error.message
+    : "ログインしました！";
+  document.getElementById("userPassword").value = "";
+  await refreshUserAuth();
+};
+
+document.getElementById("signoutBtn").onclick = async()=>{
+  const {error} = await db.auth.signOut();
+  authMessage.textContent = error
+    ? "ログアウト失敗：" + error.message
+    : "ログアウトしました。";
+  await refreshUserAuth();
+};
+
+db.auth.onAuthStateChange(()=>{
+  setTimeout(refreshUserAuth,0);
+});
+refreshUserAuth();
+</script>
 </body>
 </html>
