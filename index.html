@@ -433,13 +433,17 @@ check.addEventListener("change", async () => {
     return;
   }
 
-  if (check.checked) completed[a.id] = true;
-  else delete completed[a.id];
+  
 
-  render();
+if (check.checked) {
+  showTrophyEffect(a);
+}
+
+render();
 });
 
 const content=document.createElement("div");
+
 const title=document.createElement("h3");
 title.textContent =
   a.rarity === "伝説" && !completed[a.id]
