@@ -397,11 +397,22 @@ card.className = "achievement " +
   (rarityClass[a.rarity] || "") +
   (completed[a.id] ? " done" : "");
 
-const check=document.createElement("input");
-check.type="checkbox";
+
+const check = document.createElement("input");
+check.type = "checkbox";
+
+const allNormalUnlocked = achievements
+  .filter(item => item.rarity !== "伝説")
+  .every(item => completed[item.id]);
+
+const legendLocked =
+  a.rarity === "伝説" && !allNormalUnlocked;
 
 check.checked = !!completed[a.id];
-check.disabled = !!completed[a.id];
+
+check.disabled =
+  !!completed[a.id] || legendLocked;
+
 
 check.setAttribute("aria-label",a.name+"を達成");
 
