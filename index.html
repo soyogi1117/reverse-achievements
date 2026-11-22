@@ -399,7 +399,10 @@ card.className = "achievement " +
 
 const check=document.createElement("input");
 check.type="checkbox";
-check.checked=!!completed[a.id];
+
+check.checked = !!completed[a.id];
+check.disabled = !!completed[a.id];
+
 check.setAttribute("aria-label",a.name+"を達成");
 
 check.addEventListener("change", async () => {
