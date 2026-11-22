@@ -251,6 +251,38 @@ db.auth.onAuthStateChange(()=>{
 });
 refreshUserAuth();
 
+async function loadUsername() {
+  const input = document.getElementById("profileUsername");
+  const message = document.getElementById("profileMessage");
+
+  input.value = "";
+  message.textContent = "";
+
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    message.textContent = "読み込み失敗：" + error.message;
+    return;
+  }
+
+  if (data) {
+    input.value = data.username;
+  }
+}
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadUsername, 0);
+});
+
+loadUsername();
+
 document.getElementById("saveUsernameBtn").onclick = async () => {
   const username = document.getElementById("profileUsername").value.trim();
   const message = document.getElementById("profileMessage");
