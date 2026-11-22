@@ -252,7 +252,6 @@ db.auth.onAuthStateChange(()=>{
 refreshUserAuth();
 
 document.getElementById("saveUsernameBtn").onclick = async () => {
-  alert("ボタンのクリックを検知しました");
   const username = document.getElementById("profileUsername").value.trim();
   const message = document.getElementById("profileMessage");
   const button = document.getElementById("saveUsernameBtn");
