@@ -281,7 +281,10 @@ check.addEventListener("change", async () => {
 
 const content=document.createElement("div");
 const title=document.createElement("h3");
-title.textContent=a.name;
+title.textContent =
+  a.rarity === "伝説" && !completed[a.id]
+    ? "🔒 ？？？？？？"
+    : a.name;
 const desc=document.createElement("p");
 desc.textContent=a.description;
 const role=document.createElement("span");
