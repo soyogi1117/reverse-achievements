@@ -250,6 +250,42 @@ db.auth.onAuthStateChange(()=>{
   setTimeout(refreshUserAuth,0);
 });
 refreshUserAuth();
+
+document.getElementById("saveUsernameBtn").onclick = async () => {
+  const username = document.getElementById("profileUsername").value.trim();
+  const message = document.getElementById("profileMessage");
+  const button = document.getElementById("saveUsernameBtn");
+
+  if (username.length < 1 || username.length > 20) {
+    message.textContent = "ユーザー名は1〜20文字で入力してください。";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "保存中...";
+
+  try {
+    const { data: { user }, error: authError } = await db.auth.getUser();
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    const { error } = await db.from("profiles").upsert({
+      id: user.id,
+      username: username,
+      updated_at: new Date().toISOString()
+    });
+
+    message.textContent = error
+      ? "保存失敗：" + error.message
+      : "ユーザー名を保存しました！";
+  } catch (error) {
+    message.textContent = "保存失敗：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+};
 </script>
 
 <script>
