@@ -248,6 +248,45 @@ const filtered=achievements.filter(a=>
 (!rarity||a.rarity===rarity)&&
 (!status||(status==="done"?!!completed[a.id]:!completed[a.id]))
 );
+
+const sort = document.getElementById("sort").value;
+
+const rarityOrder = {
+  "銅": 1,
+  "銀": 2,
+  "金": 3,
+  "伝説": 4
+};
+
+filtered.sort((a, b) => {
+  
+  // 未獲得の伝説トロフィーは必ず最後に表示
+  const hiddenA = a.rarity === "伝説" && !completed[a.id];
+  const hiddenB = b.rarity === "伝説" && !completed[b.id];
+
+  if (hiddenA !== hiddenB) {
+    return hiddenA ? 1 : -1;
+  }
+
+  if (sort === "todo") {
+    return Number(!!completed[a.id]) - Number(!!completed[b.id]);
+  }
+
+  if (sort === "done") {
+    return Number(!!completed[b.id]) - Number(!!completed[a.id]);
+  }
+
+  if (sort === "high") {
+    return rarityOrder[b.rarity] - rarityOrder[a.rarity];
+  }
+
+  if (sort === "low") {
+    return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+  }
+
+  return 0;
+});
+
 if(!filtered.length){list.textContent="該当する実績がありません";return}
 filtered.forEach(a=>{
 const card=document.createElement("article");
@@ -322,8 +361,10 @@ card.append(check,content);
 list.append(card);
 });
 }
-["search","rarity","status"].forEach(id=>
+
+["search","rarity","status","sort"].forEach(id=>
 document.getElementById(id).addEventListener("input",render));
+
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
