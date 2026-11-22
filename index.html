@@ -305,10 +305,6 @@ message.textContent = "";
 document.getElementById("profileTitle").textContent =
   "🏆 マイプロフィール";
 
-const { data: { user } } = await db.auth.getUser();
-if (!user) return;
-
-
   const { data: { user } } = await db.auth.getUser();
   if (!user) return;
 
