@@ -2,52 +2,134 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>猫逆トロフィー｜管理者ページ</title>
-  <style>
-    body {
-      background: #10131f;
-      color: #e5c16c;
-      font-family: sans-serif;
-      padding: 24px;
-    }
-    main {
-      max-width: 600px;
-      margin: 50px auto;
-    }
-    input, button {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    button {
-      background: #e5c16c;
-      border: none;
-      cursor: pointer;
-    }
-    input {
-      background: #222839;
-      color: white;
-      border: 1px solid #555;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>猫逆トロフィー｜管理者ページ</title>
+<style>
+body {
+  background:#10131f;
+  color:#e5c16c;
+  font-family:sans-serif;
+  padding:24px;
+}
+main {max-width:600px;margin:50px auto}
+input,button {
+  box-sizing:border-box;
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border-radius:8px;
+  font-size:16px;
+}
+input {
+  background:#222839;
+  color:white;
+  border:1px solid #555;
+}
+button {
+  background:#e5c16c;
+  border:none;
+  cursor:pointer;
+}
+#message {color:#eee;white-space:pre-wrap}
+[hidden] {display:none!important}
+</style>
 </head>
 <body>
-  <main>
-    <h1>🏆 管理者ページ</h1>
-    <p>猫逆トロフィー｜実績管理</p>
+<main>
+  <h1>🏆 管理者ページ</h1>
+  <p>猫逆トロフィー｜実績管理</p>
 
+  <section id="login">
     <h2>管理者ログイン</h2>
-    <input type="email" placeholder="メールアドレス">
-    <input type="password" placeholder="パスワード">
-    <button type="button">ログイン</button>
+    <input id="email" type="email" placeholder="メールアドレス">
+    <input id="password" type="password" placeholder="パスワード">
+    <button id="loginButton">ログイン</button>
+  </section>
 
-    <p>※現在は画面のみ。ログイン機能は次に設定します。</p>
-  </main>
+  <section id="admin" hidden>
+    <h2>管理者としてログイン中</h2>
+    <p>認証に成功しました。</p>
+    <button id="logoutButton">ログアウト</button>
+  </section>
+
+  <p id="message"></p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL =
+  "https://qwmraeabwlnkwsaqwqqg.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
+
+const db = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const login = document.getElementById("login");
+const admin = document.getElementById("admin");
+const message = document.getElementById("message");
+
+async function checkAdmin() {
+  const {data:{user},error} = await db.auth.getUser();
+
+  if (error || !user) {
+    login.hidden = false;
+    admin.hidden = true;
+    return;
+  }
+
+  const {data,error:adminError} = await db
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+  if (adminError || !data) {
+    login.hidden = true;
+    admin.hidden = true;
+    message.textContent =
+      "このアカウントには管理者権限がありません。";
+    return;
+  }
+
+  login.hidden = true;
+  admin.hidden = false;
+  message.textContent = "";
+}
+
+document.getElementById("loginButton")
+  .addEventListener("click",async()=>{
+    message.textContent = "ログイン中...";
+
+    const email =
+      document.getElementById("email").value;
+    const password =
+      document.getElementById("password").value;
+
+    const {error} = await db.auth
+      .signInWithPassword({email,password});
+
+    if(error) {
+      message.textContent =
+        "ログイン失敗：" + error.message;
+      return;
+    }
+
+    await checkAdmin();
+  });
+
+document.getElementById("logoutButton")
+  .addEventListener("click",async()=>{
+    await db.auth.signOut();
+    message.textContent = "";
+    await checkAdmin();
+  });
+
+checkAdmin();
+</script>
 </body>
 </html>
-
