@@ -85,12 +85,44 @@ const check=document.createElement("input");
 check.type="checkbox";
 check.checked=!!completed[a.id];
 check.setAttribute("aria-label",a.name+"を達成");
-check.addEventListener("change",()=>{
-if(check.checked)completed[a.id]=true;
-else delete completed[a.id];
-try{localStorage.setItem(key,JSON.stringify(completed))}catch(e){}
-render();
+
+check.addEventListener("change", async () => {
+  const wasChecked = !check.checked;
+
+  check.disabled = true;
+
+  const { data: { user } } = await db.auth.getUser();
+
+  if (!user) {
+    alert("実績を保存するにはログインしてください。");
+    check.checked = wasChecked;
+    check.disabled = false;
+    return;
+  }
+
+  const result = check.checked
+    ? await db.from("user_achievements").upsert({
+        user_id: user.id,
+        achievement_id: a.id
+      })
+    : await db.from("user_achievements")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("achievement_id", a.id);
+
+  if (result.error) {
+    alert("保存失敗：" + result.error.message);
+    check.checked = wasChecked;
+    check.disabled = false;
+    return;
+  }
+
+  if (check.checked) completed[a.id] = true;
+  else delete completed[a.id];
+
+  render();
 });
+
 const content=document.createElement("div");
 const title=document.createElement("h3");
 title.textContent=a.name;
@@ -212,6 +244,42 @@ db.auth.onAuthStateChange(()=>{
   setTimeout(refreshUserAuth,0);
 });
 refreshUserAuth();
+</script>
+
+<script>
+async function loadUserProgress() {
+  const { data: { user }, error: authError } =
+    await db.auth.getUser();
+
+  if (authError || !user) {
+    completed = {};
+    render();
+    return;
+  }
+
+  const { data, error } = await db
+    .from("user_achievements")
+    .select("achievement_id")
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("達成状況の取得失敗:", error);
+    return;
+  }
+
+  completed = {};
+  for (const item of data) {
+    completed[item.achievement_id] = true;
+  }
+
+  render();
+}
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadUserProgress, 0);
+});
+
+loadUserProgress();
 </script>
 </body>
 </html>
