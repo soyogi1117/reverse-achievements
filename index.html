@@ -73,6 +73,84 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   box-shadow: 0 0 20px rgba(180,110,255,0.6);
   transition: all 0.4s ease;
 }
+
+/* 🏆 トロフィー獲得演出 */
+#trophyEffect:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  animation: effectFadeIn 0.3s ease;
+}
+
+#trophyEffectContent {
+  width: 90%;
+  max-width: 420px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #1b2333;
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+  animation: trophyAppear 0.6s ease;
+}
+
+#trophyEffectIcon {
+  font-size: 72px;
+  animation: trophyBounce 0.8s ease;
+}
+
+#trophyEffectTitle {
+  color: #ffd700;
+  font-size: 24px;
+}
+
+#trophyEffectName {
+  color: #fff;
+  font-size: 20px;
+}
+
+/* 🌈 伝説専用演出 */
+#trophyEffect.legendary #trophyEffectContent {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#1b2333, #1b2333) padding-box,
+    linear-gradient(
+      120deg,
+      red, orange, yellow, lime,
+      cyan, blue, violet, red
+    ) border-box;
+  box-shadow: 0 0 60px rgba(180, 110, 255, 0.8);
+}
+
+#trophyEffect.legendary #trophyEffectTitle {
+  background: linear-gradient(
+    90deg, red, orange, yellow,
+    lime, cyan, blue, violet
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes effectFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes trophyAppear {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes trophyBounce {
+  0% { transform: scale(0.3); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
 </style>
 
 </head>
@@ -160,6 +238,15 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 <div id="list"></div>
 </main>
 <footer>猫逆トロフィー | 実績は自己申告制</footer>
+  
+<div id="trophyEffect" hidden>
+  <div id="trophyEffectContent">
+    <div id="trophyEffectIcon">🏆</div>
+    <h2 id="trophyEffectTitle"></h2>
+    <p id="trophyEffectName"></p>
+  </div>
+</div>
+
 <script>
 let achievements = [];
 const key="neko-trophy-progress-v1";
