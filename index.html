@@ -291,8 +291,32 @@ async function loadUsername() {
   const input = document.getElementById("profileUsername");
   const message = document.getElementById("profileMessage");
 
-  input.value = "";
+  
+input.value = "";
+message.textContent = "";
+
+document.getElementById("profileTitle").textContent =
+  "🏆 マイプロフィール";
+
+
+input.value = "";
+message.textContent = "";
+
+document.getElementById("profileTitle").textContent =
+  "🏆 マイプロフィール";
+
+input.value = "";
   message.textContent = "";
+  
+input.value = "";
+message.textContent = "";
+
+document.getElementById("profileTitle").textContent =
+  "🏆 マイプロフィール";
+
+const { data: { user } } = await db.auth.getUser();
+if (!user) return;
+
 
   const { data: { user } } = await db.auth.getUser();
   if (!user) return;
