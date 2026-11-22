@@ -468,8 +468,24 @@ title.textContent =
   a.rarity === "伝説" && !completed[a.id]
     ? "🔒 ？？？？？？"
     : a.name;
-const desc=document.createElement("p");
-desc.textContent=a.description;
+
+const desc = document.createElement("p");
+
+if (a.rarity === "伝説" && legendLocked) {
+  const normalAchievements = achievements.filter(
+    item => item.rarity !== "伝説"
+  );
+
+  const unlockedCount = normalAchievements.filter(
+    item => completed[item.id]
+  ).length;
+
+  desc.textContent =
+    `🔒 解放条件：通常トロフィーをすべて獲得（${unlockedCount}/${normalAchievements.length}）`;
+} else {
+  desc.textContent = a.description;
+}
+
 const role=document.createElement("span");
 role.className="tag";role.textContent=a.role;
 const level=document.createElement("span");
