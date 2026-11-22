@@ -6,79 +6,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>猫逆トロフィー｜管理者ページ</title>
 <style>
-body {
-  background:#10131f;
-  color:#e5c16c;
-  font-family:sans-serif;
-  padding:24px;
+*{box-sizing:border-box}
+body{
+  margin:0;padding:24px;
+  background:#10131f;color:#e5c16c;
+  font-family:sans-serif
 }
-main {max-width:600px;margin:50px auto}
-input,button {
-  box-sizing:border-box;
-  width:100%;
-  padding:14px;
-  margin:8px 0;
-  border-radius:8px;
-  font-size:16px;
+main{max-width:680px;margin:30px auto}
+h1{font-size:28px}
+h2{margin-top:32px}
+input,textarea,select,button{
+  width:100%;padding:13px;margin:7px 0;
+  border-radius:8px;font-size:16px;
+  font-family:inherit
 }
-input {
-  background:#222839;
-  color:white;
-  border:1px solid #555;
+input,textarea,select{
+  background:#222839;color:white;
+  border:1px solid #555
 }
-button {
-  background:#e5c16c;
-  border:none;
-  cursor:pointer;
+button{
+  background:#e5c16c;color:#10131f;
+  border:0;font-weight:bold;cursor:pointer
 }
-#message {color:#eee;white-space:pre-wrap}
-[hidden] {display:none!important}
+button:disabled{opacity:.5}
+button.secondary{background:#59647c;color:white}
+button.danger{background:#a43e48;color:white}
+label{display:block;margin-top:12px}
+label.check{
+  display:flex;align-items:center;gap:10px
+}
+label.check input{width:auto}
+.item{
+  background:#1c2232;border:1px solid #454b60;
+  padding:16px;margin:14px 0;border-radius:12px
+}
+.item h3{margin:0 0 8px}
+.item p{color:#ddd;white-space:pre-wrap}
+.actions{display:flex;gap:8px}
+.actions button{flex:1}
+#message{color:#eee;white-space:pre-wrap}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
-  <h1>🏆 管理者ページ</h1>
-  <p>猫逆トロフィー｜実績管理</p>
+<h1>🏆 管理者ページ</h1>
+<p>猫逆トロフィー｜実績管理</p>
 
-  <section id="login">
-    <h2>管理者ログイン</h2>
-    <input id="email" type="email" placeholder="メールアドレス">
-    <input id="password" type="password" placeholder="パスワード">
-    <button id="loginButton">ログイン</button>
-  </section>
+<section id="login">
+  <h2>管理者ログイン</h2>
+  <input id="email" type="email" placeholder="メールアドレス">
+  <input id="password" type="password" placeholder="パスワード">
+  <button id="loginButton">ログイン</button>
+</section>
 
-  <section id="admin" hidden>
-    <h2>管理者としてログイン中</h2>
-    <p>認証に成功しました。</p>
-    <button id="logoutButton">ログアウト</button>
-  </section>
+<section id="admin" hidden>
+  <h2>実績を登録・編集</h2>
 
-  <p id="message"></p>
+  <form id="achievementForm">
+    <input id="editId" type="hidden">
+
+    <label for="name">実績名</label>
+    <input id="name" required maxlength="150">
+
+    <label for="description">実績の説明</label>
+    <textarea id="description" required rows="3"></textarea>
+
+    <label for="category">カテゴリー</label>
+    <input id="category" required placeholder="例：魔女">
+
+    <label for="rarity">レアリティ</label>
+    <select id="rarity">
+      <option value="銅">銅</option>
+      <option value="銀">銀</option>
+      <option value="金">金</option>
+      <option value="プラチナ">プラチナ</option>
+    </select>
+
+    <label for="role">対応役職（任意）</label>
+    <input id="role" placeholder="例：魔女">
+
+    <label class="check">
+      <input id="published" type="checkbox">
+      公開する
+    </label>
+
+    <button id="saveButton" type="submit">
+      実績を保存
+    </button>
+    <button id="cancelButton" class="secondary"
+      type="button" hidden>
+      編集をキャンセル
+    </button>
+  </form>
+
+  <h2>登録済みの実績</h2>
+  <div id="achievementList"></div>
+
+  <button id="logoutButton" class="secondary">
+    ログアウト
+  </button>
+</section>
+
+<p id="message" role="status"></p>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-const SUPABASE_URL =
-  "https://qwmraeabwlnkwsaqwqqg.supabase.co";
-
-const SUPABASE_KEY =
-  "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
-
 const db = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
+  "https://qwmraeabwlnkwsaqwqqg.supabase.co",
+  "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f"
 );
 
-const login = document.getElementById("login");
-const admin = document.getElementById("admin");
-const message = document.getElementById("message");
+const $ = id => document.getElementById(id);
+let records = [];
 
-async function checkAdmin() {
+function showMessage(text){
+  $("message").textContent = text;
+}
+
+function resetForm(){
+  $("achievementForm").reset();
+  $("editId").value = "";
+  $("cancelButton").hidden = true;
+  $("saveButton").textContent = "実績を保存";
+}
+
+async function checkAdmin(){
   const {data:{user},error} = await db.auth.getUser();
 
-  if (error || !user) {
-    login.hidden = false;
-    admin.hidden = true;
+  if(error || !user){
+    $("login").hidden = false;
+    $("admin").hidden = true;
     return;
   }
 
@@ -88,46 +147,196 @@ async function checkAdmin() {
     .eq("user_id",user.id)
     .maybeSingle();
 
-  if (adminError || !data) {
-    login.hidden = true;
-    admin.hidden = true;
-    message.textContent =
-      "このアカウントには管理者権限がありません。";
+  if(adminError || !data){
+    $("login").hidden = true;
+    $("admin").hidden = true;
+    showMessage("このアカウントには管理者権限がありません。");
     return;
   }
 
-  login.hidden = true;
-  admin.hidden = false;
-  message.textContent = "";
+  $("login").hidden = true;
+  $("admin").hidden = false;
+  showMessage("");
+  await loadAchievements();
 }
 
-document.getElementById("loginButton")
-  .addEventListener("click",async()=>{
-    message.textContent = "ログイン中...";
+async function loadAchievements(){
+  const {data,error} = await db
+    .from("achievements")
+    .select("*")
+    .order("id",{ascending:true});
 
-    const email =
-      document.getElementById("email").value;
-    const password =
-      document.getElementById("password").value;
+  if(error){
+    showMessage("取得失敗：" + error.message);
+    return;
+  }
 
-    const {error} = await db.auth
-      .signInWithPassword({email,password});
+  records = data || [];
+  const list = $("achievementList");
+  list.replaceChildren();
 
-    if(error) {
-      message.textContent =
-        "ログイン失敗：" + error.message;
-      return;
-    }
+  if(!records.length){
+    list.textContent = "実績はまだありません。";
+    return;
+  }
 
-    await checkAdmin();
+  for(const item of records){
+    const card = document.createElement("div");
+    card.className = "item";
+
+    const title = document.createElement("h3");
+    title.textContent = item.name;
+
+    const detail = document.createElement("p");
+    detail.textContent =
+      `${item.description}\n` +
+      `カテゴリー：${item.category}\n` +
+      `レアリティ：${item.rarity}\n` +
+      `役職：${item.role || "なし"}\n` +
+      `公開状態：${item.is_published ? "公開" : "非公開"}`;
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const edit = document.createElement("button");
+    edit.textContent = "編集";
+    edit.type = "button";
+    edit.onclick = () => editAchievement(item.id);
+
+    const del = document.createElement("button");
+    del.textContent = "削除";
+    del.type = "button";
+    del.className = "danger";
+    del.onclick = () => deleteAchievement(item.id);
+
+    actions.append(edit,del);
+    card.append(title,detail,actions);
+    list.append(card);
+  }
+}
+
+function editAchievement(id){
+  const item = records.find(x => x.id === id);
+  if(!item) return;
+
+  $("editId").value = item.id;
+  $("name").value = item.name;
+  $("description").value = item.description;
+  $("category").value = item.category;
+  $("rarity").value = item.rarity;
+  $("role").value = item.role || "";
+  $("published").checked = item.is_published;
+
+  $("saveButton").textContent = "変更を保存";
+  $("cancelButton").hidden = false;
+  $("achievementForm").scrollIntoView({behavior:"smooth"});
+}
+
+async function deleteAchievement(id){
+  const item = records.find(x => x.id === id);
+  if(!item) return;
+
+  if(!confirm(`「${item.name}」を削除しますか？`))
+    return;
+
+  const {data,error} = await db
+    .from("achievements")
+    .delete()
+    .eq("id",id)
+    .select("id");
+
+  if(error){
+    showMessage("削除失敗：" + error.message);
+    return;
+  }
+  if(!data || !data.length){
+    showMessage("削除できませんでした。権限を確認してください。");
+    return;
+  }
+
+  resetForm();
+  showMessage("実績を削除しました。");
+  await loadAchievements();
+}
+
+$("achievementForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+
+  const id = $("editId").value;
+  const payload = {
+    name:$("name").value.trim(),
+    description:$("description").value.trim(),
+    category:$("category").value.trim(),
+    rarity:$("rarity").value,
+    role:$("role").value.trim() || null,
+    is_published:$("published").checked
+  };
+
+  if(!payload.name || !payload.description ||
+     !payload.category){
+    showMessage("必須項目を入力してください。");
+    return;
+  }
+
+  $("saveButton").disabled = true;
+
+  let result;
+  if(id){
+    result = await db.from("achievements")
+      .update(payload)
+      .eq("id",Number(id))
+      .select("id");
+  }else{
+    result = await db.from("achievements")
+      .insert(payload)
+      .select("id");
+  }
+
+  $("saveButton").disabled = false;
+
+  if(result.error){
+    showMessage("保存失敗：" + result.error.message);
+    return;
+  }
+  if(!result.data || !result.data.length){
+    showMessage("保存できませんでした。権限を確認してください。");
+    return;
+  }
+
+  resetForm();
+  showMessage("実績を保存しました！");
+  await loadAchievements();
+});
+
+$("cancelButton").onclick = resetForm;
+
+$("loginButton").onclick = async()=>{
+  showMessage("ログイン中...");
+
+  const {error} = await db.auth.signInWithPassword({
+    email:$("email").value,
+    password:$("password").value
   });
 
-document.getElementById("logoutButton")
-  .addEventListener("click",async()=>{
-    await db.auth.signOut();
-    message.textContent = "";
-    await checkAdmin();
-  });
+  if(error){
+    showMessage("ログイン失敗：" + error.message);
+    return;
+  }
+
+  $("password").value = "";
+  await checkAdmin();
+};
+
+$("logoutButton").onclick = async()=>{
+  const {error} = await db.auth.signOut();
+  if(error){
+    showMessage("ログアウト失敗：" + error.message);
+    return;
+  }
+  resetForm();
+  showMessage("");
+  await checkAdmin();
+};
 
 checkAdmin();
 </script>
