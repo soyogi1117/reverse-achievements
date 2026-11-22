@@ -354,7 +354,26 @@ async function loadUserProgress() {
   }
 
   render();
+updateProfileStats();
 }
+function updateProfileStats() {
+  const achievements = Array.from(
+    document.querySelectorAll('input[type="checkbox"]')
+  ).filter(input => input.dataset.id);
+
+  const total = achievements.length;
+  const unlocked = achievements.filter(
+    input => input.checked
+  ).length;
+
+  const rate = total > 0
+    ? Math.round(unlocked / total * 100)
+    : 0;
+
+  document.getElementById("profileUnlocked").textContent = unlocked;
+  document.getElementById("profileRate").textContent = rate + "%";
+}
+
 
 db.auth.onAuthStateChange(() => {
   setTimeout(loadUserProgress, 0);
