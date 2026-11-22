@@ -435,11 +435,16 @@ check.addEventListener("change", async () => {
 
   
 
+
 if (check.checked) {
+  completed[a.id] = true;
   showTrophyEffect(a);
+} else {
+  delete completed[a.id];
 }
 
 render();
+
 });
 
 const content=document.createElement("div");
@@ -461,6 +466,32 @@ list.append(card);
 });
 }
 
+
+let trophyEffectTimer;
+
+function showTrophyEffect(achievement) {
+  const effect = document.getElementById("trophyEffect");
+  const isLegend = achievement.rarity === "伝説";
+
+  clearTimeout(trophyEffectTimer);
+
+  effect.classList.toggle("legendary", isLegend);
+
+  document.getElementById("trophyEffectIcon").textContent =
+    isLegend ? "🌈🏆" : "🏆";
+
+  document.getElementById("trophyEffectTitle").textContent =
+    isLegend ? "LEGENDARY ACHIEVEMENT" : "TROPHY UNLOCKED!";
+
+  document.getElementById("trophyEffectName").textContent =
+    achievement.name;
+
+  effect.hidden = false;
+
+  trophyEffectTimer = setTimeout(() => {
+    effect.hidden = true;
+  }, 2500);
+}
 ["search","rarity","status","sort"].forEach(id=>
 document.getElementById(id).addEventListener("input",render));
 
