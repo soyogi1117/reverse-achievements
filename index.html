@@ -69,6 +69,24 @@ const total=achievements.length;
 const done=achievements.filter(a=>completed[a.id]).length;
 document.getElementById("count").textContent=`${done} / ${total} 達成`;
 const pct=total?Math.round(done/total*100):0;
+
+const rarityCounts = {
+  "銅": 0,
+  "銀": 0,
+  "金": 0,
+  "伝説": 0
+};
+
+achievements.forEach(a => {
+  if (completed[a.id] && a.rarity in rarityCounts) {
+    rarityCounts[a.rarity]++;
+  }
+});
+
+document.getElementById("bronzeCount").textContent = rarityCounts["銅"];
+document.getElementById("silverCount").textContent = rarityCounts["銀"];
+document.getElementById("goldCount").textContent = rarityCounts["金"];
+document.getElementById("legendCount").textContent = rarityCounts["伝説"];
   
 document.getElementById("profileUnlocked").textContent = done;
 document.getElementById("profileRate").textContent = pct + "%";
