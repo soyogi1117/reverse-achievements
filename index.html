@@ -350,9 +350,16 @@ document.getElementById("saveUsernameBtn").onclick = async () => {
       updated_at: new Date().toISOString()
     });
 
-    message.textContent = error
-      ? "保存失敗：" + error.message
-      : "ユーザー名を保存しました！";
+    
+if (error) {
+  message.textContent = "保存失敗：" + error.message;
+} else {
+  message.textContent = "ユーザー名を保存しました！";
+
+  document.getElementById("profileTitle").textContent =
+    "🏆 " + username + "のプロフィール";
+}
+
   } catch (error) {
     message.textContent = "保存失敗：" + error.message;
   } finally {
