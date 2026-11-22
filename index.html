@@ -308,9 +308,14 @@ async function loadUsername() {
     return;
   }
 
-  if (data) {
-    input.value = data.username;
-  }
+  
+if (data) {
+  input.value = data.username;
+
+  document.getElementById("profileTitle").textContent =
+    "🏆 " + data.username + "のプロフィール";
+}
+
 }
 
 db.auth.onAuthStateChange(() => {
