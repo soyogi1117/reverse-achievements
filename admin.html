@@ -61,7 +61,20 @@ label.check input{width:auto}
 </section>
 
 <section id="admin" hidden>
-  <h2>実績を登録・編集</h2>
+ 
+<section id="trophyPreviewAdmin">
+  <h2>🏆 獲得演出プレビュー</h2>
+  <p>トロフィーの獲得演出を確認できます。</p>
+  
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+  <button type="button" onclick="previewTrophy('銅')">🥉 銅</button>
+  <button type="button" onclick="previewTrophy('銀')">🥈 銀</button>
+  <button type="button" onclick="previewTrophy('金')">🥇 金</button>
+  <button type="button" onclick="previewTrophy('伝説')">🌈 伝説</button>
+</div>
+
+</section>
+ <h2>実績を登録・編集</h2>
 
   <form id="achievementForm">
     <input id="editId" type="hidden">
@@ -340,5 +353,101 @@ $("logoutButton").onclick = async()=>{
 
 checkAdmin();
 </script>
+
+<!-- 管理者用トロフィープレビュー -->
+<div id="adminTrophyEffect" hidden
+  style="position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;text-align:center;
+  color:white;padding:20px;">
+
+  <h2 id="adminTrophyTitle">TROPHY UNLOCKED!</h2>
+
+  <img id="adminTrophyImage" alt="トロフィー"
+    style="width:160px;height:160px;object-fit:contain;">
+
+  <p id="adminTrophyName"></p>
+</div>
+<style>
+  #adminTrophyEffect[hidden] {
+    display: none !important;
+  }
+</style>
+
+<script>
+let adminTrophyTimer;
+
+function previewTrophy(rarity) {
+  const images = {
+    "銅": "DD12C370-5B0B-48A9-B4B8-D82A58A75C5F.png",
+    "銀": "FE5334A6-05ED-4D18-9268-C4A80665A74F.png",
+    "金": "C302C0C0-2636-4FCE-A1BB-A3A7B398CD7D.png",
+    "伝説": "7592707B-2DA2-4B5F-9131-D481572EE8F2.png"
+  };
+
+  const colors = {
+    "銅": "#cd7f32",
+    "銀": "#dce6f5",
+    "金": "#ffd700",
+    "伝説": "#b46aff"
+  };
+
+  const effect = document.getElementById("adminTrophyEffect");
+  const img = document.getElementById("adminTrophyImage");
+  const title = document.getElementById("adminTrophyTitle");
+
+  clearTimeout(adminTrophyTimer);
+
+  img.src = images[rarity];
+  img.alt = rarity + "トロフィー";
+
+  title.textContent = rarity === "伝説"
+    ? "LEGENDARY ACHIEVEMENT"
+    : "TROPHY UNLOCKED!";
+
+  title.style.color = colors[rarity];
+  img.style.setProperty("--glow", colors[rarity]);
+
+  effect.hidden = false;
+
+  img.style.animation = "none";
+  void img.offsetWidth;
+  img.style.animation =
+    "adminTrophyPop .8s ease-out both, adminTrophyGlow 1.5s ease-in-out .8s infinite";
+
+  adminTrophyTimer = setTimeout(() => {
+    effect.hidden = true;
+    img.style.animation = "none";
+  }, 2500);
+}
+</script>
+
+<style>
+@keyframes adminTrophyPop {
+  0% {
+    transform: scale(.3) rotate(-12deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.2) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes adminTrophyGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 28px var(--glow));
+  }
+}
+</style>
+
 </body>
 </html>
