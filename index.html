@@ -532,6 +532,22 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 #announcementList > .panel p {
   margin: 8px 0;
 }
+
+/* 役職編集欄は通常非表示 */
+#roleEditor {
+  display: none;
+}
+
+/* 編集モード中だけ表示 */
+#signedIn.editing #roleEditor {
+  display: block;
+}
+
+#roleEditor select {
+  display: block;
+  width: 100%;
+  margin: 6px 0 12px;
+}
 </style>
 
 </head>
@@ -620,6 +636,36 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 </div>
 
   
+
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">❤️ 好きな役職</div>
+    <strong id="favoriteRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
+  </div>
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">💔 苦手な役職</div>
+    <strong id="dislikedRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
+  </div>
+</div>
+
+<div id="roleEditor" style="margin-top:12px;">
+  <h4>🎭 好きな役職・苦手な役職を編集</h4>
+
+  <label for="favoriteRoleSelect">❤️ 好きな役職</label>
+  <select id="favoriteRoleSelect">
+    <option value="">未設定</option>
+  </select>
+
+  <label for="dislikedRoleSelect">💔 苦手な役職</label>
+  <select id="dislikedRoleSelect">
+    <option value="">未設定</option>
+  </select>
+
+  <button id="saveRolesBtn" type="button">
+    役職を保存
+  </button>
+  <p id="roleMessage"></p>
+</div>
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
   <div style="text-align:center;padding:12px 6px;background:#263249;border-radius:10px;">
     <div style="font-size:12px;">🏆 獲得トロフィー</div>
