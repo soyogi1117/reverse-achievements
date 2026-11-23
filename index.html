@@ -1720,7 +1720,9 @@ if (!roomType || !title || !date) {
         .from("room_announcements")
         .insert({
           user_id: user.id,
-          title: title,
+          
+room_type: roomType,
+title: title,
           event_date: new Date(date).toISOString(),
           body: body
         });
@@ -1731,7 +1733,9 @@ if (!roomType || !title || !date) {
 await loadAnnouncements();
 
 
-      document.getElementById("announcementTitle").value = "";
+      
+document.getElementById("announcementType").value = "";
+document.getElementById("announcementTitle").value = "";
       document.getElementById("announcementDate").value = "";
       document.getElementById("announcementBody").value = "";
 
@@ -1751,7 +1755,9 @@ async function loadAnnouncements() {
   const { data, error } = await db
     .from("room_announcements")
     
-.select("id, user_id, title, event_date, body, created_at, is_closed")
+
+.select("id, user_id, room_type, title, event_date, body, created_at, is_closed")
+
 
     .order("event_date", { ascending: true });
 
@@ -1806,7 +1812,27 @@ data.forEach(item => {
     const card = document.createElement("article");
     card.className = "panel";
 
-    const title = document.createElement("h3");
+    
+const typeLabel = document.createElement("span");
+
+typeLabel.textContent =
+  item.room_type === "スタ逆" ? "🔵 スタ逆" :
+  item.room_type === "特殊逆" ? "🟣 特殊逆" :
+  "部屋の種類：未設定";
+
+typeLabel.style.cssText = `
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  background: ${item.room_type === "スタ逆" ? "#1c3554" :
+                item.room_type === "特殊逆" ? "#38234f" : "#343c4c"};
+  color: ${item.room_type === "スタ逆" ? "#8bc5ff" :
+           item.room_type === "特殊逆" ? "#d3a5ff" : "#aeb7c9"};
+`;
+const title = document.createElement("h3");
     title.textContent = "📢 " + item.title;
 
     const date = document.createElement("p");
@@ -1964,7 +1990,9 @@ profileName.textContent =
 
 
 
-    card.append(title, author, date, body);
+    
+card.append(typeLabel, title, author, date, body);
+
     
 
 if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
