@@ -2688,5 +2688,91 @@ const nekoRoles = [
   });
 });
 </script>
+
+<script>
+document.getElementById("saveRolesBtn").addEventListener("click", async () => {
+  const favorite = document.getElementById("favoriteRoleSelect").value;
+  const disliked = document.getElementById("dislikedRoleSelect").value;
+  const message = document.getElementById("roleMessage");
+  const button = document.getElementById("saveRolesBtn");
+
+  button.disabled = true;
+  message.textContent = "保存中...";
+
+  try {
+    const { data: { user }, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    const { error } = await db
+      .from("profiles")
+      .update({
+        favorite_role: favorite || null,
+        disliked_role: disliked || null
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      message.textContent = "保存失敗：" + error.message;
+      return;
+    }
+
+    document.getElementById("favoriteRoleDisplay").textContent =
+      favorite || "未設定";
+
+    document.getElementById("dislikedRoleDisplay").textContent =
+      disliked || "未設定";
+
+    message.textContent = "役職を保存しました！";
+
+  } catch (error) {
+    message.textContent = "保存失敗：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+
+<script>
+async function loadRoles() {
+  const { data: { user }, error: authError } =
+    await db.auth.getUser();
+
+  if (authError || !user) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("favorite_role, disliked_role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("役職の読み込み失敗:", error);
+    return;
+  }
+
+  const favorite = data?.favorite_role || "";
+  const disliked = data?.disliked_role || "";
+
+  document.getElementById("favoriteRoleDisplay").textContent =
+    favorite || "未設定";
+
+  document.getElementById("dislikedRoleDisplay").textContent =
+    disliked || "未設定";
+
+  document.getElementById("favoriteRoleSelect").value = favorite;
+  document.getElementById("dislikedRoleSelect").value = disliked;
+}
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadRoles, 0);
+});
+
+loadRoles();
+</script>
 </body>
 </html>
