@@ -732,6 +732,19 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 #profileEditPanel #bioEditor textarea {
   margin-top: 0 !important;
 }
+
+/* プロフィール編集の各項目を等間隔にする */
+#signedIn.editing #profileEditPanel {
+  gap: 20px;
+}
+
+#profileEditPanel > div p:empty {
+  display: none;
+}
+
+#profileEditPanel #bioEditor textarea {
+  margin-top: 0 !important;
+}
 </style>
 
 </head>
