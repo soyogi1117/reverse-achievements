@@ -1889,6 +1889,8 @@ const endedB = b.is_closed || timeB + 2 * 60 * 60 * 1000 <= now;
 data.forEach(item => {
     const card = document.createElement("article");
     card.className = "panel";
+card.style.position = "relative";
+
 
     
 const typeLabel = document.createElement("span");
@@ -2128,6 +2130,10 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
     ? "開催予定"
     : "開催中";
       upcomingLabel.style.cssText = `
+position: absolute;
+top: 16px;
+right: 16px;
+
         display: inline-block;
         width: fit-content;
         padding: 5px 12px;
