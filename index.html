@@ -722,7 +722,23 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 <div id="announcementForm" hidden>
   <h3>✏️ 部屋告知を投稿</h3>
 
-  <input
+  
+
+<label for="announcementType"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  🏷️ 部屋の種類
+</label>
+<select id="announcementType"
+        style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
+  <option value="">部屋の種類を選択</option>
+  <option value="スタ逆">🔵 スタンダード逆村</option>
+  <option value="特殊逆">🟣 特殊逆村</option>
+</select>
+<label for="announcementTitle"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  🎭 部屋主のキャラクター
+</label>
+<input
     id="announcementTitle"
     type="text"
     maxlength="100"
