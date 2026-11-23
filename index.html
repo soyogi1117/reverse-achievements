@@ -2108,6 +2108,98 @@ setInterval(() => {
 </script>
 
 <script>
+async function openPlayerProfile(userId) {
+  const section = document.getElementById("publicProfile");
+  const name = document.getElementById("publicProfileName");
+  const bio = document.getElementById("publicProfileBio");
+  const avatar = document.getElementById("publicProfileAvatar");
+  const stats = document.getElementById("publicTrophyStats");
+
+  name.textContent = "👤 読み込み中...";
+  bio.textContent = "";
+  avatar.style.display = "none";
+  avatar.removeAttribute("src");
+  stats.style.display = "none";
+
+  section.hidden = false;
+  document.getElementById("roomAnnouncements").hidden = true;
+  section.scrollIntoView({ behavior: "smooth" });
+
+  const { data: { user } } = await db.auth.getUser();
+
+  const { data: profiles, error } = await db.rpc(
+    "get_public_profile",
+    { target_user_id: userId }
+  );
+
+  const profile = profiles?.[0];
+
+  if (error || !profile) {
+    name.textContent = "プロフィールを表示できません";
+    bio.textContent = "読み込みに失敗しました。";
+    return;
+  }
+
+  const isOwner = user?.id === userId;
+  const canView = !profile.is_private || isOwner;
+
+  name.textContent =
+    "👤 " + (profile.username || "名前未設定") +
+    "のプロフィール" + (profile.is_private ? " 🔒" : "");
+
+  if (profile.avatar_url) {
+    avatar.src = profile.avatar_url;
+    avatar.style.display = "block";
+  }
+
+  if (!canView) {
+    bio.textContent = "🔒 このプロフィールは非公開です。";
+    return;
+  }
+
+  const { data: details } = await db
+    .from("profiles")
+    .select("bio")
+    .eq("id", userId)
+    .maybeSingle();
+
+  bio.textContent =
+    details?.bio || "自己紹介はまだありません。";
+
+  stats.style.display = "flex";
+
+  const unlockedDisplay =
+    document.getElementById("publicProfileUnlocked");
+  const rateDisplay =
+    document.getElementById("publicProfileRate");
+
+  unlockedDisplay.textContent = "—";
+  rateDisplay.textContent = "—";
+
+  const { data: trophies, error: trophyError } = await db
+    .from("user_achievements")
+    .select("achievement_id")
+    .eq("user_id", userId);
+
+  if (trophyError) {
+    console.error("トロフィー取得失敗:", trophyError);
+    return;
+  }
+
+  const ids = new Set(
+    (trophies || []).map(t => String(t.achievement_id))
+  );
+
+  const total = achievements.length;
+  const unlocked = achievements.filter(
+    a => ids.has(String(a.id))
+  ).length;
+
+  unlockedDisplay.textContent = unlocked;
+  rateDisplay.textContent =
+    (total ? Math.round(unlocked / total * 100) : 0) + "%";
+}
+
 document.getElementById("playerSearchBtn")
   .addEventListener("click", async () => {
     const input = document.getElementById("playerSearchInput");
@@ -2142,15 +2234,28 @@ document.getElementById("playerSearchBtn")
     message.textContent = `${data.length}人見つかりました。`;
 
     data.forEach(player => {
-      const item = document.createElement("div");
-      item.style.cssText =
-        "padding:12px;border-bottom:1px solid #46516a;";
+      
+const item = document.createElement("button");
+item.type = "button";
+item.style.cssText =
+  "display:block;width:100%;text-align:left;" +
+  "padding:12px;border:0;" +
+  "border-bottom:1px solid #46516a;" +
+  "background:transparent;color:#e4bd68;" +
+  "font-size:16px;cursor:pointer;";
+
 
       const name = document.createElement("strong");
       name.textContent =
         player.username + (player.is_private ? " 🔒" : "");
 
-      item.appendChild(name);
+      
+item.addEventListener("click", () => {
+  
+openPlayerProfile(player.id);
+
+});
+item.appendChild(name);
       results.appendChild(item);
     });
   });
