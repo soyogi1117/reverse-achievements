@@ -2149,6 +2149,28 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
         }
 
         
+
+const roomTypeOptions = [
+  "スタ逆",
+  "特殊逆"
+];
+
+const selectedRoomType = prompt(
+  "部屋の種類を選択\n" +
+  "1：スタ逆\n" +
+  "2：特殊逆",
+  String(roomTypeOptions.indexOf(item.room_type) + 1)
+);
+
+if (selectedRoomType === null) return;
+
+const newRoomType =
+  roomTypeOptions[Number(selectedRoomType) - 1];
+
+if (!newRoomType) {
+  alert("1か2を入力してください。");
+  return;
+}
 const playerOptions = [
   "誰でも",
   "初心者",
@@ -2185,7 +2207,9 @@ if (!newBody) {
         const { error } = await db
           .from("room_announcements")
           .update({
-            title: title,
+            
+room_type: newRoomType,
+title: title,
             event_date: parsedDate.toISOString(),
             body: newBody.trim(),
             updated_at: new Date().toISOString()
