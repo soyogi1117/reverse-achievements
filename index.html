@@ -840,7 +840,19 @@ document.getElementById("profileTitle").textContent =
 
   const { data, error } = await db
     .from("profiles")
-    .select("username, avatar_url")
+    
+.select("username, avatar_url")
+.eq("id", user.id)
+.maybeSingle();
+
+
+  if (error) {
+    message.textContent = "読み込み失敗：" + error.message;
+    return;
+  }
+
+  
+if (data) {
 const avatar = document.getElementById("profileAvatar");
 
 if (data.avatar_url) {
@@ -851,16 +863,6 @@ if (data.avatar_url) {
   avatar.style.display = "none";
 }
 
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error) {
-    message.textContent = "読み込み失敗：" + error.message;
-    return;
-  }
-
-  
-if (data) {
   input.value = data.username;
 
   document.getElementById("profileTitle").textContent =
