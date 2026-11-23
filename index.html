@@ -1496,7 +1496,6 @@ editProfileBtn.addEventListener("click", () => {
 
 document.getElementById("postAnnouncementBtn")
   .addEventListener("click", async () => {
-alert("投稿ボタンは反応しています！");
 
     const button = document.getElementById("postAnnouncementBtn");
     const message = document.getElementById("announcementMessage");
@@ -1550,10 +1549,15 @@ await loadAnnouncements();
 
 async function loadAnnouncements() {
   const list = document.getElementById("announcementList");
+  const { data: { user } } = await db.auth.getUser();
+  const currentUserId = user?.id || null;
+
 
   const { data, error } = await db
     .from("room_announcements")
-    .select("id, title, event_date, body, created_at")
+    
+.select("id, user_id, title, event_date, body, created_at")
+
     .order("event_date", { ascending: true });
 
   if (error) {
@@ -1593,6 +1597,103 @@ async function loadAnnouncements() {
     body.style.overflowWrap = "anywhere";
 
     card.append(title, date, body);
+    if (currentUserId && item.user_id === currentUserId) {
+      const actions = document.createElement("div");
+      actions.style.cssText =
+        "display:flex;gap:10px;margin-top:12px;";
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.textContent = "✏️ 編集";
+      editBtn.addEventListener("click", async () => {
+        const newTitle = prompt("部屋名を編集", item.title);
+        if (newTitle === null) return;
+
+        const title = newTitle.trim();
+        if (!title || title.length > 100) {
+          alert("部屋名は1〜100文字で入力してください。");
+          return;
+        }
+
+        const newDate = prompt(
+          "開催日時を入力（例：2026-12-01T20:00）",
+          new Date(
+            new Date(item.event_date).getTime()
+            - new Date().getTimezoneOffset() * 60000
+          ).toISOString().slice(0, 16)
+        );
+        if (newDate === null) return;
+
+        const parsedDate = new Date(newDate);
+        if (!newDate.trim() || isNaN(parsedDate.getTime())) {
+          alert("開催日時の形式が正しくありません。");
+          return;
+        }
+
+        const newBody = prompt("告知の詳細を編集", item.body);
+        if (newBody === null) return;
+
+        if (newBody.length > 1000) {
+          alert("詳細は1000文字以内で入力してください。");
+          return;
+        }
+
+        editBtn.disabled = true;
+
+        const { error } = await db
+          .from("room_announcements")
+          .update({
+            title: title,
+            event_date: parsedDate.toISOString(),
+            body: newBody.trim(),
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", item.id)
+          .eq("user_id", currentUserId);
+
+        if (error) {
+          alert("編集失敗：" + error.message);
+          editBtn.disabled = false;
+          return;
+        }
+
+        await loadAnnouncements();
+        alert("告知を更新しました！");
+      });
+
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.textContent = "🗑️ 削除";
+      deleteBtn.addEventListener("click", async () => {
+        const confirmed = confirm(
+          "この部屋告知を削除しますか？"
+        );
+
+        if (!confirmed) return;
+
+        deleteBtn.disabled = true;
+
+        const { error } = await db
+          .from("room_announcements")
+          .delete()
+          .eq("id", item.id)
+          .eq("user_id", currentUserId);
+
+        if (error) {
+          alert("削除失敗：" + error.message);
+          deleteBtn.disabled = false;
+          return;
+        }
+
+        await loadAnnouncements();
+      });
+
+
+      actions.append(editBtn, deleteBtn);
+      card.append(actions);
+    }
+
     list.append(card);
   });
 }
