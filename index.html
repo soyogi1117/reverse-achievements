@@ -2542,6 +2542,9 @@ async function openPlayerProfile(userId) {
   const avatar = document.getElementById("publicProfileAvatar");
   const stats = document.getElementById("publicTrophyStats");
 
+const roleStats = document.getElementById("publicRoleStats");
+roleStats.style.display = "none";
+
   name.textContent = "👤 読み込み中...";
   bio.textContent = "";
   avatar.style.display = "none";
