@@ -181,6 +181,61 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   60% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
+
+/* トロフィー登場アニメーション */
+@keyframes trophyPop {
+  0% {
+    transform: scale(0.3) rotate(-12deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.2) rotate(4deg);
+    opacity: 1;
+  }
+  85% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* レアリティ別の発光 */
+@keyframes trophyGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--trophy-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 28px var(--trophy-glow));
+  }
+}
+
+#trophyEffectIcon {
+  --trophy-glow: #ffd700;
+}
+
+#trophyEffect.bronze #trophyEffectIcon {
+  --trophy-glow: #cd7f32;
+}
+
+#trophyEffect.silver #trophyEffectIcon {
+  --trophy-glow: #dce6f5;
+}
+
+#trophyEffect.gold #trophyEffectIcon {
+  --trophy-glow: #ffd700;
+}
+
+#trophyEffect.legendary #trophyEffectIcon {
+  --trophy-glow: #b46aff;
+}
+
+#trophyEffect.show #trophyEffectIcon img {
+  animation:
+    trophyPop 0.8s ease-out both,
+    trophyGlow 1.5s ease-in-out 0.8s infinite;
+}
 </style>
 
 </head>
@@ -610,9 +665,13 @@ trophyIcon.style.filter = "";
     achievement.name;
 
   effect.hidden = false;
+effect.classList.remove("show");
+void effect.offsetWidth;
+effect.classList.add("show");
 
   trophyEffectTimer = setTimeout(() => {
     effect.hidden = true;
+    effect.classList.remove("show");
   }, 2500);
 }
 ["search","rarity","status","sort"].forEach(id=>
