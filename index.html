@@ -417,14 +417,14 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 /* プロフィール編集欄 */
 #bioEditor,
 #signedIn > div:has(#profileUsername),
-#profileStats > div:has(#avatarInput) {
+#signedIn > div:has(#avatarInput)
   display: none;
 }
 
 /* 編集モード中だけ表示 */
 #signedIn.editing #bioEditor,
 #signedIn.editing > div:has(#profileUsername),
-#signedIn.editing #profileStats > div:has(#avatarInput) {
+#signedIn.editing > div:has(#avatarInput)
   display: block;
 }
 
@@ -565,7 +565,22 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
     <button id="signinBtn" type="button">ログイン</button>
   </div>
   <div id="signedIn" hidden>
-    
+    <div style="margin: 15px 0;">
+  <img id="profileAvatar"
+       alt="プロフィール画像"
+       width="100"
+       height="100"
+       style="border-radius:50%; object-fit:cover; display:none;">
+
+  <div style="margin-top:10px;">
+    <input id="avatarInput" type="file" accept="image/*">
+    <button id="uploadAvatarBtn" type="button">
+      プロフィール画像を保存
+    </button>
+  </div>
+
+  <p id="avatarMessage" role="status"></p>
+</div>
 <div style="margin-top:12px;">
   <input id="profileUsername" type="text" maxlength="20" placeholder="ユーザー名（20文字以内）">
   <button id="saveUsernameBtn" type="button">ユーザー名を保存</button>
@@ -584,7 +599,24 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   </button>
   <p id="bioMessage"></p>
 </div>
+<div id="roleEditor" style="margin-top:12px;">
+  <h4>🎭 好きな役職・苦手な役職を編集</h4>
 
+  <label for="favoriteRoleSelect">❤️ 好きな役職</label>
+  <select id="favoriteRoleSelect">
+    <option value="">未設定</option>
+  </select>
+
+  <label for="dislikedRoleSelect">💔 苦手な役職</label>
+  <select id="dislikedRoleSelect">
+    <option value="">未設定</option>
+  </select>
+
+  <button id="saveRolesBtn" type="button">
+    役職を保存
+  </button>
+  <p id="roleMessage"></p>
+</div>
 <div id="profileStats" style="margin-top:20px;">
 
 <div class="profileHeader">
@@ -614,43 +646,11 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 
     
   </div>
-  <div id="roleEditor" style="margin-top:12px;">
-  <h4>🎭 好きな役職・苦手な役職を編集</h4>
-
-  <label for="favoriteRoleSelect">❤️ 好きな役職</label>
-  <select id="favoriteRoleSelect">
-    <option value="">未設定</option>
-  </select>
-
-  <label for="dislikedRoleSelect">💔 苦手な役職</label>
-  <select id="dislikedRoleSelect">
-    <option value="">未設定</option>
-  </select>
-
-  <button id="saveRolesBtn" type="button">
-    役職を保存
-  </button>
-  <p id="roleMessage"></p>
-</div>
+  
 </div>
 
  
-<div style="margin: 15px 0;">
-  <img id="profileAvatar"
-       alt="プロフィール画像"
-       width="100"
-       height="100"
-       style="border-radius:50%; object-fit:cover; display:none;">
 
-  <div style="margin-top:10px;">
-    <input id="avatarInput" type="file" accept="image/*">
-    <button id="uploadAvatarBtn" type="button">
-      プロフィール画像を保存
-    </button>
-  </div>
-
-  <p id="avatarMessage" role="status"></p>
-</div>
  
 <div id="profileBioSection" style="margin-top:16px;">
   <h4>📝 自己紹介</h4>
