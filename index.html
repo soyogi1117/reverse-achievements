@@ -2658,5 +2658,35 @@ item.appendChild(name);
   });
 </script>
 
+
+<script>
+const nekoRoles = [
+  "サイコ",
+  "狂信者",
+  "狂人",
+  "黒猫",
+  "妖術師",
+  "ささやく狂人",
+  "人狼",
+  "賢狼",
+  "魔女",
+  "暗殺者",
+  "猫又",
+  "わら人形",
+  "賢者",
+  "独裁者"
+];
+
+["favoriteRoleSelect", "dislikedRoleSelect"].forEach(id => {
+  const select = document.getElementById(id);
+
+  nekoRoles.forEach(role => {
+    const option = document.createElement("option");
+    option.value = role;
+    option.textContent = role;
+    select.appendChild(option);
+  });
+});
+</script>
 </body>
 </html>
