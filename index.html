@@ -774,19 +774,33 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   <option value="19">19人</option>
   <option value="20">20人</option>
 </select>
-  <input
+ 
+<label for="announcementDate"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  📅 開催日時
+</label>
+ <input
     id="announcementDate"
     type="datetime-local"
-    style="width:100%;margin-bottom:10px;"
+    
+style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin-bottom:10px;"
+
   >
 
-  <textarea
-    id="announcementBody"
-    maxlength="1000"
-    rows="4"
-    placeholder="配役・ルール・参加条件など"
-    style="width:100%;margin-bottom:10px;"
-  ></textarea>
+  
+<label for="announcementBody"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  🎯 募集するプレイヤー
+</label>
+<select id="announcementBody"
+        style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
+  <option value="">募集対象を選択</option>
+  <option value="誰でも">誰でも</option>
+  <option value="初心者">初心者</option>
+  <option value="準初心者">準初心者</option>
+  <option value="上級者">上級者</option>
+</select>
+
 
   <button id="postAnnouncementBtn" type="button">
     📢 告知を投稿
@@ -1726,10 +1740,14 @@ const date = document.getElementById("announcementDate").value;
 
     
 
-if (!roomType || !title || !players || !date) {
+
+if (!roomType || !title || !players || !date || !body) {
+
 
   message.textContent =
-    "部屋の種類・部屋主のキャラクター・開催日時を入力してください。";
+    
+"部屋の種類・部屋主のキャラクター・人数・開催日時・募集するプレイヤーをすべて入力してください。";
+
   return;
 }
 
@@ -1769,7 +1787,9 @@ await loadAnnouncements();
       
 document.getElementById("announcementType").value = "";
 document.getElementById("announcementTitle").value = "";
-      document.getElementById("announcementDate").value = "";
+      
+document.getElementById("announcementPlayers").value = "";
+document.getElementById("announcementDate").value = "";
       document.getElementById("announcementBody").value = "";
 
     } catch (error) {
@@ -1789,7 +1809,9 @@ async function loadAnnouncements() {
     .from("room_announcements")
     
 
-.select("id, user_id, room_type, title, event_date, body, created_at, is_closed")
+
+.select("id, user_id, room_type, players, title, event_date, body, created_at, is_closed")
+
 
 
     .order("event_date", { ascending: true });
@@ -1867,6 +1889,12 @@ typeLabel.style.cssText = `
 `;
 const title = document.createElement("h3");
     title.textContent = "📢 " + item.title;
+
+const playersDisplay = document.createElement("p");
+playersDisplay.className = "muted";
+playersDisplay.textContent = item.players
+  ? "👥 人数：" + item.players + "人"
+  : "👥 人数：未設定";
 
     const date = document.createElement("p");
     date.className = "muted";
@@ -2024,7 +2052,9 @@ profileName.textContent =
 
 
     
-card.append(typeLabel, title, author, date, body);
+
+card.append(typeLabel, title, playersDisplay, author, date, body);
+
 
     
 
