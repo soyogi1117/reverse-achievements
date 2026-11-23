@@ -1674,15 +1674,20 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
     
     } else {
       const upcomingLabel = document.createElement("span");
-      upcomingLabel.textContent = "開催予定";
+      upcomingLabel.textContent =
+  new Date(item.event_date).getTime() > Date.now()
+    ? "開催予定"
+    : "開催中";
       upcomingLabel.style.cssText = `
         display: inline-block;
         width: fit-content;
         padding: 5px 12px;
         margin-bottom: 12px;
         border-radius: 20px;
-        background: #193d32;
-        color: #70e0a4;
+        
+        background: ${new Date(item.event_date).getTime() > Date.now() ? "#1c3554" : "#193d32"};
+        color: ${new Date(item.event_date).getTime() > Date.now() ? "#8bc5ff" : "#70e0a4"};
+
         border: 1px solid #348866;
         font-size: 12px;
         font-weight: bold;
