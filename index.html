@@ -577,24 +577,29 @@ effect.classList.add(
 
   
 
-const trophyIcon = document.getElementById("trophyEffectIcon");
-const trophyGradient = trophyIcon.querySelector("#trophyMetal");
 
-const metalColors = {
-  "銅": ["#ffe0b0", "#cd7f32", "#7c3e18", "#e9a66a"],
-  "銀": ["#ffffff", "#d8dee8", "#788596", "#f2f5fa"],
-  "金": ["#fff3c0", "#ffd700", "#b8860b", "#fff0a0"],
-  "伝説": ["#ff4545", "#ffd700", "#39baff", "#b46aff"]
+const trophyIcon = document.getElementById("trophyEffectIcon");
+
+const trophyImages = {
+  "銅": "DD12C370-5B0B-48A9-B4B8-D82A58A75C5F.png",
+  "銀": "FE5334A6-05ED-4D18-9268-C4A80665A74F.png",
+  "金": "C302C0C0-2636-4FCE-A1BB-A3A7B398CD7D.png",
+  "伝説": "7592707B-2DA2-4B5F-9131-D481572EE8F2.png"
 };
 
-const colors = metalColors[achievement.rarity] || metalColors["金"];
+const trophyImage = document.createElement("img");
+trophyImage.src = trophyImages[achievement.rarity] || trophyImages["金"];
+trophyImage.alt = achievement.rarity + "トロフィー";
+trophyImage.style.width = "160px";
+trophyImage.style.height = "160px";
+trophyImage.style.objectFit = "contain";
+trophyImage.style.display = "block";
+trophyImage.style.margin = "0 auto";
 
-trophyGradient.querySelectorAll("stop").forEach((stop, index) => {
-  stop.setAttribute("stop-color", colors[index]);
-});
-
+trophyIcon.replaceChildren(trophyImage);
 trophyIcon.style.background = "";
 trophyIcon.style.filter = "";
+
 
 
 
