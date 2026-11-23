@@ -271,7 +271,24 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 
 <div id="profileStats" style="margin-top:20px;">
 <h3 id="profileTitle">🏆 マイプロフィール</h3>
-  
+ 
+<div style="margin: 15px 0;">
+  <img id="profileAvatar"
+       alt="プロフィール画像"
+       width="100"
+       height="100"
+       style="border-radius:50%; object-fit:cover; display:none;">
+
+  <div style="margin-top:10px;">
+    <input id="avatarInput" type="file" accept="image/*">
+    <button id="uploadAvatarBtn" type="button">
+      プロフィール画像を保存
+    </button>
+  </div>
+
+  <p id="avatarMessage" role="status"></p>
+</div>
+ 
 <div id="profileBioSection" style="margin-top:16px;">
   <h4>📝 自己紹介</h4>
   <p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p>
@@ -307,6 +324,27 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   <button id="saveUsernameBtn" type="button">ユーザー名を保存</button>
   <p id="profileMessage" role="status"></p>
 </div>
+<div style="margin-top:16px;">
+  <h3>🖼️ プロフィール画像</h3>
+
+  <img id="profileAvatar"
+       alt="プロフィール画像"
+       width="100"
+       height="100"
+       style="border-radius:50%;object-fit:cover;"
+       hidden>
+
+  <input id="avatarFile"
+         type="file"
+         accept="image/png,image/jpeg,image/webp">
+
+  <button id="uploadAvatarBtn" type="button">
+    画像をアップロード
+  </button>
+
+  <p id="avatarMessage" role="status"></p>
+</div>
+
 
 </div>
 <p id="authMessage" role="status"></p>
@@ -1010,6 +1048,78 @@ db.auth.onAuthStateChange(() => {
 });
 
 loadUserProgress();
+
+// ここにプロフィール画像の処理を追加する
+
+async function uploadAvatar(file) {
+  const { data: { user }, error: authError } = await db.auth.getUser();
+
+  if (authError || !user) {
+    alert("ログインしてください");
+    return;
+  }
+
+  const filePath = `${user.id}/avatar-${Date.now()}.png`;
+
+  const { error: uploadError } = await db.storage
+    .from("avatars")
+    .upload(filePath, file, {
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    alert("画像のアップロードに失敗しました：" + uploadError.message);
+    return;
+  }
+
+  const { data } = db.storage
+    .from("avatars")
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+}
+
+document.getElementById("uploadAvatarBtn").addEventListener("click", async () => {
+  const input = document.getElementById("avatarInput");
+  const message = document.getElementById("avatarMessage");
+  const button = document.getElementById("uploadAvatarBtn");
+
+  if (!input.files.length) {
+    message.textContent = "画像を選択してください";
+    return;
+  }
+
+  const file = input.files[0];
+
+  if (!file.type.startsWith("image/")) {
+    message.textContent = "画像ファイルを選択してください";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "アップロード中...";
+
+  try {
+    const url = await uploadAvatar(file);
+
+    if (!url) {
+      message.textContent = "アップロードに失敗しました";
+      return;
+    }
+
+    const avatar = document.getElementById("profileAvatar");
+    avatar.src = url;
+    avatar.style.display = "block";
+
+    message.textContent = "プロフィール画像を保存しました！";
+  } catch (error) {
+    message.textContent = "エラー：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
 </script>
 
 </body>
