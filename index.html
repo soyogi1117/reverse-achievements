@@ -2134,8 +2134,10 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
         margin-bottom: 12px;
         border-radius: 20px;
         
-        background: ${new Date(item.event_date).getTime() > Date.now() ? "#1c3554" : "#193d32"};
-        color: ${new Date(item.event_date).getTime() > Date.now() ? "#8bc5ff" : "#70e0a4"};
+        
+background: #193d32;
+color: #70e0a4;
+
 
         border: 1px solid #348866;
         font-size: 12px;
