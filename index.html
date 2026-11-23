@@ -601,6 +601,20 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 #profileEditPanel > div:has(#profileUsername) {
   order: -1;
 }
+
+/* 個別保存ボタンを非表示 */
+#saveUsernameBtn,
+#saveBioBtn,
+#saveRolesBtn,
+#uploadAvatarBtn {
+  display: none;
+}
+
+
+/* 編集中はプロフィール閲覧画面を隠す */
+#signedIn.editing #profileStats {
+  display: none;
+}
 </style>
 
 </head>
@@ -676,7 +690,12 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   </button>
   <p id="roleMessage"></p>
 </div>
-  </div>
+  
+<button id="saveProfileBtn" type="button">
+  変更を保存
+</button>
+<p id="saveProfileMessage" role="status"></p>
+</div>
 <div id="profileStats" style="margin-top:20px;">
 
 <div class="profileHeader">
@@ -1902,7 +1921,94 @@ db.auth.onAuthStateChange(() => {
 });
 
 loadPrivacySetting();
+
+const saveProfileBtn = document.getElementById("saveProfileBtn");
+const saveProfileMessage = document.getElementById("saveProfileMessage");
 const editProfileBtn = document.getElementById("editProfileBtn");
+
+
+
+saveProfileBtn.addEventListener("click", async () => {
+  const username = document.getElementById("profileUsername").value.trim();
+  const bio = document.getElementById("bioInput").value.trim();
+  const favorite = document.getElementById("favoriteRoleSelect").value;
+  const disliked = document.getElementById("dislikedRoleSelect").value;
+
+  if (!username || username.length > 20) {
+    saveProfileMessage.textContent = "ユーザー名は1〜20文字で入力してください。";
+    return;
+  }
+
+  saveProfileBtn.disabled = true;
+  saveProfileMessage.textContent = "保存中...";
+
+  try {
+    
+let avatarUrl;
+
+const avatarFile = document.getElementById("avatarInput").files[0];
+
+if (avatarFile) {
+  if (!avatarFile.type.startsWith("image/")) {
+    throw new Error("画像ファイルを選択してください。");
+  }
+
+  avatarUrl = await uploadAvatar(avatarFile);
+
+  if (!avatarUrl) {
+    throw new Error("プロフィール画像のアップロードに失敗しました。");
+  }
+}
+const { data: { user }, error: authError } = await db.auth.getUser();
+    if (authError || !user) throw new Error("ログインしてください。");
+
+    
+const profileData = {
+  id: user.id,
+  username,
+  bio,
+  favorite_role: favorite || null,
+  disliked_role: disliked || null,
+  updated_at: new Date().toISOString()
+};
+
+if (avatarUrl) {
+  profileData.avatar_url = avatarUrl;
+}
+
+const { error } = await db.from("profiles").upsert(profileData);
+
+
+    if (error) throw error;
+
+if (avatarUrl) {
+  const headerAvatar = document.getElementById("profileHeaderAvatar");
+  headerAvatar.src = avatarUrl;
+  headerAvatar.style.display = "block";
+
+  const profileAvatar = document.getElementById("profileAvatar");
+  profileAvatar.src = avatarUrl;
+  document.getElementById("avatarInput").value = "";
+}
+
+    document.getElementById("profileTitle").textContent = username;
+    document.getElementById("profileBio").textContent =
+      bio || "自己紹介はまだありません。";
+    document.getElementById("favoriteRoleDisplay").textContent =
+      favorite || "未設定";
+    document.getElementById("dislikedRoleDisplay").textContent =
+      disliked || "未設定";
+
+    saveProfileMessage.textContent = "変更を保存しました！";
+    
+signedIn.classList.remove("editing");
+
+  } catch (error) {
+    saveProfileMessage.textContent = "保存失敗：" + error.message;
+  } finally {
+    saveProfileBtn.disabled = false;
+  }
+});
 
 editProfileBtn.addEventListener("click", () => {
   const editing = signedIn.classList.toggle("editing");
