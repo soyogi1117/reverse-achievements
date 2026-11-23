@@ -795,6 +795,25 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
     読み込み中...
   </p>
 
+
+<div id="publicRoleStats"
+  style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">❤️ 好きな役職</div>
+    <strong id="publicFavoriteRole" style="display:block;margin-top:6px;">
+      未設定
+    </strong>
+  </div>
+
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">💔 苦手な役職</div>
+    <strong id="publicDislikedRole" style="display:block;margin-top:6px;">
+      未設定
+    </strong>
+  </div>
+
+</div>
 <div id="publicTrophyStats"
      style="display:flex;gap:12px;margin-top:20px;">
 
@@ -2161,7 +2180,9 @@ const { data, error } = publicError || !publicData
       }
     : await db
         .from("profiles")
-        .select("username, avatar_url, bio")
+        
+.select("username, avatar_url, bio, favorite_role, disliked_role")
+
         .eq("id", item.user_id)
         .maybeSingle();
 
@@ -2184,6 +2205,19 @@ profileName.textContent =
 
   profileBio.textContent =
     data.bio || "自己紹介はまだありません。";
+
+const roleStats = document.getElementById("publicRoleStats");
+
+const canViewRoles =
+  !publicData.is_private || item.user_id === currentUserId;
+
+roleStats.style.display = canViewRoles ? "grid" : "none";
+
+document.getElementById("publicFavoriteRole").textContent =
+  canViewRoles ? (data.favorite_role || "未設定") : "未設定";
+
+document.getElementById("publicDislikedRole").textContent =
+  canViewRoles ? (data.disliked_role || "未設定") : "未設定";
 
   if (data.avatar_url) {
     profileAvatar.src = data.avatar_url;
@@ -2552,12 +2586,20 @@ async function openPlayerProfile(userId) {
 
   const { data: details } = await db
     .from("profiles")
-    .select("bio")
+    
+.select("bio, favorite_role, disliked_role")
+
     .eq("id", userId)
     .maybeSingle();
 
   bio.textContent =
     details?.bio || "自己紹介はまだありません。";
+
+document.getElementById("publicFavoriteRole").textContent =
+  details?.favorite_role || "未設定";
+
+document.getElementById("publicDislikedRole").textContent =
+  details?.disliked_role || "未設定";
 
   stats.style.display = "flex";
 
