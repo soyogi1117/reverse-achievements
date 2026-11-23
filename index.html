@@ -1493,6 +1493,109 @@ editProfileBtn.addEventListener("click", () => {
     ? "✕ 閉じる"
     : "✏️ 編集";
 });
+
+document.getElementById("postAnnouncementBtn")
+  .addEventListener("click", async () => {
+    const button = document.getElementById("postAnnouncementBtn");
+    const message = document.getElementById("announcementMessage");
+
+    const title = document.getElementById("announcementTitle").value.trim();
+    const date = document.getElementById("announcementDate").value;
+    const body = document.getElementById("announcementBody").value.trim();
+
+    if (!title || !date) {
+      message.textContent = "部屋名と開催日時を入力してください。";
+      return;
+    }
+
+    const { data: { user }, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    button.disabled = true;
+    message.textContent = "投稿中...";
+
+    try {
+      const { error } = await db
+        .from("room_announcements")
+        .insert({
+          user_id: user.id,
+          title: title,
+          event_date: new Date(date).toISOString(),
+          body: body
+        });
+
+      if (error) throw error;
+
+      message.textContent = "告知を投稿しました！";
+await loadAnnouncements();
+
+
+      document.getElementById("announcementTitle").value = "";
+      document.getElementById("announcementDate").value = "";
+      document.getElementById("announcementBody").value = "";
+
+    } catch (error) {
+      message.textContent = "投稿失敗：" + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+async function loadAnnouncements() {
+  const list = document.getElementById("announcementList");
+
+  const { data, error } = await db
+    .from("room_announcements")
+    .select("id, title, event_date, body, created_at")
+    .order("event_date", { ascending: true });
+
+  if (error) {
+    list.textContent = "告知の読み込みに失敗しました。";
+    console.error(error);
+    return;
+  }
+
+  list.replaceChildren();
+
+  if (!data || data.length === 0) {
+    list.textContent = "現在、告知はありません。";
+    return;
+  }
+
+  data.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "panel";
+
+    const title = document.createElement("h3");
+    title.textContent = "📢 " + item.title;
+
+    const date = document.createElement("p");
+    date.className = "muted";
+    date.textContent = "📅 " +
+      new Date(item.event_date).toLocaleString("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+    const body = document.createElement("p");
+    body.textContent = item.body;
+    body.style.whiteSpace = "pre-wrap";
+    body.style.overflowWrap = "anywhere";
+
+    card.append(title, date, body);
+    list.append(card);
+  });
+}
+
+loadAnnouncements();
 </script>
 
 </body>
