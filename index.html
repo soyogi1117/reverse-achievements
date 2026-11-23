@@ -1556,7 +1556,7 @@ async function loadAnnouncements() {
   const { data, error } = await db
     .from("room_announcements")
     
-.select("id, user_id, title, event_date, body, created_at")
+.select("id, user_id, title, event_date, body, created_at, is_closed")
 
     .order("event_date", { ascending: true });
 
@@ -1595,8 +1595,10 @@ async function loadAnnouncements() {
     const timeB = new Date(b.event_date).getTime();
 
     
-const endedA = timeA + 2 * 60 * 60 * 1000 <= now;
-const endedB = timeB + 2 * 60 * 60 * 1000 <= now;
+
+const endedA = a.is_closed || timeA + 2 * 60 * 60 * 1000 <= now;
+const endedB = b.is_closed || timeB + 2 * 60 * 60 * 1000 <= now;
+
 
 
     if (endedA !== endedB) {
@@ -1648,7 +1650,9 @@ date.style.cssText = `
 
     card.append(title, author, date, body);
     
-if (new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
+
+if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
+
 
       const endedLabel = document.createElement("span");
       endedLabel.textContent = "終了";
@@ -1782,7 +1786,37 @@ if (new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
       });
 
 
-      actions.append(editBtn, deleteBtn);
+      
+      if (!item.is_closed &&
+          new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 > Date.now()) {
+
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.textContent = "🔒 募集を終了する";
+
+        closeBtn.addEventListener("click", async () => {
+          if (!confirm("この部屋の募集を終了しますか？")) return;
+
+          closeBtn.disabled = true;
+
+          const { error } = await db
+            .from("room_announcements")
+            .update({ is_closed: true })
+            .eq("id", item.id)
+            .eq("user_id", currentUserId);
+
+          if (error) {
+            alert("募集終了に失敗しました：" + error.message);
+            closeBtn.disabled = false;
+            return;
+          }
+
+          await loadAnnouncements();
+        });
+
+        actions.append(closeBtn);
+      }
+actions.append(editBtn, deleteBtn);
       card.append(actions);
     }
 
