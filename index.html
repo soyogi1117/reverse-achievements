@@ -1725,7 +1725,9 @@ const date = document.getElementById("announcementDate").value;
     const body = document.getElementById("announcementBody").value.trim();
 
     
-if (!roomType || !title || !date) {
+
+if (!roomType || !title || !players || !date) {
+
   message.textContent =
     "部屋の種類・部屋主のキャラクター・開催日時を入力してください。";
   return;
@@ -1750,6 +1752,9 @@ if (!roomType || !title || !date) {
           user_id: user.id,
           
 room_type: roomType,
+          
+players: Number(players),
+
 title: title,
           event_date: new Date(date).toISOString(),
           body: body
