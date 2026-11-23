@@ -553,6 +553,15 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 <button id="editProfileBtn" type="button">
   ✏️ 編集
 </button>
+<button id="privacyToggleBtn" type="button"
+  style="display:block;margin-top:10px;">
+  🌐 公開設定を読み込み中...
+</button>
+
+<p id="privacyMessage"
+  style="font-size:12px;color:#aeb7c9;">
+</p>
+
 
     <p class="profileSubtitle">猫逆トロフィー プレイヤー</p>
   </div>
@@ -1512,6 +1521,78 @@ document.getElementById("backToAnnouncements")
     document.getElementById("roomAnnouncements")
       .scrollIntoView({ behavior: "smooth" });
   });
+
+const privacyToggleBtn = document.getElementById("privacyToggleBtn");
+const privacyMessage = document.getElementById("privacyMessage");
+
+async function loadPrivacySetting() {
+  const { data: { user } } = await db.auth.getUser();
+
+  privacyToggleBtn.disabled = !user;
+
+  if (!user) {
+    privacyToggleBtn.textContent = "🔒 ログインが必要です";
+    return;
+  }
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("is_private")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    privacyToggleBtn.textContent = "設定を取得できません";
+    return;
+  }
+
+  privacyToggleBtn.textContent = data.is_private
+    ? "🔒 非公開中（タップで公開）"
+    : "🌐 公開中（タップで非公開）";
+}
+
+privacyToggleBtn.addEventListener("click", async () => {
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return;
+
+  privacyToggleBtn.disabled = true;
+  privacyMessage.textContent = "変更中...";
+
+  try {
+    const { data, error } = await db
+      .from("profiles")
+      .select("is_private")
+      .eq("id", user.id)
+      .single();
+
+    if (error) throw error;
+
+    const nextPrivate = !data.is_private;
+
+    const { error: updateError } = await db
+      .from("profiles")
+      .update({ is_private: nextPrivate })
+      .eq("id", user.id);
+
+    if (updateError) throw updateError;
+
+    privacyMessage.textContent = nextPrivate
+      ? "🔒 非公開に設定しました"
+      : "🌐 公開に設定しました";
+
+    await loadPrivacySetting();
+  } catch (error) {
+    privacyMessage.textContent = "変更失敗：" + error.message;
+  } finally {
+    privacyToggleBtn.disabled = false;
+  }
+});
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadPrivacySetting, 0);
+});
+
+loadPrivacySetting();
 const editProfileBtn = document.getElementById("editProfileBtn");
 
 editProfileBtn.addEventListener("click", () => {
@@ -1704,11 +1785,31 @@ author.addEventListener("click", async () => {
   document.getElementById("roomAnnouncements").hidden = true;
   profileSection.scrollIntoView({ behavior: "smooth" });
 
-  const { data, error } = await db
-    .from("profiles")
-    .select("username, avatar_url, bio")
-    .eq("id", item.user_id)
-    .maybeSingle();
+  
+const { data: publicProfiles, error: publicError } = await db
+  .rpc("get_public_profile", {
+    target_user_id: item.user_id
+  });
+
+const publicData = publicProfiles?.[0];
+
+const { data, error } = publicError || !publicData
+  ? { data: null, error: publicError || new Error("プロフィールが見つかりません") }
+  : publicData.is_private && item.user_id !== currentUserId
+    ? {
+        data: {
+          username: publicData.username,
+          avatar_url: publicData.avatar_url,
+          bio: "🔒 このプロフィールは非公開です。"
+        },
+        error: null
+      }
+    : await db
+        .from("profiles")
+        .select("username, avatar_url, bio")
+        .eq("id", item.user_id)
+        .maybeSingle();
+
 
   if (error || !data) {
     profileName.textContent = "プロフィールを表示できません";
