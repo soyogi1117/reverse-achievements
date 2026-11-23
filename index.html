@@ -1825,6 +1825,7 @@ author.style.cssText = `
   text-align: left;
 `;
 author.addEventListener("click", async () => {
+  document.getElementById("backToAnnouncements").textContent = "← 部屋告知に戻る";
   const profileSection = document.getElementById("publicProfile");
   const profileName = document.getElementById("publicProfileName");
   const profileBio = document.getElementById("publicProfileBio");
@@ -2268,6 +2269,8 @@ item.addEventListener("click", () => {
  
 document.getElementById("publicProfile").dataset.returnTo = "playerSearch";
  
+
+document.getElementById("backToAnnouncements").textContent = "← プレイヤー検索に戻る";
 openPlayerProfile(player.id);
 
 });
