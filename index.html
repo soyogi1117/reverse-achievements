@@ -580,8 +580,10 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 <button id="editProfileBtn" type="button">
   ✏️ 編集
 </button>
+
 <button id="privacyToggleBtn" type="button"
-  style="display:block;margin-top:10px;">
+  style="margin-left:6px;white-space:nowrap;">
+
   🌐 公開設定を読み込み中...
 </button>
 
@@ -1726,8 +1728,8 @@ async function loadPrivacySetting() {
   }
 
   privacyToggleBtn.textContent = data.is_private
-    ? "🔒 非公開中（タップで公開）"
-    : "🌐 公開中（タップで非公開）";
+    ? "🔒 非公開"
+    : "🌐 公開中";
 }
 
 privacyToggleBtn.addEventListener("click", async () => {
