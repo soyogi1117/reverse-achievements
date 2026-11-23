@@ -271,7 +271,30 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   
 <div id="trophyEffect" hidden>
   <div id="trophyEffectContent">
-    <div id="trophyEffectIcon">🏆</div>
+    
+<div id="trophyEffectIcon">
+  <svg viewBox="0 0 120 120" width="100" height="100"
+       xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="trophyMetal" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fff3c0"/>
+        <stop offset="35%" stop-color="#ffd700"/>
+        <stop offset="70%" stop-color="#b8860b"/>
+        <stop offset="100%" stop-color="#fff0a0"/>
+      </linearGradient>
+    </defs>
+    <g fill="url(#trophyMetal)" stroke="#654321" stroke-width="2">
+      <path d="M32 18 H88 L82 67 Q60 90 38 67 Z"/>
+      <path d="M32 27 H18 V40 Q18 61 40 61"
+            fill="none" stroke-width="8"/>
+      <path d="M88 27 H102 V40 Q102 61 80 61"
+            fill="none" stroke-width="8"/>
+      <rect x="55" y="78" width="10" height="19"/>
+      <rect x="38" y="97" width="44" height="10" rx="3"/>
+    </g>
+  </svg>
+</div>
+
     <h2 id="trophyEffectTitle"></h2>
     <p id="trophyEffectName"></p>
   </div>
@@ -552,8 +575,28 @@ effect.classList.add(
 );
 
 
-  document.getElementById("trophyEffectIcon").textContent =
-    isLegend ? "🌈🏆" : "🏆";
+  
+
+const trophyIcon = document.getElementById("trophyEffectIcon");
+const trophyGradient = trophyIcon.querySelector("#trophyMetal");
+
+const metalColors = {
+  "銅": ["#ffe0b0", "#cd7f32", "#7c3e18", "#e9a66a"],
+  "銀": ["#ffffff", "#d8dee8", "#788596", "#f2f5fa"],
+  "金": ["#fff3c0", "#ffd700", "#b8860b", "#fff0a0"],
+  "伝説": ["#ff4545", "#ffd700", "#39baff", "#b46aff"]
+};
+
+const colors = metalColors[achievement.rarity] || metalColors["金"];
+
+trophyGradient.querySelectorAll("stop").forEach((stop, index) => {
+  stop.setAttribute("stop-color", colors[index]);
+});
+
+trophyIcon.style.background = "";
+trophyIcon.style.filter = "";
+
+
 
   document.getElementById("trophyEffectTitle").textContent =
     isLegend ? "LEGENDARY ACHIEVEMENT" : "TROPHY UNLOCKED!";
