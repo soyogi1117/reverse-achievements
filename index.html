@@ -1819,8 +1819,13 @@ const { data, error } = publicError || !publicData
     return;
   }
 
-  profileName.textContent =
-    "👤 " + (data.username || "名前未設定") + "のプロフィール";
+  
+profileName.textContent =
+  "👤 " +
+  (data.username || "名前未設定") +
+  "のプロフィール" +
+  (publicData.is_private ? " 🔒" : "");
+
 
   profileBio.textContent =
     data.bio || "自己紹介はまだありません。";
