@@ -1574,12 +1574,7 @@ document.getElementById("backToAnnouncements")
     delete profile.dataset.returnTo;
   });
 
-  .addEventListener("click", () => {
-    document.getElementById("publicProfile").hidden = true;
-    document.getElementById("roomAnnouncements").hidden = false;
-    document.getElementById("roomAnnouncements")
-      .scrollIntoView({ behavior: "smooth" });
-  });
+
 
 const privacyToggleBtn = document.getElementById("privacyToggleBtn");
 const privacyMessage = document.getElementById("privacyMessage");
