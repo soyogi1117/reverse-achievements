@@ -628,13 +628,26 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 
 <div id="rarityStats" style="margin-top:16px;">
   <h4>🏅 レアリティ別の獲得状況</h4>
-  <p>🥉 銅：<strong id="bronzeCount">0</strong> 個</p>
-  <p>🥈 銀：<strong id="silverCount">0</strong> 個</p>
-  <p>🥇 金：<strong id="goldCount">0</strong> 個</p>
   
-<p id="legendStatsRow" hidden>
-  🌈 伝説：<strong id="legendCount">0</strong> 個
-</p>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥉 銅</div>
+    <strong id="bronzeCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥈 銀</div>
+    <strong id="silverCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥇 金</div>
+    <strong id="goldCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div id="legendStatsRow" hidden style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🌈 伝説</div>
+    <strong id="legendCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+</div>
+
 
 
 <div id="rarityProgress" style="margin-top:20px;">
