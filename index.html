@@ -1554,7 +1554,26 @@ const avatar = document.getElementById("profileAvatar");
 
 
 
+
 document.getElementById("backToAnnouncements")
+  .addEventListener("click", () => {
+    const profile = document.getElementById("publicProfile");
+    const returnTo = profile.dataset.returnTo;
+
+    profile.hidden = true;
+
+    if (returnTo === "playerSearch") {
+      document.getElementById("playerSearch")
+        .scrollIntoView({ behavior: "smooth" });
+    } else {
+      document.getElementById("roomAnnouncements").hidden = false;
+      document.getElementById("roomAnnouncements")
+        .scrollIntoView({ behavior: "smooth" });
+    }
+
+    delete profile.dataset.returnTo;
+  });
+
   .addEventListener("click", () => {
     document.getElementById("publicProfile").hidden = true;
     document.getElementById("roomAnnouncements").hidden = false;
@@ -2251,7 +2270,9 @@ item.style.cssText =
 
       
 item.addEventListener("click", () => {
-  
+ 
+document.getElementById("publicProfile").dataset.returnTo = "playerSearch";
+ 
 openPlayerProfile(player.id);
 
 });
