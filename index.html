@@ -1582,6 +1582,17 @@ async function loadAnnouncements() {
 
     const date = document.createElement("p");
     date.className = "muted";
+date.style.cssText = `
+  display: inline-block;
+  background: #2b3852;
+  color: #e4bd68;
+  border: 1px solid #58647a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: bold;
+  font-size: 14px;
+`;
+
     date.textContent = "📅 " +
       new Date(item.event_date).toLocaleString("ja-JP", {
         year: "numeric",
