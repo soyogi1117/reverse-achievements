@@ -1413,9 +1413,10 @@ if (data.avatar_url) {
 
   input.value = data.username;
 
-  document.getElementById("profileTitle").textContent =
-    
-username;
+  
+document.getElementById("profileTitle").textContent =
+  data.username;
+
 
 }
 
@@ -1544,9 +1545,10 @@ if (error) {
 } else {
   message.textContent = "ユーザー名を保存しました！";
 
-  document.getElementById("profileTitle").textContent =
-    
-data.username;
+  
+document.getElementById("profileTitle").textContent =
+  username;
+
 
 }
 
