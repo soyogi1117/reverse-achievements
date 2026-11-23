@@ -1594,8 +1594,10 @@ async function loadAnnouncements() {
     const timeA = new Date(a.event_date).getTime();
     const timeB = new Date(b.event_date).getTime();
 
-    const endedA = timeA < now;
-    const endedB = timeB < now;
+    
+const endedA = timeA + 2 * 60 * 60 * 1000 <= now;
+const endedB = timeB + 2 * 60 * 60 * 1000 <= now;
+
 
     if (endedA !== endedB) {
       return endedA ? 1 : -1;
@@ -1645,7 +1647,9 @@ date.style.cssText = `
       (authorNames.get(item.user_id) || "名前未設定");
 
     card.append(title, author, date, body);
-    if (new Date(item.event_date).getTime() < Date.now()) {
+    
+if (new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
+
       const endedLabel = document.createElement("span");
       endedLabel.textContent = "終了";
       endedLabel.style.cssText = `
