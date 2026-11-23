@@ -254,8 +254,29 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   </div>
   <div id="signedIn" hidden>
     
+<div id="bioEditor" style="margin-top:20px;">
+  <h3>✏️ 自己紹介を編集</h3>
+  <textarea
+    id="bioInput"
+    maxlength="500"
+    rows="5"
+    placeholder="自己紹介を入力してください（500文字以内）"
+    style="width:100%;box-sizing:border-box;"
+  ></textarea>
+  <button id="saveBioBtn" type="button">
+    自己紹介を保存
+  </button>
+  <p id="bioMessage"></p>
+</div>
+
 <div id="profileStats" style="margin-top:20px;">
 <h3 id="profileTitle">🏆 マイプロフィール</h3>
+  
+<div id="profileBioSection" style="margin-top:16px;">
+  <h4>📝 自己紹介</h4>
+  <p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p>
+</div>
+
   <p>獲得トロフィー：<strong id="profileUnlocked">0</strong> 個</p>
   <p>達成率：<strong id="profileRate">0%</strong></p>
 
@@ -819,12 +840,97 @@ if (data) {
 }
 
 }
+async function saveBio() {
+  const input = document.getElementById("bioInput");
+  const message = document.getElementById("bioMessage");
+  const button = document.getElementById("saveBioBtn");
+  const bio = input.value.trim();
+
+  if (bio.length > 500) {
+    message.textContent = "自己紹介は500文字以内にしてください。";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "保存中...";
+
+  try {
+    const { data: { user }, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    const { error } = await db
+      .from("profiles")
+      .update({
+        bio: bio,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      message.textContent = "保存失敗：" + error.message;
+      return;
+    }
+
+    document.getElementById("profileBio").textContent =
+      bio || "自己紹介はまだありません。";
+
+    message.textContent = "自己紹介を保存しました！";
+  } catch (error) {
+    message.textContent = "保存失敗：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById("saveBioBtn")
+  .addEventListener("click", saveBio);
+
+async function loadBio() {
+  const input = document.getElementById("bioInput");
+  const display = document.getElementById("profileBio");
+  const message = document.getElementById("bioMessage");
+
+  input.value = "";
+  display.textContent = "自己紹介はまだありません。";
+  message.textContent = "";
+
+  const { data: { user }, error: authError } =
+    await db.auth.getUser();
+
+  if (authError || !user) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("bio")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    message.textContent = "自己紹介の読み込みに失敗しました。";
+    return;
+  }
+
+  const bio = data?.bio || "";
+
+  input.value = bio;
+  display.textContent = bio || "自己紹介はまだありません。";
+}
+
 
 db.auth.onAuthStateChange(() => {
   setTimeout(loadUsername, 0);
+  setTimeout(loadBio, 0);
 });
 
-loadUsername();
+
+loadUsername(); 
+loadBio();
+ 
 
 document.getElementById("saveUsernameBtn").onclick = async () => {
   const username = document.getElementById("profileUsername").value.trim();
