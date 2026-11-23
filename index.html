@@ -1818,6 +1818,36 @@ if (publicTrophyStats) {
       : "none";
 }
 
+const unlockedDisplay = document.getElementById("publicProfileUnlocked");
+const rateDisplay = document.getElementById("publicProfileRate");
+
+unlockedDisplay.textContent = "—";
+rateDisplay.textContent = "—";
+
+if (publicData && (!publicData.is_private || item.user_id === currentUserId)) {
+  const { data: trophyData, error: trophyError } = await db
+    .from("user_achievements")
+    .select("achievement_id")
+    .eq("user_id", item.user_id);
+
+  if (!trophyError) {
+    const unlockedIds = new Set(
+      (trophyData || []).map(trophy => String(trophy.achievement_id))
+    );
+
+    const total = achievements.length;
+    const unlocked = achievements.filter(
+      achievement => unlockedIds.has(String(achievement.id))
+    ).length;
+
+    unlockedDisplay.textContent = unlocked;
+    rateDisplay.textContent =
+      (total ? Math.round(unlocked / total * 100) : 0) + "%";
+  } else {
+    console.error("トロフィー取得失敗:", trophyError);
+  }
+}
+
 
 const { data, error } = publicError || !publicData
   ? { data: null, error: publicError || new Error("プロフィールが見つかりません") }
