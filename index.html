@@ -1691,13 +1691,18 @@ document.getElementById("postAnnouncementBtn")
     const message = document.getElementById("announcementMessage");
 
     const title = document.getElementById("announcementTitle").value.trim();
-    const date = document.getElementById("announcementDate").value;
+    
+const roomType = document.getElementById("announcementType").value;
+const date = document.getElementById("announcementDate").value;
     const body = document.getElementById("announcementBody").value.trim();
 
-    if (!title || !date) {
-      message.textContent = "部屋名と開催日時を入力してください。";
-      return;
-    }
+    
+if (!roomType || !title || !date) {
+  message.textContent =
+    "部屋の種類・部屋主のキャラクター・開催日時を入力してください。";
+  return;
+}
+
 
     const { data: { user }, error: authError } =
       await db.auth.getUser();
