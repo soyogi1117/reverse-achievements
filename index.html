@@ -1568,6 +1568,20 @@ async function loadAnnouncements() {
 
   list.replaceChildren();
 
+  const { data: authors, error: authorsError } = await db
+    .rpc("get_announcement_authors");
+
+  if (authorsError) {
+    console.error("投稿者名の取得失敗:", authorsError);
+  }
+
+  const authorNames = new Map(
+    (authors || []).map(author => [
+      author.user_id,
+      author.username || "名前未設定"
+    ])
+  );
+
   if (!data || data.length === 0) {
     list.textContent = "現在、告知はありません。";
     return;
@@ -1607,7 +1621,15 @@ date.style.cssText = `
     body.style.whiteSpace = "pre-wrap";
     body.style.overflowWrap = "anywhere";
 
-    card.append(title, date, body);
+    
+    const author = document.createElement("p");
+    author.className = "muted";
+    author.textContent =
+      "👤 投稿者：" +
+      (authorNames.get(item.user_id) || "名前未設定");
+
+    card.append(title, author, date, body);
+
     if (currentUserId && item.user_id === currentUserId) {
       const actions = document.createElement("div");
       actions.style.cssText =
