@@ -2076,7 +2076,26 @@ profileName.textContent =
 
     
 
-card.append(typeLabel, title, playersDisplay, author, date, body);
+const infoRow = document.createElement("div");
+infoRow.style.cssText = `
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 6px 0;
+`;
+
+playersDisplay.textContent = item.players
+  ? "👥 " + item.players + "人"
+  : "👥 人数未設定";
+
+author.style.margin = "0";
+
+infoRow.append(playersDisplay, author);
+
+card.append(typeLabel, title, infoRow, date, body);
+
+
 
 
     
