@@ -2116,6 +2116,8 @@ author.addEventListener("click", async () => {
   profileAvatar.style.display = "none";
   profileAvatar.removeAttribute("src");
 
+document.getElementById("publicRoleStats").style.display = "none";
+
   profileSection.hidden = false;
   document.getElementById("roomAnnouncements").hidden = true;
   profileSection.scrollIntoView({ behavior: "smooth" });
@@ -2595,14 +2597,18 @@ roleStats.style.display = "none";
     .eq("id", userId)
     .maybeSingle();
 
-  bio.textContent =
-    details?.bio || "自己紹介はまだありません。";
+  
+bio.textContent =
+  details?.bio || "自己紹介はまだありません。";
 
 document.getElementById("publicFavoriteRole").textContent =
   details?.favorite_role || "未設定";
 
 document.getElementById("publicDislikedRole").textContent =
   details?.disliked_role || "未設定";
+
+roleStats.style.display = "grid";
+
 
   stats.style.display = "flex";
 
