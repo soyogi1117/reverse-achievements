@@ -644,6 +644,29 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 
 
 
+
+<section id="playerSearch" class="panel">
+  <h2>🔎 プレイヤー検索</h2>
+  <p class="muted">
+    プレイヤー名を1文字以上入力して検索できます。
+  </p>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <input
+      id="playerSearchInput"
+      type="search"
+      maxlength="20"
+      placeholder="プレイヤー名を入力"
+      style="flex:1;min-width:0;"
+    >
+    <button id="playerSearchBtn" type="button">
+      🔎 検索
+    </button>
+  </div>
+
+  <p id="playerSearchMessage" class="muted"></p>
+  <div id="playerSearchResults"></div>
+</section>
 <section id="publicProfile" class="panel" hidden>
   <button id="backToAnnouncements" type="button">
     ← 部屋告知に戻る
@@ -2082,6 +2105,55 @@ setInterval(() => {
     loadAnnouncements();
   }
 }, 60 * 1000);
+</script>
+
+<script>
+document.getElementById("playerSearchBtn")
+  .addEventListener("click", async () => {
+    const input = document.getElementById("playerSearchInput");
+    const message = document.getElementById("playerSearchMessage");
+    const results = document.getElementById("playerSearchResults");
+    const name = input.value.trim();
+
+    results.replaceChildren();
+
+    if (!name) {
+      message.textContent = "プレイヤー名を入力してください。";
+      return;
+    }
+
+    message.textContent = "検索中...";
+
+    const { data, error } = await db.rpc("search_players", {
+      search_name: name
+    });
+
+    if (error) {
+      console.error(error);
+      message.textContent = "検索に失敗しました。";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      message.textContent = "該当するプレイヤーはいません。";
+      return;
+    }
+
+    message.textContent = `${data.length}人見つかりました。`;
+
+    data.forEach(player => {
+      const item = document.createElement("div");
+      item.style.cssText =
+        "padding:12px;border-bottom:1px solid #46516a;";
+
+      const name = document.createElement("strong");
+      name.textContent =
+        player.username + (player.is_private ? " 🔒" : "");
+
+      item.appendChild(name);
+      results.appendChild(item);
+    });
+  });
 </script>
 
 </body>
