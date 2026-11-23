@@ -2124,7 +2124,7 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
       editBtn.type = "button";
       editBtn.textContent = "✏️ 編集";
       editBtn.addEventListener("click", async () => {
-        const newTitle = prompt("部屋名を編集", item.title);
+        const newTitle = prompt("部屋主のキャラクターを編集", item.title);
         if (newTitle === null) return;
 
         const title = newTitle.trim();
@@ -2148,8 +2148,32 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
           return;
         }
 
-        const newBody = prompt("告知の詳細を編集", item.body);
-        if (newBody === null) return;
+        
+const playerOptions = [
+  "誰でも",
+  "初心者",
+  "準初心者",
+  "上級者"
+];
+
+const selectedNumber = prompt(
+  "募集するプレイヤーを選択\n" +
+  "1：誰でも\n" +
+  "2：初心者\n" +
+  "3：準初心者\n" +
+  "4：上級者",
+  String(playerOptions.indexOf(item.body) + 1)
+);
+
+if (selectedNumber === null) return;
+
+const newBody = playerOptions[Number(selectedNumber) - 1];
+
+if (!newBody) {
+  alert("1〜4の番号を入力してください。");
+  return;
+}
+
 
         if (newBody.length > 1000) {
           alert("詳細は1000文字以内で入力してください。");
