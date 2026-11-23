@@ -1923,30 +1923,62 @@ playersDisplay.textContent = item.players
 
     const date = document.createElement("p");
     date.className = "muted";
+
 date.style.cssText = `
-  display: inline-block;
-  background: #2b3852;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  background: transparent;
   color: #e4bd68;
-  border: 1px solid #58647a;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-weight: bold;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 8px 0;
+  font-weight: 600;
   font-size: 14px;
 `;
 
-    date.textContent = "📅 " +
-      new Date(item.event_date).toLocaleString("ja-JP", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
 
-    const body = document.createElement("p");
-    body.textContent = item.body;
-    body.style.whiteSpace = "pre-wrap";
-    body.style.overflowWrap = "anywhere";
+    
+const eventDate = new Date(item.event_date);
+
+const dateText = eventDate.toLocaleString("ja-JP", {
+  month: "long",
+  day: "numeric",
+  weekday: "short",
+  hour: "2-digit",
+  minute: "2-digit"
+});
+
+date.textContent = "📅 " + dateText;
+
+
+    
+const body = document.createElement("div");
+body.style.cssText = `
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+`;
+
+const bodyLabel = document.createElement("span");
+bodyLabel.textContent = "募集対象";
+bodyLabel.style.color = "#9ca3af";
+
+const bodyBadge = document.createElement("span");
+bodyBadge.textContent = item.body;
+bodyBadge.style.cssText = `
+  display: inline-block;
+  background: #374151;
+  color: #e5e7eb;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+`;
+
+body.append(bodyLabel, bodyBadge);
+
 
     
     
@@ -2157,8 +2189,17 @@ color: #70e0a4;
 
     if (currentUserId && item.user_id === currentUserId) {
       const actions = document.createElement("div");
-      actions.style.cssText =
-        "display:flex;gap:10px;margin-top:12px;";
+      
+actions.style.cssText = `
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #374151;
+  flex-wrap: wrap;
+`;
+
 
       const editBtn = document.createElement("button");
       editBtn.type = "button";
@@ -2346,7 +2387,18 @@ title: title,
 
         actions.append(closeBtn);
       }
-actions.append(editBtn, deleteBtn);
+
+const rightActions = document.createElement("div");
+rightActions.style.cssText = `
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+`;
+
+rightActions.append(editBtn, deleteBtn);
+actions.append(rightActions);
+
       card.append(actions);
     }
 
