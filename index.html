@@ -1515,7 +1515,13 @@ header {
 #manageMatchDate::-webkit-date-and-time-value{min-width:0;text-align:center}
 #manageMatchesList .manageCard{background:#263249;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}
 #manageMatchesList .manageActions{display:flex;gap:8px;margin-top:8px}
-#manageMatchesList .manageActions button{flex:1}
+#manageMatchesList .manageActions button{flex:1;min-width:0;padding:10px 4px}
+#managePlayerResults button{display:block;width:100%;margin:5px 0}
+#matchAuditView{overflow-wrap:anywhere}
+#matchAuditView details{background:#263249;padding:10px;margin:8px 0;border-radius:8px}
+#matchAuditView pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+#matchAuditLookup{margin:12px 0}
+#manageMatchEdit[hidden],#matchAuditView[hidden],#matchAuditLookup[hidden]{display:none!important}
 </style>
 
 </head>
@@ -1876,12 +1882,16 @@ header {
 <div id="manageMatchesPanel" hidden>
 <p id="manageMatchesStatus" role="status" class="muted"></p>
 <div id="manageMatchesList"></div>
+<div id="matchAuditLookup"><label>変更履歴を検索（削除済みも含む）<input id="matchAuditId" type="number" min="1" step="1" placeholder="対戦ID"></label><button id="matchAuditFind" type="button">履歴を表示</button></div>
+<div id="matchAuditView" hidden></div>
 <form id="manageMatchEdit" hidden>
 <h3>対戦結果を修正</h3>
 <label>対戦日時<input id="manageMatchDate" type="datetime-local" required></label>
 <label>部屋の種類<input id="manageMatchRoom" required maxlength="80"></label>
 <label>勝利陣営<select id="manageMatchWinner" required><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
 <label>備考<textarea id="manageMatchMemo" rows="3" maxlength="500"></textarea></label>
+<h3>参加プレイヤー</h3><div class="matchSearchRow"><input id="managePlayerSearch" type="search" placeholder="プレイヤー名" maxlength="20"><button id="managePlayerFind" type="button">検索</button></div>
+<p id="managePlayerStatus" role="status" class="muted"></p><div id="managePlayerResults"></div><div id="managePlayerRoster"></div>
 <div style="display:flex;gap:8px"><button id="manageMatchCancel" type="button" style="flex:1">キャンセル</button><button type="submit" style="flex:2">変更を保存</button></div>
 </form></div>
 </section>
@@ -4900,18 +4910,31 @@ void refreshMyMatchStats();
 (() => {
  const el=id=>document.getElementById(id), open=el('manageMatchesOpen'), panel=el('manageMatchesPanel'), list=el('manageMatchesList'), edit=el('manageMatchEdit'), status=el('manageMatchesStatus');
  let owner=null, allowed=false, revision=0, loadSeq=0, selected=null, busy=false;
+ let editSeq=0, searchSeq=0, auditSeq=0, rosterReady=false, originalDate='';
+ const roster=new Map(), audit=el('matchAuditView');
+ const roleNames=[...new Set([...nekoRoles,'罠師','医者','狼少年','強欲な人狼','窮地の人狼','ギャンブル狂','指導者','聖騎士','マッチ売り','末裔','一匹狼','黒い占い師','道化師','天邪鬼'])];
+ function addPlayer(p){const id=p.user_id||p.id;if(!id||roster.has(id))return;
+ const card=node('div');card.className='matchPlayerCard';const header=node('div');header.className='matchPlayerHeader';header.append(node('strong',p.username||id),button('削除',()=>{if(busy)return;roster.delete(id);card.remove();el('managePlayerResults').replaceChildren();}));
+ const role=node('input');role.required=true;role.maxLength=80;role.value=p.role||'';role.setAttribute('list','manageRoleOptions');role.placeholder='役職名';
+ const faction=node('select');faction.required=true;for(const v of [...new Set(['','市民陣営','人狼陣営','その他',p.faction||''])]){const o=node('option',v||'陣営を選択');o.value=v;faction.append(o);}faction.value=p.faction||'';
+ for(const [label,field] of [['役職',role],['陣営',faction]]){const l=node('label',label);l.append(field);card.append(l);}card.prepend(header);el('managePlayerRoster').append(card);roster.set(id,{role,faction});}
+ const dl=node('datalist');dl.id='manageRoleOptions';for(const r of roleNames){const o=node('option');o.value=r;dl.append(o);}edit.append(dl);
+ function clearAudit(){++auditSeq;audit.hidden=true;audit.replaceChildren();}
+ async function showAudit(id){if(!allowed||busy)return;const seq=++auditSeq;audit.hidden=false;audit.replaceChildren(node('p','履歴を読み込み中...'));try{let rows=[];for(let from=0;;from+=500){const {data,error}=await db.rpc('get_match_audit_logs',{p_match_id:id}).range(from,from+499);if(seq!==auditSeq)return;if(error)throw error;rows.push(...(data||[]));if(!data||data.length<500)break;}audit.replaceChildren(node('h3','変更履歴：対戦ID '+id),button('閉じる',clearAudit));if(!rows.length)audit.append(node('p','閲覧可能な履歴はありません。'));for(const r of rows){const d=node('details');const [table,action]=r.action.split(':');d.append(node('summary',new Date(r.changed_at).toLocaleString('ja-JP')+' / '+(table==='matches'?'対戦':'参加者')+' / '+({INSERT:'登録',UPDATE:'変更',DELETE:'削除'}[action]||action)));d.append(node('p','変更者ID：'+(r.changed_by||'不明')));for(const [label,data] of [['変更前',r.old_data],['変更後',r.new_data]])if(data){d.append(node('strong',label),node('pre',JSON.stringify(data,null,2)));}audit.append(d);}audit.scrollIntoView({block:'start',behavior:'smooth'});}catch(e){if(seq===auditSeq)audit.replaceChildren(node('p','履歴取得失敗：'+e.message),button('閉じる',clearAudit));}}
+ el('matchAuditFind').onclick=()=>{const id=el('matchAuditId').value;if(!/^[1-9][0-9]*$/.test(id)){msg('対戦IDを入力してください。');return;}void showAudit(id);};
+ el('managePlayerFind').onclick=async()=>{if(!selected||!rosterReady||busy||!allowed)return;const seq=++searchSeq,q=el('managePlayerSearch').value.trim(),target=el('managePlayerResults'),status=el('managePlayerStatus');target.replaceChildren();if(!q){status.textContent='プレイヤー名を入力してください。';return;}status.textContent='検索中...';try{const {data,error}=await db.rpc('search_players',{search_name:q});if(seq!==searchSeq)return;if(error)throw error;status.textContent=(data||[]).length?'参加者を選択してください。':'該当者なし';for(const p of data||[]){if(!p.id)continue;const b=button(p.username+(roster.has(p.id)?'（追加済み）':' ＋'),()=>{if(busy||!allowed||!rosterReady)return;addPlayer(p);b.disabled=true;b.textContent=p.username+'（追加済み）';});b.disabled=roster.has(p.id);target.append(b);}}catch(e){if(seq===searchSeq)status.textContent='検索失敗：'+e.message;}};
  const msg=t=>status.textContent=t;
  const node=(tag,t)=>{const n=document.createElement(tag);if(t!==undefined)n.textContent=t;return n;};
  function button(t,fn){const b=node('button',t);b.type='button';b.onclick=fn;return b;}
- function closeEdit(){selected=null;edit.hidden=true;edit.reset();list.hidden=false;}
- function reset(){++loadSeq;panel.hidden=true;list.replaceChildren();closeEdit();msg('');}
+ function closeEdit(){++editSeq;++searchSeq;rosterReady=false;roster.clear();el('managePlayerRoster').replaceChildren();el('managePlayerResults').replaceChildren();el('managePlayerStatus').textContent='';selected=null;edit.hidden=true;edit.reset();list.hidden=false;el('matchAuditLookup').hidden=false;}
+ function reset(){++loadSeq;panel.hidden=true;list.replaceChildren();closeEdit();clearAudit();msg('');}
  async function check(){const seq=++revision;try{const {data:{user},error}=await db.auth.getUser();if(seq!==revision)return;if(owner!==(user?.id||null)){owner=user?.id||null;reset();}allowed=false;open.hidden=true;if(error||!user){reset();return;}const [h,a]=await Promise.all([db.from('room_hosts').select('user_id').eq('user_id',user.id).maybeSingle(),db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle()]);if(seq!==revision)return;allowed=!!(h.data||a.data);open.hidden=!allowed;if(!allowed)reset();}catch(e){if(seq===revision){allowed=false;open.hidden=true;reset();}}}
- function beginEdit(m){if(busy||!allowed)return;selected=m;const d=new Date(m.played_at);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el('manageMatchDate').value=d.toISOString().slice(0,16);el('manageMatchRoom').value=m.room_type;el('manageMatchWinner').value=m.winning_side;el('manageMatchMemo').value=m.memo||'';list.hidden=true;edit.hidden=false;edit.scrollIntoView({block:'start',behavior:'smooth'});}
- async function load(){const seq=++loadSeq;closeEdit();list.replaceChildren();msg('読み込み中...');try{let rows=[];for(let from=0;;from+=500){const {data,error}=await db.rpc('get_manageable_matches').range(from,from+499);if(seq!==loadSeq)return;if(error)throw error;rows.push(...(data||[]));if(!data||data.length<500)break;}msg(rows.length?'管理可能な対戦：'+rows.length+'件':'管理可能な対戦はありません。');for(const m of rows){const card=node('div');card.className='manageCard';card.append(node('strong',m.room_type+' / '+m.winning_side),node('p',new Date(m.played_at).toLocaleString('ja-JP')+' / ID '+m.id));if(m.memo)card.append(node('p',m.memo));const actions=node('div');actions.className='manageActions';const del=button('削除',()=>remove(m));del.style.background='#843b48';actions.append(button('修正',()=>beginEdit(m)),del);card.append(actions);list.append(card);}}catch(e){if(seq===loadSeq)msg('取得失敗：'+e.message);}}
+ async function beginEdit(m){if(busy||!allowed)return;closeEdit();clearAudit();const seq=++editSeq;selected=m;const d=new Date(m.played_at);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());originalDate=d.toISOString().slice(0,16);el('manageMatchDate').value=originalDate;el('manageMatchRoom').value=m.room_type;el('manageMatchWinner').value=m.winning_side;el('manageMatchMemo').value=m.memo||'';list.hidden=true;el('matchAuditLookup').hidden=true;edit.hidden=false;const save=edit.querySelector('[type=submit]');save.disabled=true;el('managePlayerStatus').textContent='参加者を読み込み中...';edit.scrollIntoView({block:'start',behavior:'smooth'});try{const {data,error}=await db.rpc('get_match_players',{p_match_id:m.id});if(seq!==editSeq)return;if(error)throw error;for(const p of data||[])addPlayer(p);rosterReady=true;save.disabled=false;el('managePlayerStatus').textContent='参加者の追加・削除・役職変更ができます。';}catch(e){if(seq===editSeq)el('managePlayerStatus').textContent='参加者取得失敗：'+e.message+'（キャンセルして再度開いてください）';}}
+ async function load(){const seq=++loadSeq;closeEdit();clearAudit();list.replaceChildren();msg('読み込み中...');try{let rows=[];for(let from=0;;from+=500){const {data,error}=await db.rpc('get_manageable_matches').range(from,from+499);if(seq!==loadSeq)return;if(error)throw error;rows.push(...(data||[]));if(!data||data.length<500)break;}msg(rows.length?'管理可能な対戦：'+rows.length+'件':'管理可能な対戦はありません。');for(const m of rows){const card=node('div');card.className='manageCard';card.append(node('strong',m.room_type+' / '+m.winning_side),node('p',new Date(m.played_at).toLocaleString('ja-JP')+' / ID '+m.id));if(m.memo)card.append(node('p',m.memo));const actions=node('div');actions.className='manageActions';const del=button('削除',()=>remove(m));del.style.background='#843b48';actions.append(button('修正',()=>beginEdit(m)),button('履歴',()=>showAudit(m.id)),del);card.append(actions);list.append(card);}}catch(e){if(seq===loadSeq)msg('取得失敗：'+e.message);}}
  function lock(v){busy=v;open.disabled=v;for(const n of panel.querySelectorAll('button,input,select,textarea'))n.disabled=v;}
  async function mutate(fn,args){if(busy||!allowed)return;const who=owner;lock(true);msg('処理中...');try{const {error}=await db.rpc(fn,args);if(error)throw error;if(owner!==who)return;await load();if(owner!==who)return;msg((fn==='delete_match'?'削除':'修正')+'しました。 '+status.textContent);void refreshMyMatchStats();clearPublicMatchStats();}catch(e){if(owner===who)msg('処理失敗：'+e.message);}finally{lock(false);}}
  function remove(m){if(busy||!allowed)return;if(confirm('対戦ID '+m.id+' を削除しますか？参加者全員の戦績から削除されます。'))void mutate('delete_match',{p_match_id:m.id});}
- edit.onsubmit=e=>{e.preventDefault();if(!selected||busy||!allowed)return;const room=el('manageMatchRoom').value.trim();if(!room){msg('部屋の種類を入力してください。');return;}if(!confirm('変更を保存しますか？参加者全員の勝敗が再計算されます。'))return;void mutate('update_match',{p_match_id:selected.id,p_room_type:room,p_played_at:new Date(el('manageMatchDate').value).toISOString(),p_winning_side:el('manageMatchWinner').value,p_memo:el('manageMatchMemo').value.trim()||null});};
+ edit.onsubmit=e=>{e.preventDefault();if(!selected||busy||!allowed||!rosterReady)return;const room=el('manageMatchRoom').value.trim();const rows=[...roster].map(([user_id,p])=>({user_id,role:p.role.value.trim(),faction:p.faction.value}));if(!room||!rows.length||rows.some(p=>!p.role||!p.faction)){msg('部屋名・参加者・役職・陣営を入力してください。');return;}if(!confirm('変更を保存しますか？参加者全員の勝敗が再計算されます。'))return;const date=el('manageMatchDate').value;void mutate('update_match_full',{p_match_id:selected.id,p_room_type:room,p_played_at:date===originalDate?selected.played_at:new Date(date).toISOString(),p_winning_side:el('manageMatchWinner').value,p_players:rows,p_memo:el('manageMatchMemo').value.trim()||null});};
  el('manageMatchCancel').onclick=()=>{if(!busy)closeEdit();};
  open.onclick=()=>{if(!allowed||busy)return;if(!panel.hidden){reset();return;}panel.hidden=false;void load();};
  db.auth.onAuthStateChange(event=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)){if(event==='SIGNED_OUT'){allowed=false;owner=null;open.hidden=true;reset();}setTimeout(check,0);}});void check();
