@@ -3368,6 +3368,110 @@ color: #70e0a4;
 
 
 
+const participantBtn = document.createElement("button");
+participantBtn.type = "button";
+participantBtn.className = "participantBtn";
+participantBtn.textContent = "＋ 参加希望する";
+participantBtn.disabled = true;
+
+const participantCount = document.createElement("p");
+participantCount.className = "participantCount";
+participantCount.textContent = "参加希望者：読み込み中...";
+card.append(participantCount);
+
+async function updateParticipantCount() {
+  const { count, error } = await db
+    .from("room_participants")
+    .select("*", { count: "exact", head: true })
+    .eq("announcement_id", item.id);
+
+  
+participantCount.textContent = error
+  ? "参加希望人数の取得に失敗"
+  : `参加希望者：${count} / ${item.players}人`;
+
+participantBar.style.width = error
+  ? "0%"
+  : `${Math.min(100, count / item.players * 100)}%`;
+
+}
+
+updateParticipantCount();
+
+card.append(participantBtn);
+
+const participantProgress = document.createElement("div");
+participantProgress.style.cssText =
+  "height:8px;background:#343c4c;border-radius:20px;overflow:hidden;margin:8px 0 14px;";
+
+const participantBar = document.createElement("div");
+participantBar.style.cssText =
+  "height:100%;width:0;background:#54d88a;border-radius:20px;transition:width .3s ease;";
+
+participantProgress.append(participantBar);
+card.append(participantProgress);
+
+async function setupParticipantButton() {
+  if (!currentUserId) {
+    participantBtn.textContent = "ログインして参加希望";
+    return;
+  }
+
+  const { data, error } = await db
+    .from("room_participants")
+    .select("user_id")
+    .eq("announcement_id", item.id)
+    .eq("user_id", currentUserId)
+    .maybeSingle();
+
+  if (error) {
+    participantBtn.textContent = "読み込み失敗";
+    return;
+  }
+
+  let joined = !!data;
+
+  function updateButton() {
+    participantBtn.textContent = joined
+      ? "✓ 参加希望済み（取消）"
+      : "＋ 参加希望する";
+
+    participantBtn.disabled = false;
+  }
+
+  updateButton();
+
+  participantBtn.addEventListener("click", async () => {
+    participantBtn.disabled = true;
+
+    try {
+      const result = joined
+        ? await db.from("room_participants")
+            .delete()
+            .eq("announcement_id", item.id)
+            .eq("user_id", currentUserId)
+        : await db.from("room_participants")
+            .insert({
+              announcement_id: item.id,
+              user_id: currentUserId
+            });
+
+      if (result.error) throw result.error;
+
+      joined = !joined;
+
+await updateParticipantCount();
+
+    } catch (error) {
+      alert("操作に失敗しました：" + error.message);
+    } finally {
+      updateButton();
+    }
+  });
+}
+
+setupParticipantButton();
+
     if (currentUserId && item.user_id === currentUserId) {
       const actions = document.createElement("div");
       
