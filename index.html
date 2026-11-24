@@ -1511,6 +1511,11 @@ header {
 .matchStatsPanel .msRow{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid #3d465a;font-size:13px}
 .matchStatsPanel .msRow span:last-child{text-align:right;flex-shrink:0}
 .matchStatsPanel .msBar{height:7px;background:#384154;border-radius:8px;overflow:hidden;margin-bottom:9px}
+#manageMatchDate{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;-webkit-appearance:none;appearance:none}
+#manageMatchDate::-webkit-date-and-time-value{min-width:0;text-align:center}
+#manageMatchesList .manageCard{background:#263249;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}
+#manageMatchesList .manageActions{display:flex;gap:8px;margin-top:8px}
+#manageMatchesList .manageActions button{flex:1}
 </style>
 
 </head>
@@ -1867,6 +1872,18 @@ header {
 <label>備考（任意）<textarea id="matchMemo" rows="3" maxlength="500"></textarea></label>
 <button id="matchSave" type="submit">対戦結果を一括登録</button>
 </form><p id="matchStatus" role="status" aria-live="polite"></p>
+<button id="manageMatchesOpen" type="button" hidden style="width:100%;margin-top:8px">対戦結果を管理</button>
+<div id="manageMatchesPanel" hidden>
+<p id="manageMatchesStatus" role="status" class="muted"></p>
+<div id="manageMatchesList"></div>
+<form id="manageMatchEdit" hidden>
+<h3>対戦結果を修正</h3>
+<label>対戦日時<input id="manageMatchDate" type="datetime-local" required></label>
+<label>部屋の種類<input id="manageMatchRoom" required maxlength="80"></label>
+<label>勝利陣営<select id="manageMatchWinner" required><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
+<label>備考<textarea id="manageMatchMemo" rows="3" maxlength="500"></textarea></label>
+<div style="display:flex;gap:8px"><button id="manageMatchCancel" type="button" style="flex:1">キャンセル</button><button type="submit" style="flex:2">変更を保存</button></div>
+</form></div>
 </section>
 
 
@@ -4878,6 +4895,27 @@ async function refreshMyMatchStats(){const seq=++myMatchStatsSeq,node=document.g
 async function loadPublicMatchStats(id,seq){if(seq!==publicMatchStatsSeq)return;const node=document.getElementById('publicMatchStats');node.hidden=false;node.textContent='戦績を読み込み中...';try{const rows=await fetchMatchStats(id);if(seq===publicMatchStatsSeq)renderMatchStats(node,rows);}catch(e){if(seq===publicMatchStatsSeq)node.textContent='戦績取得失敗：'+e.message;}}
 db.auth.onAuthStateChange((event)=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)){clearPublicMatchStats();setTimeout(refreshMyMatchStats,0);}});
 void refreshMyMatchStats();
+</script>
+<script>
+(() => {
+ const el=id=>document.getElementById(id), open=el('manageMatchesOpen'), panel=el('manageMatchesPanel'), list=el('manageMatchesList'), edit=el('manageMatchEdit'), status=el('manageMatchesStatus');
+ let owner=null, allowed=false, revision=0, loadSeq=0, selected=null, busy=false;
+ const msg=t=>status.textContent=t;
+ const node=(tag,t)=>{const n=document.createElement(tag);if(t!==undefined)n.textContent=t;return n;};
+ function button(t,fn){const b=node('button',t);b.type='button';b.onclick=fn;return b;}
+ function closeEdit(){selected=null;edit.hidden=true;edit.reset();list.hidden=false;}
+ function reset(){++loadSeq;panel.hidden=true;list.replaceChildren();closeEdit();msg('');}
+ async function check(){const seq=++revision;try{const {data:{user},error}=await db.auth.getUser();if(seq!==revision)return;if(owner!==(user?.id||null)){owner=user?.id||null;reset();}allowed=false;open.hidden=true;if(error||!user){reset();return;}const [h,a]=await Promise.all([db.from('room_hosts').select('user_id').eq('user_id',user.id).maybeSingle(),db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle()]);if(seq!==revision)return;allowed=!!(h.data||a.data);open.hidden=!allowed;if(!allowed)reset();}catch(e){if(seq===revision){allowed=false;open.hidden=true;reset();}}}
+ function beginEdit(m){if(busy||!allowed)return;selected=m;const d=new Date(m.played_at);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el('manageMatchDate').value=d.toISOString().slice(0,16);el('manageMatchRoom').value=m.room_type;el('manageMatchWinner').value=m.winning_side;el('manageMatchMemo').value=m.memo||'';list.hidden=true;edit.hidden=false;edit.scrollIntoView({block:'start',behavior:'smooth'});}
+ async function load(){const seq=++loadSeq;closeEdit();list.replaceChildren();msg('読み込み中...');try{let rows=[];for(let from=0;;from+=500){const {data,error}=await db.rpc('get_manageable_matches').range(from,from+499);if(seq!==loadSeq)return;if(error)throw error;rows.push(...(data||[]));if(!data||data.length<500)break;}msg(rows.length?'管理可能な対戦：'+rows.length+'件':'管理可能な対戦はありません。');for(const m of rows){const card=node('div');card.className='manageCard';card.append(node('strong',m.room_type+' / '+m.winning_side),node('p',new Date(m.played_at).toLocaleString('ja-JP')+' / ID '+m.id));if(m.memo)card.append(node('p',m.memo));const actions=node('div');actions.className='manageActions';const del=button('削除',()=>remove(m));del.style.background='#843b48';actions.append(button('修正',()=>beginEdit(m)),del);card.append(actions);list.append(card);}}catch(e){if(seq===loadSeq)msg('取得失敗：'+e.message);}}
+ function lock(v){busy=v;open.disabled=v;for(const n of panel.querySelectorAll('button,input,select,textarea'))n.disabled=v;}
+ async function mutate(fn,args){if(busy||!allowed)return;const who=owner;lock(true);msg('処理中...');try{const {error}=await db.rpc(fn,args);if(error)throw error;if(owner!==who)return;await load();if(owner!==who)return;msg((fn==='delete_match'?'削除':'修正')+'しました。 '+status.textContent);void refreshMyMatchStats();clearPublicMatchStats();}catch(e){if(owner===who)msg('処理失敗：'+e.message);}finally{lock(false);}}
+ function remove(m){if(busy||!allowed)return;if(confirm('対戦ID '+m.id+' を削除しますか？参加者全員の戦績から削除されます。'))void mutate('delete_match',{p_match_id:m.id});}
+ edit.onsubmit=e=>{e.preventDefault();if(!selected||busy||!allowed)return;const room=el('manageMatchRoom').value.trim();if(!room){msg('部屋の種類を入力してください。');return;}if(!confirm('変更を保存しますか？参加者全員の勝敗が再計算されます。'))return;void mutate('update_match',{p_match_id:selected.id,p_room_type:room,p_played_at:new Date(el('manageMatchDate').value).toISOString(),p_winning_side:el('manageMatchWinner').value,p_memo:el('manageMatchMemo').value.trim()||null});};
+ el('manageMatchCancel').onclick=()=>{if(!busy)closeEdit();};
+ open.onclick=()=>{if(!allowed||busy)return;if(!panel.hidden){reset();return;}panel.hidden=false;void load();};
+ db.auth.onAuthStateChange(event=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)){if(event==='SIGNED_OUT'){allowed=false;owner=null;open.hidden=true;reset();}setTimeout(check,0);}});void check();
+})();
 </script>
 </body>
 </html>
