@@ -1047,6 +1047,19 @@ a[x-apple-data-detectors] {
   left: 14px;
   pointer-events: none;
 }
+
+#announcementVersion {
+  width: 34% !important;
+  display: inline-block;
+  vertical-align: top;
+}
+
+#announcementTitle {
+  width: 62% !important;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 2%;
+}
 </style>
 
 </head>
@@ -1461,15 +1474,62 @@ a[x-apple-data-detectors] {
        style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
   🎭 部屋主のキャラクター
 </label>
-<input
-    id="announcementTitle"
-    type="text"
-    maxlength="100"
-    placeholder="例：J赤フレディ"
-    
-style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin-bottom:10px;"
 
-  >
+<select id="announcementVersion">
+  <option value="">種類を選択</option>
+  <option>N</option>
+  <option>SP1</option>
+  <option>SP2</option>
+  <option>SP3</option>
+  <option>SP4</option>
+  <option>MN</option>
+  <option>MSP1</option>
+  <option>MSP2</option>
+  <option>DSP1</option>
+  <option>JVIP</option>
+  <option>DVIP</option>
+</select>
+
+<select id="announcementTitle">
+  <option value="">キャラクターを選択</option>
+  <option>アンナ</option>
+  <option>マイク</option>
+  <option>エリック</option>
+  <option>バニラ</option>
+  <option>メアリー</option>
+  <option>ジェイ</option>
+  <option>ショーン</option>
+  <option>ローラ</option>
+  <option>ビル</option>
+  <option>ミカ</option>
+  <option>リリアン</option>
+  <option>メリル</option>
+  <option>ゲイル</option>
+  <option>スーザン</option>
+  <option>ロディ</option>
+  <option>エマ</option>
+  <option>フランク</option>
+  <option>トーマス</option>
+  <option>クリス</option>
+  <option>ジェシカ</option>
+  <option>サンドラ</option>
+  <option>フェイ</option>
+  <option>ヒュー</option>
+  <option>マリアンヌ</option>
+  <option>ニック</option>
+  <option>ソフィア</option>
+  <option>チャン</option>
+  <option>カミラ</option>
+  <option>フレディ</option>
+  <option>アーニー</option>
+  <option>ケイト</option>
+  <option>ウィル</option>
+  <option>セリーヌ</option>
+  <option>ポール</option>
+  <option>モーガン</option>
+  <option>ペネロペ</option>
+</select>
+
 
 
 <label for="announcementPlayers"
@@ -2592,7 +2652,11 @@ document.getElementById("postAnnouncementBtn")
     const button = document.getElementById("postAnnouncementBtn");
     const message = document.getElementById("announcementMessage");
 
-    const title = document.getElementById("announcementTitle").value.trim();
+    
+const version = document.getElementById("announcementVersion").value;
+const character = document.getElementById("announcementTitle").value;
+const title = version && character ? version + character : "";
+
     
 const roomType = document.getElementById("announcementType").value;
 
@@ -2649,6 +2713,8 @@ await loadAnnouncements();
       
 document.getElementById("announcementType").value = "";
 document.getElementById("announcementTitle").value = "";
+
+document.getElementById("announcementVersion").value = "";
       
 document.getElementById("announcementPlayers").value = "";
 document.getElementById("announcementDate").value = "";
@@ -3628,6 +3694,57 @@ document.getElementById("closeProfileBtn").addEventListener("click", () => {
   document.getElementById("signedIn").classList.remove("editing");
   document.getElementById("editProfileBtn").textContent = "✏️ 編集";
 });
+</script>
+
+<script>
+const versionSelect = document.getElementById("announcementVersion");
+const characterSelect = document.getElementById("announcementTitle");
+
+const vipCharacters = [
+  "ケイト", "ウィル", "セリーヌ",
+  "ポール", "モーガン", "ペネロペ"
+];
+
+const normalCharacters = Array.from(characterSelect.options)
+  .map(option => option.value)
+  .filter(name => name && !vipCharacters.includes(name));
+
+function updateAnnouncementCharacters() {
+  const version = versionSelect.value;
+
+  characterSelect.replaceChildren(
+    new Option("キャラクターを選択", "")
+  );
+
+  characterSelect.disabled = !version;
+
+  if (!version) return;
+
+  const characters =
+    version === "JVIP" || version === "DVIP"
+      ? vipCharacters
+      : normalCharacters;
+
+  characters.forEach(name => {
+    characterSelect.add(new Option(name, name));
+  });
+}
+
+versionSelect.addEventListener("change", updateAnnouncementCharacters);
+
+document.getElementById("postAnnouncementBtn")
+  .addEventListener("click", () => {
+    setTimeout(updateAnnouncementCharacters, 0);
+  });
+
+new MutationObserver(() => {
+  if (!versionSelect.value) updateAnnouncementCharacters();
+}).observe(document.getElementById("announcementMessage"), {
+  childList: true,
+  subtree: true
+});
+
+updateAnnouncementCharacters();
 </script>
 </body>
 </html>
