@@ -1441,6 +1441,13 @@ header {
   text-align: center;
   margin: 4px 0 14px;
 }
+/* Equipped trophy title */
+.equippedTrophyTitle { font-size:14px; font-weight:700; margin:0 0 6px; overflow-wrap:anywhere; }
+.equippedTrophyTitle[hidden] { display:none !important; }
+.equippedTrophyTitle[data-rarity="銅"] { color:#cd7f32; }
+.equippedTrophyTitle[data-rarity="銀"] { color:#c0c0c0; }
+.equippedTrophyTitle[data-rarity="金"] { color:#ffd700; }
+.equippedTrophyTitle[data-rarity="伝説"] { background:linear-gradient(90deg,#ff5555,#ffb347,#ffe66d,#54d88a,#55b9ff,#c57aff); background-clip:text; -webkit-background-clip:text; color:transparent; filter:drop-shadow(0 0 5px #a569ff66); width:fit-content; }
 </style>
 
 </head>
@@ -1624,6 +1631,11 @@ header {
 </div>
   
 
+<div id="trophyTitleEditor">
+  <label for="trophyTitleSelect" style="display:block;margin-bottom:8px;">称号</label>
+  <select id="trophyTitleSelect" disabled><option value="">称号なし</option></select>
+  <p id="trophyTitleStatus" role="status" style="font-size:13px;color:#aeb7c9;">獲得済みトロフィーを読み込み中...</p>
+</div>
 <div id="profileEditActions">
   <button id="closeProfileBtn" type="button">
     ✕ 閉じる
@@ -1645,6 +1657,7 @@ header {
        style="display:none; border-radius:50%; object-fit:cover;">
 
   <div>
+    <div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div>
     <h3 id="profileTitle">🏆 マイプロフィール</h3>
     
 <button id="editProfileBtn" type="button">
@@ -1805,6 +1818,7 @@ header {
     ← 部屋告知に戻る
   </button>
 
+  <div id="publicTrophyTitle" class="equippedTrophyTitle" hidden></div>
   <h2 id="publicProfileName">👤 プロフィール</h2>
 
   <img id="publicProfileAvatar"
@@ -3039,6 +3053,10 @@ if (avatarUrl) {
   profileData.avatar_url = avatarUrl;
 }
 
+const titleSelect = document.getElementById("trophyTitleSelect");
+if (!titleSelect.disabled && titleEditorUser === user.id && titleSelect.value !== titleOriginalValue) {
+  profileData.equipped_achievement_id = titleSelect.value || null;
+}
 const { error } = await db.from("profiles").upsert(profileData);
 
 
@@ -3066,6 +3084,10 @@ if (avatarUrl) {
   profileData.favorite_character || "未設定";
 
 saveProfileMessage.textContent = "変更を保存しました！";
+if (Object.prototype.hasOwnProperty.call(profileData, "equipped_achievement_id")) {
+  titleOriginalValue = titleSelect.value;
+  displayTrophyTitle(document.getElementById("myTrophyTitle"), titleOwned.find(a => String(a.id) === titleSelect.value));
+}
     
 
 signedIn.classList.remove("editing");
@@ -3859,6 +3881,8 @@ async function openPlayerProfile(userId) {
 const roleStats = document.getElementById("publicRoleStats");
 roleStats.style.display = "none";
 
+  const titleRequest = ++publicTitleRequest;
+  displayTrophyTitle(document.getElementById("publicTrophyTitle"), null);
   name.textContent = "👤 読み込み中...";
   bio.textContent = "";
   avatar.style.display = "none";
@@ -3901,6 +3925,7 @@ roleStats.style.display = "none";
     return;
   }
 
+  void loadPublicTrophyTitle(userId, titleRequest);
   const { data: details } = await db
     .from("profiles")
     
@@ -4608,5 +4633,76 @@ document.getElementById("pushNotificationBtn")
   });
 </script>
 
+<script>
+// 称号機能：プロフィール編集に統合
+let titleEditorUser = null;
+let titleOriginalValue = "";
+let titleOwned = [];
+let titleLoadRequest = 0;
+let publicTitleRequest = 0;
+function displayTrophyTitle(element, trophy) {
+  element.hidden = !trophy;
+  element.textContent = trophy ? trophy.name : "";
+  element.dataset.rarity = trophy?.rarity || "";
+}
+async function loadTrophyTitle() {
+  const request = ++titleLoadRequest;
+  const select = document.getElementById("trophyTitleSelect");
+  const status = document.getElementById("trophyTitleStatus");
+  select.disabled = true;
+  titleEditorUser = null;
+  select.replaceChildren(new Option("称号なし", ""));
+  status.textContent = "獲得済みトロフィーを読み込み中...";
+  try {
+    const {data:{user}, error: authError} = await db.auth.getUser();
+    if (request !== titleLoadRequest) return;
+    if (!user || authError) {
+      displayTrophyTitle(document.getElementById("myTrophyTitle"), null);
+      status.textContent = "ログインしてください。";
+      return;
+    }
+    const [profile, owned, catalog] = await Promise.all([
+      db.from("profiles").select("equipped_achievement_id").eq("id",user.id).maybeSingle(),
+      db.from("user_achievements").select("achievement_id").eq("user_id",user.id),
+      db.from("achievements").select("id,name,rarity").eq("is_published",true).order("id")
+    ]);
+    if (request !== titleLoadRequest) return;
+    for (const result of [profile,owned,catalog]) if (result.error) throw result.error;
+    const ids = new Set((owned.data || []).map(a => String(a.achievement_id)));
+    titleOwned = (catalog.data || []).filter(a => ids.has(String(a.id)));
+    const current = String(profile.data?.equipped_achievement_id ?? "");
+    for (const a of titleOwned) select.add(new Option(a.name + "（" + a.rarity + "）", String(a.id)));
+    const equipped = titleOwned.find(a => String(a.id) === current);
+    select.value = equipped ? current : "";
+    titleOriginalValue = select.value;
+    titleEditorUser = user.id;
+    select.disabled = false;
+    displayTrophyTitle(document.getElementById("myTrophyTitle"), equipped);
+    status.textContent = titleOwned.length ? "獲得済み " + titleOwned.length + " 件から選択できます。変更を保存してください。" : "獲得済みトロフィーがありません。";
+  } catch (error) {
+    if (request !== titleLoadRequest) return;
+    status.textContent = "称号の読み込み失敗：" + (error.message || String(error));
+    console.error("称号取得失敗",error);
+  }
+}
+async function loadPublicTrophyTitle(userId, request) {
+  try {
+    const result = await db.from("profiles").select("equipped_achievement_id").eq("id",userId).maybeSingle();
+    if (result.error) throw result.error;
+    const id = result.data?.equipped_achievement_id;
+    if (id == null || request !== publicTitleRequest) return;
+    const trophy = await db.from("achievements").select("id,name,rarity").eq("id",id).eq("is_published",true).maybeSingle();
+    if (trophy.error) throw trophy.error;
+    if (request === publicTitleRequest) displayTrophyTitle(document.getElementById("publicTrophyTitle"), trophy.data);
+  } catch (error) { console.error("公開称号取得失敗",error); }
+}
+document.getElementById("editProfileBtn").addEventListener("click", () => {
+  if (signedIn.classList.contains("editing")) void loadTrophyTitle();
+});
+db.auth.onAuthStateChange((event) => {
+  if (["INITIAL_SESSION","SIGNED_IN","SIGNED_OUT"].includes(event)) setTimeout(() => { if (!signedIn.classList.contains("editing") || event === "SIGNED_OUT") void loadTrophyTitle(); },0);
+});
+void loadTrophyTitle();
+</script>
 </body>
 </html>
