@@ -4533,24 +4533,80 @@ updatePushNotificationStatus();
 window.addEventListener("focus", updatePushNotificationStatus);
 </script>
 
+
 <script>
+const VAPID_PUBLIC_KEY = "BKncVUEu1C92lIj9GQKpNdSOMIn6ImLXZPK_UytdqD2c1HZesT9Boud_NRSRs0xKvVYgE8-P7L3VSYLxK3mEdCI";
+
+function convertVapidKey(key) {
+  const padding = "=".repeat((4 - key.length % 4) % 4);
+  const base64 = (key + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  return Uint8Array.from(
+    atob(base64),
+    c => c.charCodeAt(0)
+  );
+}
+
 document.getElementById("pushNotificationBtn")
   .addEventListener("click", async () => {
+    const btn = document.getElementById("pushNotificationBtn");
+    const status = document.getElementById("pushNotificationStatus");
+
+    btn.disabled = true;
+
     try {
       const permission = await Notification.requestPermission();
 
-      updatePushNotificationStatus();
-
-      if (permission === "granted") {
-        alert("通知が許可されました。");
-      } else if (permission === "denied") {
-        alert("通知が拒否されました。");
+      if (permission !== "granted") {
+        updatePushNotificationStatus();
+        return;
       }
+
+      const { data: { user } } = await db.auth.getUser();
+
+      if (!user) {
+        throw new Error("ログインしてください。");
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+
+      let subscription =
+        await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertVapidKey(VAPID_PUBLIC_KEY)
+        });
+      }
+
+      const info = subscription.toJSON();
+
+      const { error } = await db
+        .from("push_subscriptions")
+        .upsert({
+          user_id: user.id,
+          endpoint: info.endpoint,
+          p256dh: info.keys.p256dh,
+          auth: info.keys.auth
+        }, {
+          onConflict: "endpoint"
+        });
+
+      if (error) throw error;
+
+      status.textContent = "プッシュ通知：有効";
+      alert("プッシュ通知を有効にしました。");
+
     } catch (error) {
-      alert("通知設定に失敗しました。");
-      console.error(error);
+      alert("端末登録に失敗しました：" + error.message);
+    } finally {
+      btn.disabled = false;
     }
   });
 </script>
+
 </body>
 </html>
