@@ -123,6 +123,19 @@ label.check input{width:auto}
     </button>
   </form>
 
+<section id="autoRuleAdmin">
+<h2>戦績連動型トロフィー</h2>
+<p>実績を保存してから選択してください。無効化すると新規自動付与を停止します。</p>
+<form id="autoRuleForm">
+<label for="autoAchievement">対象トロフィー</label><select id="autoAchievement" required></select>
+<label for="autoMetric">獲得条件</label><select id="autoMetric"><option value="total_matches">通算対戦数（廃村除外）</option><option value="total_wins">通算勝利数</option><option value="win_streak">最高連勝数</option></select>
+<label for="autoThreshold">達成必要数</label><input id="autoThreshold" type="number" min="1" max="2147483647" step="1" value="1" required>
+<label class="check"><input id="autoEnabled" type="checkbox">自動獲得を有効にする</label>
+<button id="autoSave" type="submit" disabled>獲得条件を保存</button>
+</form>
+<button id="autoSync" type="button" class="secondary" disabled>全ユーザーの自動獲得条件を一括再判定</button>
+<p id="autoStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
+</section>
   <h2>登録済みの実績</h2>
   <div id="achievementList"></div>
 
@@ -196,6 +209,7 @@ async function loadAchievements(){
   }
 
   records = data || [];
+  await loadAutoRules();
   const list = $("achievementList");
   list.replaceChildren();
 
@@ -410,6 +424,53 @@ async function loadRoomHosts(only = hostOnly) {
 $("hostSearchBtn").onclick = () => loadRoomHosts(false);
 $("hostListBtn").onclick = () => loadRoomHosts(true);
 $("hostSearch").addEventListener("keydown", e => { if(e.key === "Enter") loadRoomHosts(false); });
+
+let autoRules = new Map();
+let autoBusy = false;
+function showAutoRule(){
+  const r = autoRules.get($("autoAchievement").value);
+  $("autoMetric").value = r?.metric || "total_matches";
+  $("autoThreshold").value = r?.threshold || 1;
+  $("autoEnabled").checked = r?.is_enabled || false;
+}
+async function loadAutoRules(){
+  const sel = $("autoAchievement"), prev = sel.value;
+  $("autoSave").disabled = $("autoSync").disabled = true;
+  try {
+    const {data,error} = await db.rpc("admin_get_auto_rules");
+    if(error) throw error;
+    autoRules = new Map((data || []).map(r=>[String(r.achievement_id),r]));
+    sel.replaceChildren();
+    for(const a of records){
+      const opt = document.createElement("option"); opt.value=String(a.id);
+      opt.textContent = a.name + (autoRules.get(opt.value)?.is_enabled ? " ［自動］" : "") + (!a.is_published ? " ［非公開］" : ""); sel.append(opt);
+    }
+    if(records.some(a=>String(a.id)===prev)) sel.value=prev;
+    showAutoRule();
+    $("autoSave").disabled = autoBusy || !sel.value; $("autoSync").disabled=autoBusy;
+  } catch(e){ $("autoStatus").textContent="条件取得失敗："+e.message; }
+}
+$("autoAchievement").onchange=showAutoRule;
+$("autoRuleForm").onsubmit=async e=>{
+  e.preventDefault(); if(autoBusy || !$("autoAchievement").value) return;
+  const threshold=Number($("autoThreshold").value);
+  if(!Number.isInteger(threshold)||threshold<1||threshold>2147483647) return;
+  autoBusy=true; $("autoSave").disabled=$("autoSync").disabled=true;
+  try {
+    const {error}=await db.rpc("admin_set_auto_rule",{p_achievement_id:Number($("autoAchievement").value),p_metric:$("autoMetric").value,p_threshold:threshold,p_enabled:$("autoEnabled").checked});
+    if(error) throw error;
+    $("autoStatus").textContent="保存しました。既存戦績への適用は一括再判定を押してください。";
+  }catch(e){$("autoStatus").textContent="保存失敗："+e.message;}
+  finally{autoBusy=false;await loadAutoRules();}
+};
+$("autoSync").onclick=async()=>{
+  if(autoBusy || !confirm("全ユーザーを再判定します。条件未達成の自動獲得分は取り消されます。実行しますか？")) return;
+  autoBusy=true; $("autoSave").disabled=$("autoSync").disabled=true;
+  $("autoStatus").textContent="再判定中…";
+  try{const {data,error}=await db.rpc("admin_sync_all_auto_achievements");if(error)throw error;$("autoStatus").textContent=`再判定完了：${data}人`;}
+  catch(e){$("autoStatus").textContent="再判定失敗："+e.message;}
+  finally{autoBusy=false;await loadAutoRules();}
+};
 
 checkAdmin();
 </script>
