@@ -1522,6 +1522,21 @@ header {
 #matchAuditView pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
 #matchAuditLookup{margin:12px 0}
 #manageMatchEdit[hidden],#matchAuditView[hidden],#matchAuditLookup[hidden]{display:none!important}
+
+.matchStatsPanel .msFaction{border-block:1px solid #3d465a;margin:18px 0;padding:16px 0;}
+.matchStatsPanel .msFaction h4{font-size:16px;color:#f1f2f6;margin:0 0 16px;}
+.matchStatsPanel .msFactionLine{display:flex;justify-content:space-between;gap:8px;margin:12px 0 8px;font-size:15px;}
+.matchStatsPanel .msBar{height:9px;margin-bottom:4px;}
+.matchStatsPanel .msFaction small{display:block;font-size:12px;margin-bottom:12px;}
+.matchStatsPanel .msDetails{padding:0;background:transparent;}
+.matchStatsPanel .msDetails summary{display:block;position:relative;list-style:none;background:#34415c;border-radius:9px;padding:14px 30px;text-align:center;font-weight:500;color:#f1f2f6;}
+.matchStatsPanel .msDetails summary::-webkit-details-marker{display:none;}
+.matchStatsPanel .msDetails summary::after{content:'▾';position:absolute;right:12px;}
+.matchStatsPanel .msDetails[open] summary::after{content:'▴';}
+.matchStatsPanel .msDetails[open]{background:#263249;padding-bottom:8px;}
+.matchStatsPanel .msDetails .msRow,.matchStatsPanel .msDetails p{margin-inline:10px;}
+.matchStatsPanel .msRow span:first-child{min-width:0;overflow-wrap:anywhere;}
+.matchStatsPanel .msRow span:last-child{max-width:55%;white-space:normal;overflow-wrap:anywhere;}
 </style>
 
 </head>
@@ -4891,14 +4906,16 @@ function renderMatchStats(node, rows){
  node.append(statsNode('h3','⚔️ 戦績'));
  const grid=statsNode('div',undefined,'matchStatsGrid');
  for(const [label,value,color] of [['総対戦数',rows.length,'#f1f2f6'],['勝率',fmt(total.rate),'#e4bd68'],['勝利',total.w,'#79d3a5'],['敗北',total.l,'#ef8585']]){const tile=statsNode('div',undefined,'matchStatsTile');const v=statsNode('strong',String(value));v.style.color=color;tile.append(statsNode('span',label),v);grid.append(tile);}node.append(grid,statsNode('p','廃村：'+total.c+'件（勝率の計算対象外）','muted'));
- if(!rows.length){node.append(statsNode('p','対戦記録はまだありません。','muted'));return;}
- for(const [key,label] of [['faction','陣営別戦績'],['role','役職別戦績'],['room_type','部屋別戦績']]){
+ const faction=statsNode('div',undefined,'msFaction');faction.append(statsNode('h4','陣営別勝率'));
+ const sides=[...new Set(['市民陣営','人狼陣営',...rows.map(r=>r.faction||'未設定')])];
+ for(const k of sides){const t=count(rows.filter(r=>(r.faction||'未設定')===k)),color=k==='市民陣営'?'#85baff':k==='人狼陣営'?'#ff8585':'#e4bd68';const line=statsNode('div',undefined,'msFactionLine'),name=statsNode('span',k);name.style.color=color;line.append(name,statsNode('strong',fmt(t.rate)));const bar=statsNode('div',undefined,'msBar'),fill=statsNode('div');fill.style.height='100%';fill.style.borderRadius='8px';fill.style.background=color;fill.style.width=(t.rate||0)+'%';bar.append(fill);faction.append(line,bar,statsNode('small',`${t.w}勝 ${t.l}敗${t.c?' / 廃村 '+t.c+'件':''}`,'muted'));}node.append(faction);
+ for(const [key,label] of [['role','役職別戦績'],['room_type','部屋別戦績']]){
   const group=new Map();for(const r of rows){const k=r[key]||'未設定';if(!group.has(k))group.set(k,[]);group.get(k).push(r);}
-  const det=statsNode('details');det.open=key==='faction';det.append(statsNode('summary',label));
-  for(const [k,a] of group){const t=count(a),line=statsNode('div',undefined,'msRow');line.append(statsNode('span',k),statsNode('span',`${t.w}勝 ${t.l}敗 / ${fmt(t.rate)}${t.c?' / 廃'+t.c:''}`));det.append(line);if(key==='faction'){const bar=statsNode('div',undefined,'msBar'),fill=statsNode('div');fill.style.cssText='height:100%;border-radius:8px;background:'+(k==='市民陣営'?'#85baff':k==='人狼陣営'?'#ff8585':'#e4bd68');fill.style.width=(t.rate||0)+'%';bar.append(fill);det.append(bar);}}
-  node.append(det);
+  const det=statsNode('details',undefined,'msDetails');det.append(statsNode('summary',label));
+  if(!group.size)det.append(statsNode('p','対戦記録はまだありません。','muted'));
+  for(const [k,a] of group){const t=count(a),line=statsNode('div',undefined,'msRow');line.append(statsNode('span',k),statsNode('span',`${t.w}勝 ${t.l}敗 / ${fmt(t.rate)}${t.c?' / 廃'+t.c:''}`));det.append(line);}node.append(det);
  }
- const hist=statsNode('details');hist.append(statsNode('summary','対戦履歴（'+rows.length+'件）'));for(const r of rows){const line=statsNode('div',undefined,'msRow'),left=statsNode('span',new Date(r.played_at).toLocaleString('ja-JP')+' / '+r.room_type+' / '+r.role+' / '+r.faction),right=statsNode('span',r.result);right.style.color=r.result==='勝利'?'#79d3a5':r.result==='敗北'?'#ef8585':'#aeb7c9';line.append(left,right);hist.append(line);}node.append(hist);
+ const hist=statsNode('details',undefined,'msDetails');hist.append(statsNode('summary','対戦履歴（'+rows.length+'件）'));if(!rows.length)hist.append(statsNode('p','対戦記録はまだありません。','muted'));for(const r of rows){const line=statsNode('div',undefined,'msRow'),left=statsNode('span',new Date(r.played_at).toLocaleString('ja-JP')+' / '+r.room_type+' / '+r.role+' / '+r.faction),right=statsNode('span',r.result);right.style.color=r.result==='勝利'?'#79d3a5':r.result==='敗北'?'#ef8585':'#aeb7c9';line.append(left,right);hist.append(line);}node.append(hist);
 }
 async function fetchMatchStats(id){let rows=[];for(let from=0;;from+=500){const {data,error}=await db.rpc('get_player_match_history',{p_user_id:id}).range(from,from+499);if(error)throw error;rows.push(...(data||[]));if(!data||data.length<500)return rows;}}
 async function refreshMyMatchStats(){const seq=++myMatchStatsSeq,node=document.getElementById('myMatchStats');node.hidden=true;node.replaceChildren();try{const {data:{user},error}=await db.auth.getUser();if(seq!==myMatchStatsSeq||!user)return;if(error)throw error;node.hidden=false;node.textContent='戦績を読み込み中...';const rows=await fetchMatchStats(user.id);if(seq===myMatchStatsSeq)renderMatchStats(node,rows);}catch(e){if(seq===myMatchStatsSeq){node.hidden=false;node.textContent='戦績取得失敗：'+e.message;}}}
