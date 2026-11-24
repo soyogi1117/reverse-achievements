@@ -1288,15 +1288,152 @@ a[x-apple-data-detectors] {
   font-size: 14px;
   font-weight: bold;
 }
+
+/* 通知ベル */
+header {
+  position: relative;
+}
+
+#notificationBtn {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: #263148;
+  border: 1px solid #58647a;
+  border-radius: 50%;
+  color: #f1f2f6;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#notificationBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 20px;
+  text-align: center;
+}
+
+/* 通知一覧 */
+#notificationPanel {
+  width: calc(100% - 32px);
+  max-width: 500px;
+  margin: 0 auto 20px;
+  padding: 18px;
+  background: #202a3d;
+  border: 1px solid #3d465a;
+  border-radius: 16px;
+}
+
+#notificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+#notificationHeader h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+#closeNotificationBtn {
+  background: transparent;
+  border: none;
+  color: #f1f2f6;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#readAllNotificationsBtn {
+  width: 100%;
+  padding: 12px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#notificationList {
+  max-height: 420px;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+
+.notificationItem {
+  padding: 14px;
+  margin-bottom: 8px;
+  background: #263148;
+  border: 1px solid #3d465a;
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+
+.notificationItem.unread {
+  background: #2c3953;
+  border-left: 4px solid #85baff;
+}
+
+.notificationItem h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: #f1f2f6;
+}
+
+.notificationItem p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #c5cddd;
+}
+
+.notificationItem time {
+  font-size: 12px;
+  color: #8590a4;
+}
 </style>
 
 </head>
 <body>
 <header>
+
+<button id="notificationBtn" type="button"
+        aria-label="通知" aria-expanded="false" hidden>
+  🔔
+  <span id="notificationBadge" hidden>0</span>
+</button>
 <h1>逆村広場</h1>
 <p>逆村プレイヤー集まる場所</p>
 </header>
   
+
+<section id="notificationPanel" hidden>
+  <div id="notificationHeader">
+    <h2>🔔 通知</h2>
+    <button id="closeNotificationBtn" type="button">
+      ✕
+    </button>
+  </div>
+
+  <button id="readAllNotificationsBtn" type="button">
+    すべて既読にする
+  </button>
+
+  <div id="notificationList">
+    <p class="muted">通知はありません。</p>
+  </div>
+</section>
 <section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#f1f2f6">
 
   <h2>🏆 ユーザーアカウント</h2>
@@ -4179,6 +4316,139 @@ document.getElementById("saveAnnouncementEditBtn")
       button.disabled = false;
     }
   });
+</script>
+
+<script>
+async function loadNotifications() {
+  const btn = document.getElementById("notificationBtn");
+  const badge = document.getElementById("notificationBadge");
+  const panel = document.getElementById("notificationPanel");
+  const list = document.getElementById("notificationList");
+
+  const { data: { user } } = await db.auth.getUser();
+
+  btn.hidden = !user;
+
+  if (!user) {
+    panel.hidden = true;
+    badge.hidden = true;
+    list.replaceChildren();
+    return;
+  }
+
+  const { data, error } = await db
+    .from("notifications")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    list.textContent = "通知の取得に失敗しました。";
+    return;
+  }
+
+  const unreadCount = data.filter(n => !n.is_read).length;
+
+  badge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+  badge.hidden = unreadCount === 0;
+
+  list.replaceChildren();
+
+  if (data.length === 0) {
+    list.textContent = "通知はありません。";
+    return;
+  }
+
+  data.forEach(n => {
+    const item = document.createElement("div");
+    item.className = "notificationItem"
+      + (n.is_read ? "" : " unread");
+
+    const title = document.createElement("h3");
+    title.textContent = n.title;
+
+    const message = document.createElement("p");
+    message.textContent = n.message;
+
+    const time = document.createElement("time");
+    time.textContent = new Date(n.created_at)
+      .toLocaleString("ja-JP");
+
+    item.append(title, message, time);
+    list.append(item);
+  });
+}
+</script>
+
+<script>
+document.getElementById("notificationBtn")
+  .addEventListener("click", async () => {
+    const panel = document.getElementById("notificationPanel");
+    const btn = document.getElementById("notificationBtn");
+
+    panel.hidden = !panel.hidden;
+    btn.setAttribute("aria-expanded", String(!panel.hidden));
+
+    if (!panel.hidden) {
+      await loadNotifications();
+    }
+  });
+
+document.getElementById("closeNotificationBtn")
+  .addEventListener("click", () => {
+    document.getElementById("notificationPanel").hidden = true;
+    document.getElementById("notificationBtn")
+      .setAttribute("aria-expanded", "false");
+  });
+
+document.getElementById("readAllNotificationsBtn")
+  .addEventListener("click", async () => {
+    const { data: { user } } = await db.auth.getUser();
+
+    if (!user) return;
+
+    const { error } = await db
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+
+    if (error) {
+      alert("既読処理に失敗しました。");
+      return;
+    }
+
+    await loadNotifications();
+  });
+</script>
+
+<script>
+db.auth.onAuthStateChange((event, session) => {
+  if (!session) {
+    document.getElementById("notificationBtn").hidden = true;
+    document.getElementById("notificationBadge").hidden = true;
+    document.getElementById("notificationPanel").hidden = true;
+    document.getElementById("notificationList").replaceChildren();
+    document.getElementById("notificationBtn")
+      .setAttribute("aria-expanded", "false");
+  } else {
+    setTimeout(() => loadNotifications(), 0);
+  }
+});
+
+setInterval(() => {
+  if (!document.hidden) {
+    loadNotifications();
+  }
+}, 30000);
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    loadNotifications();
+  }
+});
+
+loadNotifications();
 </script>
 </body>
 </html>
