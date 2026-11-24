@@ -2507,13 +2507,7 @@ const profileData = {
   updated_at: new Date().toISOString()
 };
 
-  id: user.id,
-  username,
-  bio,
-  favorite_role: favorite || null,
-  disliked_role: disliked || null,
-  updated_at: new Date().toISOString()
-};
+  
 
 if (avatarUrl) {
   profileData.avatar_url = avatarUrl;
@@ -3584,15 +3578,16 @@ async function loadRoles() {
   document.getElementById("favoriteRoleDisplay").textContent =
     favorite || "未設定";
 
-  document.getElementById("dislikedRoleDisplay").textContent =
-    
+  
+document.getElementById("dislikedRoleDisplay").textContent =
+  disliked || "未設定";
+
 document.getElementById("favoriteCharacterSelect").value =
   data?.favorite_character || "";
 
 document.getElementById("favoriteCharacterDisplay").textContent =
   data?.favorite_character || "未設定";
 
-    disliked || "未設定";
 
   document.getElementById("favoriteRoleSelect").value = favorite;
   document.getElementById("dislikedRoleSelect").value = disliked;
