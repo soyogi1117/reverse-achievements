@@ -1129,6 +1129,25 @@ a[x-apple-data-detectors] {
   background: #34415c;
   border: none;
 }
+
+#edit_announcementDate {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+}
+
+#edit_announcementDate:not(:valid)::before {
+  content: "YYYY/MM/DD HH:mm";
+  color: #9ca3af;
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+}
 </style>
 
 </head>
@@ -3779,8 +3798,14 @@ editSourceFields.forEach(id => {
   if (label) {
     const newLabel = label.cloneNode(true);
     newLabel.htmlFor = clone.id;
-    editFields.appendChild(newLabel);
-  }
+    if (id === "announcementTitle") {
+  editFields.insertBefore(
+    newLabel,
+    document.getElementById("edit_announcementVersion")
+  );
+} else {
+  editFields.appendChild(newLabel);
+}
 
   editFields.appendChild(clone);
 });
