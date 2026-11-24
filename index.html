@@ -1000,6 +1000,29 @@ a[x-apple-data-detectors] {
   font-size: 14px !important;
   font-weight: 500 !important;
 }
+
+#profileEditActions {
+  display: flex;
+  gap: 12px;
+}
+
+#profileEditActions #closeProfileBtn {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 8px;
+  background: #263148;
+  color: #f1f2f6;
+  border: 1px solid #58647a;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#profileEditActions #saveProfileBtn {
+  flex: 2;
+  width: auto;
+  min-width: 0;
+}
 </style>
 
 </head>
@@ -1106,9 +1129,16 @@ a[x-apple-data-detectors] {
   <p id="roleMessage"></p>
 </div>
   
-<button id="saveProfileBtn" type="button">
-  変更を保存
-</button>
+
+<div id="profileEditActions">
+  <button id="closeProfileBtn" type="button">
+    ✕ 閉じる
+  </button>
+  <button id="saveProfileBtn" type="button">
+    変更を保存
+  </button>
+</div>
+
 <p id="saveProfileMessage" role="status"></p>
 </div>
 <div id="profileStats" style="margin-top:20px;">
@@ -3492,6 +3522,11 @@ db.auth.onAuthStateChange(() => {
 });
 
 loadRoles();
+
+document.getElementById("closeProfileBtn").addEventListener("click", () => {
+  document.getElementById("signedIn").classList.remove("editing");
+  document.getElementById("editProfileBtn").textContent = "✏️ 編集";
+});
 </script>
 </body>
 </html>
