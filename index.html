@@ -1474,6 +1474,17 @@ header {
 .profileHeader > div { flex:1; text-align:center; }
 #profileTitle, #publicProfileName { text-align:center; }
 #myTrophyTitle, #publicTrophyTitle { margin-inline:auto; }
+
+#matchCenter [hidden]{display:none!important}
+#matchCenter label{display:block;margin:12px 0;color:#aeb7c9;font-size:14px}
+#matchCenter label>input,#matchCenter label>select,#matchCenter textarea{display:block;width:100%;margin-top:6px;box-sizing:border-box;background:#34415c;color:#f1f2f6;border:1px solid #58647a;border-radius:10px;padding:12px;font:inherit;font-size:16px;min-width:0}
+#matchCenter button{background:#34415c;color:#f1f2f6;border:1px solid #58647a;border-radius:10px;padding:12px;font-size:15px;cursor:pointer}
+#matchCenter button:disabled{opacity:.5}
+#matchOpen,#matchSave,#matchResults button{width:100%;margin:4px 0}
+.matchSearchRow,.matchPlayerHeader{display:flex;gap:8px;align-items:center}
+.matchPlayerHeader strong{flex:1;overflow-wrap:anywhere}
+.matchPlayerCard{background:#263249;border-radius:10px;padding:12px;margin:10px 0}
+#matchStatus{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>
 
 </head>
@@ -1811,7 +1822,26 @@ header {
     <strong>トロフィー一覧</strong>
     <small>トロフィーの獲得状況を確認</small>
   </a>
+  <a href="#matchCenter" class="homeMenuItem" style="grid-column:1 / -1;">
+    <span>⚔️</span><strong>戦績</strong><small>対戦記録</small>
+  </a>
 </nav>
+<section id="matchCenter" class="panel">
+<h2>⚔️ 戦績</h2><p id="matchAccess" class="muted" role="status">権限を確認中...</p>
+<button id="matchOpen" type="button" hidden>＋ 対戦結果を登録</button>
+<form id="matchForm" hidden>
+<label>対戦日時<input id="matchDate" type="datetime-local" required></label>
+<label>部屋の種類<input id="matchRoom" placeholder="例：猫逆、罠逆" maxlength="80" required></label>
+<label>勝利陣営<select id="matchWinner" required><option value="">選択してください</option><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
+<h3>参加プレイヤー</h3><p class="muted">登録済みの参加者だけ追加してください。</p>
+<div class="matchSearchRow"><input id="matchSearch" type="search" placeholder="プレイヤー名" maxlength="20"><button id="matchFind" type="button">検索</button></div>
+<p id="matchSearchStatus" class="muted" role="status"></p><div id="matchResults"></div>
+<div id="matchRoster"></div>
+<label>備考（任意）<textarea id="matchMemo" rows="3" maxlength="500"></textarea></label>
+<button id="matchSave" type="submit">対戦結果を一括登録</button>
+</form><p id="matchStatus" role="status" aria-live="polite"></p>
+</section>
+
 
 
 
@@ -4729,6 +4759,66 @@ db.auth.onAuthStateChange((event) => {
   if (["INITIAL_SESSION","SIGNED_IN","SIGNED_OUT"].includes(event)) setTimeout(() => { if (!signedIn.classList.contains("editing") || event === "SIGNED_OUT") void loadTrophyTitle(); },0);
 });
 void loadTrophyTitle();
+</script>
+<script>
+(() => {
+ const el=id=>document.getElementById(id);
+ const form=el('matchForm'), roster=el('matchRoster'), status=el('matchStatus');
+ let owner=null, revision=0, searchRevision=0, allowed=false, saving=false;
+ const players=new Map();
+ const sides=['市民陣営','人狼陣営','その他'];
+ const roles=[...new Set([...nekoRoles,'罠師','医者','狼少年','強欲な人狼','窮地の人狼','ギャンブル狂','指導者','聖騎士','マッチ売り','末裔','一匹狼','黒い占い師','道化師','天邪鬼'])];
+ function option(value,label=value){const o=document.createElement('option');o.value=value;o.textContent=label;return o;}
+ function reset(){form.reset();players.clear();roster.replaceChildren();el('matchResults').replaceChildren();el('matchSearchStatus').textContent='';const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el('matchDate').value=d.toISOString().slice(0,16);}
+ async function check(){
+   const seq=++revision;
+   try{
+     const {data:{user},error}=await db.auth.getUser();
+     if(seq!==revision)return;
+     if(owner!==(user?.id||null)){owner=user?.id||null;searchRevision++;reset();form.hidden=true;status.textContent='';}
+     allowed=false;el('matchOpen').hidden=true;
+     if(error||!user){form.hidden=true;el('matchAccess').textContent='ログインすると戦績機能を利用できます。';return;}
+     const [h,a]=await Promise.all([db.from('room_hosts').select('user_id').eq('user_id',user.id).maybeSingle(),db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle()]);
+     if(seq!==revision)return;
+     allowed=!!(h.data||a.data);
+     el('matchOpen').hidden=!allowed;
+     if(!allowed)form.hidden=true;
+     el('matchAccess').textContent=allowed?'部屋主・管理者用の対戦登録が利用できます。':(h.error||a.error)?'権限確認エラー：'+(h.error||a.error).message:'戦績閲覧機能は準備中です。';
+   }catch(e){if(seq===revision){allowed=false;form.hidden=true;el('matchOpen').hidden=true;el('matchAccess').textContent='権限確認エラー：'+e.message;}}
+ }
+ el('matchOpen').onclick=()=>{if(!allowed)return;form.hidden=!form.hidden;if(!form.hidden&&!el('matchDate').value)reset();};
+ function add(p){
+   if(players.has(p.id))return;
+   const card=document.createElement('div');card.className='matchPlayerCard';
+   const header=document.createElement('div');header.className='matchPlayerHeader';
+   const name=document.createElement('strong');name.textContent=p.username+(p.is_private?' 🔒':'');
+   const remove=document.createElement('button');remove.type='button';remove.textContent='削除';remove.onclick=()=>{if(saving)return;players.delete(p.id);card.remove();};header.append(name,remove);
+   const role=document.createElement('select');role.required=true;role.append(option('','役職を選択'),...roles.map(r=>option(r)),option('__custom','その他（手入力）'));
+   const custom=document.createElement('input');custom.placeholder='役職名';custom.maxLength=80;custom.hidden=true;role.onchange=()=>{custom.hidden=role.value!=='__custom';custom.required=!custom.hidden;};
+   const faction=document.createElement('select');faction.required=true;faction.append(option('','陣営を選択'),...sides.map(r=>option(r)));
+   const wrap=(title,node)=>{const l=document.createElement('label');l.textContent=title;l.append(node);return l;};
+   card.append(header,wrap('役職',role),custom,wrap('陣営（勝敗判定用）',faction));roster.append(card);players.set(p.id,{role,custom,faction});
+ }
+ el('matchFind').onclick=async()=>{
+   if(!allowed||saving)return;
+   const q=el('matchSearch').value.trim(), seq=++searchRevision, target=el('matchResults'), msg=el('matchSearchStatus');target.replaceChildren();
+   if(!q){msg.textContent='プレイヤー名を入力してください。';return;}msg.textContent='検索中...';
+   try{const {data,error}=await db.rpc('search_players',{search_name:q});if(seq!==searchRevision)return;if(error)throw error;msg.textContent=(data||[]).length?'参加者をタップして追加してください。':'該当者なし';
+   for(const p of data||[]){if(!p.id)continue;const b=document.createElement('button');b.type='button';b.textContent=p.username+(p.is_private?' 🔒':'')+(players.has(p.id)?'（追加済み）':' ＋');b.disabled=players.has(p.id);b.onclick=()=>{if(!allowed||saving)return;add(p);b.disabled=true;b.textContent=p.username+'（追加済み）';};target.append(b);}}
+   catch(e){if(seq===searchRevision)msg.textContent='検索失敗：'+e.message;}
+ };
+ form.onsubmit=async e=>{
+   e.preventDefault();if(!allowed||saving)return;
+   if(!players.size){status.textContent='参加者を1人以上追加してください。';return;}
+   const rows=[...players].map(([user_id,p])=>({user_id,role:(p.role.value==='__custom'?p.custom.value:p.role.value).trim(),faction:p.faction.value}));
+   if(rows.some(p=>!p.role||!p.faction)||!el('matchRoom').value.trim()){status.textContent='部屋名・役職・陣営を入力してください。';return;}
+   if(!confirm(rows.length+'人分の対戦結果を登録しますか？'))return;
+   const who=owner;saving=true;el('matchSave').disabled=true;status.textContent='登録中...';
+   try{const {data,error}=await db.rpc('register_match',{p_room_type:el('matchRoom').value.trim(),p_played_at:new Date(el('matchDate').value).toISOString(),p_winning_side:el('matchWinner').value,p_players:rows,p_memo:el('matchMemo').value.trim()||null});if(error)throw error;if(owner===who){reset();form.hidden=true;status.textContent='登録完了：対戦ID '+data+'（'+rows.length+'人）';}}
+   catch(e){if(owner===who)status.textContent='登録失敗：'+e.message;}finally{saving=false;el('matchSave').disabled=false;}
+ };
+ db.auth.onAuthStateChange(event=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event))setTimeout(check,0);});void check();
+})();
 </script>
 </body>
 </html>
