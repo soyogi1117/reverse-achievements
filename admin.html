@@ -61,6 +61,16 @@ label.check input{width:auto}
 </section>
 
 <section id="admin" hidden>
+<section id="roomHostAdmin">
+  <h2>🏠 部屋主権限管理</h2>
+  <label for="hostSearch">プレイヤー名</label>
+  <input id="hostSearch" type="search" maxlength="20" placeholder="プレイヤー名で検索">
+  <button id="hostSearchBtn" type="button">検索</button>
+  <button id="hostListBtn" type="button" class="secondary">部屋主一覧</button>
+  <p id="hostStatus" role="status" style="color:#eee;white-space:pre-wrap"></p>
+  <div id="hostResults"></div>
+</section>
+
  
 <section id="trophyPreviewAdmin">
   <h2>🏆 獲得演出プレビュー</h2>
@@ -171,6 +181,7 @@ async function checkAdmin(){
   $("admin").hidden = false;
   showMessage("");
   await loadAchievements();
+  await loadRoomHosts(true);
 }
 
 async function loadAchievements(){
@@ -350,6 +361,55 @@ $("logoutButton").onclick = async()=>{
   showMessage("");
   await checkAdmin();
 };
+
+
+let hostBusy = false;
+let hostOnly = true;
+async function loadRoomHosts(only = hostOnly) {
+  if (hostBusy) return;
+  hostBusy = true;
+  hostOnly = only;
+  $("hostSearchBtn").disabled = $("hostListBtn").disabled = true;
+  $("hostResults").replaceChildren();
+  $("hostStatus").textContent = "読み込み中...";
+  try {
+    const {data,error} = await db.rpc("admin_find_room_hosts", {
+      p_query: only ? "" : $("hostSearch").value.trim(), p_hosts_only: only
+    });
+    if(error) throw error;
+    if($("admin").hidden) return;
+    $("hostStatus").textContent = data.length ? `${data.length}件（最大100件）` : "該当するプレイヤーはいません。";
+    for(const player of data){
+      const card = document.createElement("div"); card.className = "item";
+      const name = document.createElement("h3"); name.textContent = player.username || "名前未設定";
+      const detail = document.createElement("p"); detail.textContent = (player.is_host ? "部屋主権限あり" : "部屋主権限なし") + "\nID: " + player.user_id;
+      detail.style.overflowWrap = "anywhere";
+      const btn = document.createElement("button"); btn.type = "button";
+      btn.textContent = player.is_host ? "権限を剥奪" : "部屋主権限を付与";
+      btn.className = player.is_host ? "danger" : "";
+      btn.onclick = async () => {
+        if(hostBusy || !confirm(`${player.username || player.user_id} の部屋主権限を${player.is_host ? "剥奪" : "付与"}しますか？`)) return;
+        hostBusy = true; btn.disabled = true;
+        try {
+          const {data:{user},error:authError} = await db.auth.getUser();
+          if(authError || !user) throw new Error("ログインしてください");
+          const result = player.is_host
+            ? await db.from("room_hosts").delete().eq("user_id",player.user_id).select("user_id").single()
+            : await db.from("room_hosts").insert({user_id:player.user_id,granted_by:user.id}).select("user_id").single();
+          if(result.error) throw result.error;
+          hostBusy = false;
+          await loadRoomHosts();
+        } catch(e) { $("hostStatus").textContent = "変更失敗：" + e.message; }
+        finally { hostBusy = false; btn.disabled = false; }
+      };
+      card.append(name,detail,btn); $("hostResults").append(card);
+    }
+  } catch(e) { $("hostStatus").textContent = "取得失敗：" + e.message; }
+  finally { hostBusy = false; $("hostSearchBtn").disabled = $("hostListBtn").disabled = false; }
+}
+$("hostSearchBtn").onclick = () => loadRoomHosts(false);
+$("hostListBtn").onclick = () => loadRoomHosts(true);
+$("hostSearch").addEventListener("keydown", e => { if(e.key === "Enter") loadRoomHosts(false); });
 
 checkAdmin();
 </script>
