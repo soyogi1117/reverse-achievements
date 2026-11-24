@@ -1262,6 +1262,32 @@ a[x-apple-data-detectors] {
 .achievement.done input:disabled {
   opacity: 1;
 }
+
+/* 参加希望ボタン */
+.participantBtn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: 1px solid #58647a;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.participantBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.participantCount {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: bold;
+}
 </style>
 
 </head>
@@ -3380,10 +3406,12 @@ participantCount.textContent = "参加希望者：読み込み中...";
 card.append(participantCount);
 
 async function updateParticipantCount() {
-  const { count, error } = await db
-    .from("room_participants")
-    .select("*", { count: "exact", head: true })
-    .eq("announcement_id", item.id);
+  
+const { data: count, error } = await db
+  .rpc("get_room_participant_count", {
+    p_announcement_id: item.id
+  });
+
 
   
 participantCount.textContent = error
@@ -3436,7 +3464,17 @@ async function setupParticipantButton() {
       ? "✓ 参加希望済み（取消）"
       : "＋ 参加希望する";
 
-    participantBtn.disabled = false;
+    
+const ended =
+  item.is_closed ||
+  new Date(item.event_date) <= new Date();
+
+participantBtn.disabled = ended && !joined;
+
+if (ended && !joined) {
+  participantBtn.textContent = "募集終了";
+}
+
   }
 
   updateButton();
