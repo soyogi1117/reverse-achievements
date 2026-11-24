@@ -1148,6 +1148,96 @@ a[x-apple-data-detectors] {
   left: 14px;
   pointer-events: none;
 }
+
+.achievement:not(.done) {
+  border-color: #555b6c;
+  box-shadow: none;
+}
+
+.achievement:not(.done) {
+  background: #171b25;
+}
+
+.achievement.done {
+  opacity: 1;
+}
+
+.achievement.rarity-bronze.done {
+  background: linear-gradient(135deg, #30251f, #1b2333);
+  box-shadow: 0 0 8px rgba(205,127,50,0.2);
+}
+
+.achievement.rarity-silver.done {
+  background: linear-gradient(135deg, #303640, #1b2333);
+  box-shadow: 0 0 10px rgba(192,192,192,0.25);
+}
+
+.achievement.rarity-gold.done {
+  background: linear-gradient(135deg, #38301c, #1b2333);
+  box-shadow: 0 0 14px rgba(255,215,0,0.3);
+}
+
+/* 未獲得トロフィー */
+.achievement:not(.done) h3 {
+  color: #858b98;
+}
+
+/* 銅トロフィー */
+.achievement.rarity-bronze.done h3 {
+  color: #cd7f32;
+}
+
+/* 銀トロフィー */
+.achievement.rarity-silver.done h3 {
+  color: #c0c0c0;
+}
+
+/* 金トロフィー */
+.achievement.rarity-gold.done h3 {
+  color: #ffd700;
+}
+
+/* 伝説トロフィー */
+.achievement.rarity-legend.done h3 {
+  background: linear-gradient(
+    90deg,
+    #ff5555,
+    #ffb347,
+    #ffe66d,
+    #54d88a,
+    #55b9ff,
+    #c57aff
+  );
+  width: fit-content;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.achievement:not(.done) .tag:last-child {
+  color: #858b98;
+  border-color: #555b6c;
+}
+
+.achievement.rarity-bronze.done .tag:last-child {
+  color: #cd7f32;
+  border-color: #cd7f32;
+}
+
+.achievement.rarity-silver.done .tag:last-child {
+  color: #c0c0c0;
+  border-color: #c0c0c0;
+}
+
+.achievement.rarity-gold.done .tag:last-child {
+  color: #ffd700;
+  border-color: #ffd700;
+}
+
+.achievement.rarity-legend.done .tag:last-child {
+  color: #c57aff;
+  border-color: #c57aff;
+}
 </style>
 
 </head>
@@ -2042,7 +2132,15 @@ if (a.rarity === "伝説" && legendLocked) {
 const role=document.createElement("span");
 role.className="tag";role.textContent=a.role;
 const level=document.createElement("span");
-level.className="tag";level.textContent="★ "+a.rarity;
+level.className = "tag";
+level.textContent = !completed[a.id]
+  ? "未獲得"
+  : ({
+      "銅": "🥉 銅",
+      "銀": "🥈 銀",
+      "金": "🥇 金",
+      "伝説": "🌈 伝説"
+    }[a.rarity]);
 content.append(title,desc,role,level);
 card.append(check,content);
 list.append(card);
