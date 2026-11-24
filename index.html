@@ -1023,6 +1023,30 @@ a[x-apple-data-detectors] {
   width: auto;
   min-width: 0;
 }
+
+#announcementForm select:has(option[value=""]:checked) {
+  color: #9ca3af;
+}
+
+#announcementForm select option {
+  color: #f1f2f6;
+}
+
+#announcementForm select option[value=""] {
+  color: #9ca3af;
+}
+
+#announcementDate {
+  position: relative;
+}
+
+#announcementDate:not(:valid)::before {
+  content: "MM/DD HH:mm";
+  color: #9ca3af;
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+}
 </style>
 
 </head>
@@ -1481,6 +1505,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
  <input
     id="announcementDate"
     type="datetime-local"
+   required
     
 style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin-bottom:10px;"
 
