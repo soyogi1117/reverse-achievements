@@ -2449,7 +2449,10 @@ if (avatarUrl) {
 
     saveProfileMessage.textContent = "変更を保存しました！";
     
+
 signedIn.classList.remove("editing");
+editProfileBtn.textContent = "✏️ 編集";
+
 
   } catch (error) {
     saveProfileMessage.textContent = "保存失敗：" + error.message;
