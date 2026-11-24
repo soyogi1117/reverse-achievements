@@ -1537,6 +1537,14 @@ header {
 .matchStatsPanel .msDetails .msRow,.matchStatsPanel .msDetails p{margin-inline:10px;}
 .matchStatsPanel .msRow span:first-child{min-width:0;overflow-wrap:anywhere;}
 .matchStatsPanel .msRow span:last-child{max-width:55%;white-space:normal;overflow-wrap:anywhere;}
+
+/* Win streak display */
+.matchStatsPanel .msStreak{margin:16px 0;min-width:0;}
+.matchStatsPanel .msStreak h4{margin:0 0 12px;font-size:15px;color:#f1f2f6;}
+.matchStatsPanel .msRecent{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin:8px 0;}
+.matchStatsPanel .msRecent span{display:grid;place-items:center;aspect-ratio:1;border-radius:5px;font-size:11px;font-weight:bold;background:#374151;color:#aeb7c9;}
+.matchStatsPanel .msRecent .win{background:#24563e;color:#9ae6b8;}
+.matchStatsPanel .msRecent .loss{background:#63323c;color:#ffb1b1;}
 </style>
 
 </head>
@@ -4899,6 +4907,27 @@ void loadTrophyTitle();
 let myMatchStatsSeq=0, publicMatchStatsSeq=0;
 function clearPublicMatchStats(){const node=document.getElementById('publicMatchStats');node.hidden=true;node.replaceChildren();return ++publicMatchStatsSeq;}
 function statsNode(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
+function calculateWinStreaks(rows){
+ const ordered=[...rows].sort((a,b)=>new Date(a.played_at)-new Date(b.played_at)||(BigInt(a.match_id||0)<BigInt(b.match_id||0)?-1:BigInt(a.match_id||0)>BigInt(b.match_id||0)?1:0));
+ let current=0,best=0;
+ for(const r of ordered){
+  if(r.result==='勝利'){current++;best=Math.max(best,current);}
+  else if(r.result==='敗北')current=0;
+ }
+ return {current,best,recent:ordered.slice(-10)};
+}
+function renderWinStreaks(rows){
+ const data=calculateWinStreaks(rows), box=statsNode('section',undefined,'msStreak');
+ box.append(statsNode('h4','🔥 連勝記録'));
+ const grid=statsNode('div',undefined,'matchStatsGrid');
+ for(const [label,n,color] of [['現在の連勝',data.current,'#ffb45e'],['最高連勝記録',data.best,'#e4bd68']]){const tile=statsNode('div',undefined,'matchStatsTile'),v=statsNode('strong',n+'連勝');v.style.color=color;v.style.fontSize='20px';tile.append(statsNode('span',label),v);grid.append(tile);}box.append(grid);
+ box.append(statsNode('h4','直近10戦'));
+ const recent=statsNode('div',undefined,'msRecent');
+ for(let i=data.recent.length;i<10;i++)recent.append(statsNode('span','—'));
+ for(const r of data.recent){const mark=statsNode('span',r.result==='勝利'?'勝':r.result==='敗北'?'敗':'廃',r.result==='勝利'?'win':r.result==='敗北'?'loss':'');mark.title=new Date(r.played_at).toLocaleString('ja-JP')+' '+r.result;recent.append(mark);}box.append(recent);
+ const direction=statsNode('div',undefined,'msFactionLine');direction.style.cssText='display:flex;justify-content:space-between;font-size:11px;color:#aeb7c9';direction.append(statsNode('span','過去'),statsNode('span','最新'));box.append(direction);
+ return box;
+}
 function renderMatchStats(node, rows){
  node.replaceChildren();node.hidden=false;
  const count=a=>{const w=a.filter(r=>r.result==='勝利').length,l=a.filter(r=>r.result==='敗北').length,c=a.filter(r=>r.result==='廃村').length;return {w,l,c,rate:w+l?100*w/(w+l):null};};
@@ -4909,6 +4938,7 @@ function renderMatchStats(node, rows){
  const faction=statsNode('div',undefined,'msFaction');faction.append(statsNode('h4','陣営別勝率'));
  const sides=[...new Set(['市民陣営','人狼陣営',...rows.map(r=>r.faction||'未設定')])];
  for(const k of sides){const t=count(rows.filter(r=>(r.faction||'未設定')===k)),color=k==='市民陣営'?'#85baff':k==='人狼陣営'?'#ff8585':'#e4bd68';const line=statsNode('div',undefined,'msFactionLine'),name=statsNode('span',k);name.style.color=color;line.append(name,statsNode('strong',fmt(t.rate)));const bar=statsNode('div',undefined,'msBar'),fill=statsNode('div');fill.style.height='100%';fill.style.borderRadius='8px';fill.style.background=color;fill.style.width=(t.rate||0)+'%';bar.append(fill);faction.append(line,bar,statsNode('small',`${t.w}勝 ${t.l}敗${t.c?' / 廃村 '+t.c+'件':''}`,'muted'));}node.append(faction);
+ node.append(renderWinStreaks(rows));
  for(const [key,label] of [['role','役職別戦績'],['room_type','部屋別戦績']]){
   const group=new Map();for(const r of rows){const k=r[key]||'未設定';if(!group.has(k))group.set(k,[]);group.get(k).push(r);}
   const det=statsNode('details',undefined,'msDetails');det.append(statsNode('summary',label));
