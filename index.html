@@ -375,7 +375,7 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 #profileRate {
   display: block;
   margin: 6px 0;
-  color: #e4bd68;
+  color: #f1f2f6;
   font-size: 28px;
   font-weight: bold;
 }
@@ -830,7 +830,11 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   color: #ffd700 !important;
 }
 
+
 .progress-rainbow {
+  display: inline-block !important;
+  width: fit-content;
+  margin-inline: auto !important;
   background: linear-gradient(90deg,
     #ff5555, #ffb347, #ffe66d,
     #54d88a, #55b9ff, #c57aff);
@@ -838,6 +842,7 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 
 #publicProfileName {
   color: #f1f2f6;
@@ -855,6 +860,36 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 
 #publicTrophyStats p {
   color: #aeb7c9;
+}
+
+#publicRoleStats div[style*="font-size:12px"] {
+  color: #aeb7c9;
+}
+
+#publicFavoriteRole,
+#publicDislikedRole {
+  color: #f1f2f6;
+}
+
+#bronzeCount {
+  color: #cd7f32;
+}
+
+#silverCount {
+  color: #c0c0c0;
+}
+
+#goldCount {
+  color: #ffd700;
+}
+
+#legendCount {
+  background: linear-gradient(90deg,
+    #ff5555, #ffb347, #ffe66d,
+    #54d88a, #55b9ff, #c57aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 </style>
 
@@ -3128,9 +3163,34 @@ roleStats.style.display = "grid";
     a => ids.has(String(a.id))
   ).length;
 
-  unlockedDisplay.textContent = unlocked;
-  rateDisplay.textContent =
-    (total ? Math.round(unlocked / total * 100) : 0) + "%";
+  
+const pct =
+  total === 0 || unlocked === 0 ? 0 :
+  unlocked === total ? 100 :
+  Math.max(1, Math.floor(unlocked / total * 100));
+
+unlockedDisplay.textContent = unlocked;
+rateDisplay.textContent = pct + "%";
+
+const progressClass =
+  pct === 0 ? "progress-white" :
+  pct === 100 ? "progress-rainbow" :
+  pct >= 80 ? "progress-gold" :
+  pct >= 50 ? "progress-silver" :
+  "progress-bronze";
+
+[unlockedDisplay, rateDisplay].forEach(el => {
+  el.classList.remove(
+    "progress-white",
+    "progress-bronze",
+    "progress-silver",
+    "progress-gold",
+    "progress-rainbow"
+  );
+
+  el.classList.add(progressClass);
+});
+
 }
 
 document.getElementById("playerSearchBtn")
