@@ -1560,7 +1560,7 @@ a[x-apple-data-detectors] {
   <a href="#achievements" class="homeMenuItem">
     <span>🏆</span>
     <strong>トロフィー一覧</strong>
-    <small>実績を確認する</small>
+    <small>トロフィーの獲得状況を確認</small>
   </a>
 </nav>
 
@@ -1816,13 +1816,13 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   </div>
 </section>
 <section id="achievements" class="panel">
-<strong>実績達成状況</strong>
+<strong>トロフィー獲得状況</strong>
 <h2 id="count">0 / 0 達成</h2>
 <div class="progress"><div id="bar"></div></div>
 <div id="percent" class="muted">達成率 0%</div>
 </section>
 <div class="controls">
-<input id="search" placeholder="実績を検索">
+<input id="search" placeholder="トロフィーを検索">
 <select id="rarity">
 <option value="">全レア度</option>
 <option>銅</option><option>銀</option>
@@ -1844,7 +1844,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 </div>
 <div id="list"></div>
 </main>
-<footer>猫逆トロフィー | 実績は自己申告制</footer>
+<footer>猫逆トロフィー | 獲得は自己申告制</footer>
   
 <div id="trophyEffect" hidden>
   <div id="trophyEffectContent">
@@ -2047,7 +2047,7 @@ filtered.sort((a, b) => {
   return 0;
 });
 
-if(!filtered.length){list.textContent="該当する実績がありません";return}
+if(!filtered.length){list.textContent="該当するトロフィーがありません";return}
 filtered.forEach(a=>{
 const card=document.createElement("article");
 
@@ -2089,7 +2089,7 @@ check.addEventListener("change", async () => {
   const { data: { user } } = await db.auth.getUser();
 
   if (!user) {
-    alert("実績を保存するにはログインしてください。");
+    alert("トロフィーを獲得するにはログインしてください。");
     check.checked = wasChecked;
     check.disabled = false;
     return;
