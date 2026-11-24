@@ -1,0 +1,4704 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>逆村広場</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#101522">
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch(error => {
+        console.error("Service Worker登録失敗:", error);
+      });
+  });
+}
+</script>
+
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+
+body{margin:0;background:#101522;color:#f1f2f6;font-family:system-ui,sans-serif}
+
+header{text-align:center;padding:38px 16px 22px;background:linear-gradient(#20283b,#101522)}
+h1{font-size:clamp(24px,6vw,36px);margin:0}
+header p,.muted{color:#aeb7c9}
+main{max-width:850px;margin:auto;padding:16px}
+  
+/* プロフィールのスマホ表示調整 */
+#userAuth {
+  width: calc(100% - 32px);
+  max-width: 500px;
+  box-sizing: border-box;
+}
+
+#userAuth input,
+#userAuth textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#avatarInput {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+#profileStats {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+#profileAvatar {
+  width: 96px;
+  height: 96px;
+  border: 3px solid #e4bd68;
+}
+
+.panel,.achievement{background:#1b2333;border:1px solid #3d465a;border-radius:14px;padding:18px;margin-bottom:14px}
+.progress{height:12px;background:#343c4c;border-radius:20px;overflow:hidden;margin:12px 0}
+#bar{height:100%;width:0;background:#d9ad53;transition:width .2s}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+input,select{background:#222c40;color:#fff;border:1px solid #58647a;border-radius:9px;padding:12px;font-size:16px;min-width:0;flex:1}
+.achievement{display:flex;align-items:flex-start;gap:12px;color:#f1f2f6}
+.achievement input{flex:none;width:23px;height:23px;accent-color:#d9ad53}
+
+.achievement h3{margin:0 0 8px;color:#f1f2f6}
+
+.achievement p{margin:0 0 10px;color:#b9c2d2;font-size:14px}
+.tag{display:inline-block;border:1px solid #6b7284;border-radius:20px;padding:4px 10px;font-size:12px;margin:0 5px 5px 0}
+.done{opacity:.65}
+footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
+
+/* 🥉 銅 */
+.achievement.rarity-bronze {
+  border-color:#cd7f32;
+}
+
+/* 🥈 銀 */
+.achievement.rarity-silver {
+  border-color:#c0c0c0;
+}
+
+/* 🥇 金 */
+.achievement.rarity-gold {
+  border-color:#ffd700;
+}
+
+/* 🌈 伝説 */
+.achievement.rarity-legend {
+  border:2px solid transparent;
+  background:
+    linear-gradient(#242039,#242039) padding-box,
+    linear-gradient(
+      120deg,
+      #ff4545,
+      #ffb52e,
+      #f8e84e,
+      #48df80,
+      #39baff,
+      #a569ff,
+      #ff4545
+    ) border-box;
+  box-shadow:0 0 15px rgba(180,110,255,0.3);
+}
+
+/* 🔒 未獲得の伝説トロフィー */
+.achievement.rarity-legend:not(.done) {
+  background: #1b1e29;
+  border: 2px solid #555b6c;
+  box-shadow: none;
+}
+
+/* 🌈 獲得済みの伝説トロフィー */
+.achievement.rarity-legend.done {
+  opacity: 1;
+  box-shadow: 0 0 20px rgba(180,110,255,0.6);
+  transition: all 0.4s ease;
+}
+
+/* 🏆 トロフィー獲得演出 */
+#trophyEffect:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  animation: effectFadeIn 0.3s ease;
+}
+
+
+/* 🥉 銅トロフィー獲得演出 */
+#trophyEffect.bronze #trophyEffectContent {
+  border-color: #cd7f32;
+  box-shadow: 0 0 40px rgba(205,127,50,0.5);
+}
+
+#trophyEffect.bronze #trophyEffectTitle {
+  color: #cd7f32;
+}
+
+/* 🥈 銀トロフィー獲得演出 */
+#trophyEffect.silver #trophyEffectContent {
+  border-color: #c0c0c0;
+  box-shadow: 0 0 40px rgba(192,192,192,0.5);
+}
+
+#trophyEffect.silver #trophyEffectTitle {
+  color: #c0c0c0;
+}
+
+/* 🥇 金トロフィー獲得演出 */
+#trophyEffect.gold #trophyEffectContent {
+  border-color: #ffd700;
+  box-shadow: 0 0 40px rgba(255,215,0,0.5);
+}
+
+#trophyEffect.gold #trophyEffectTitle {
+  color: #ffd700;
+}
+#trophyEffectContent {
+  width: 90%;
+  max-width: 420px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #1b2333;
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+  animation: trophyAppear 0.6s ease;
+}
+
+#trophyEffectIcon {
+  font-size: 72px;
+  animation: trophyBounce 0.8s ease;
+}
+
+#trophyEffectTitle {
+  color: #ffd700;
+  font-size: 24px;
+}
+
+#trophyEffectName {
+  color: #fff;
+  font-size: 20px;
+}
+
+/* 🌈 伝説専用演出 */
+#trophyEffect.legendary #trophyEffectContent {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#1b2333, #1b2333) padding-box,
+    linear-gradient(
+      120deg,
+      red, orange, yellow, lime,
+      cyan, blue, violet, red
+    ) border-box;
+  box-shadow: 0 0 60px rgba(180, 110, 255, 0.8);
+}
+
+#trophyEffect.legendary #trophyEffectTitle {
+  background: linear-gradient(
+    90deg, red, orange, yellow,
+    lime, cyan, blue, violet
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes effectFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes trophyAppear {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes trophyBounce {
+  0% { transform: scale(0.3); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* トロフィー登場アニメーション */
+@keyframes trophyPop {
+  0% {
+    transform: scale(0.3) rotate(-12deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.2) rotate(4deg);
+    opacity: 1;
+  }
+  85% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* レアリティ別の発光 */
+@keyframes trophyGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--trophy-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 28px var(--trophy-glow));
+  }
+}
+
+#trophyEffectIcon {
+  --trophy-glow: #ffd700;
+}
+
+#trophyEffect.bronze #trophyEffectIcon {
+  --trophy-glow: #cd7f32;
+}
+
+#trophyEffect.silver #trophyEffectIcon {
+  --trophy-glow: #dce6f5;
+}
+
+#trophyEffect.gold #trophyEffectIcon {
+  --trophy-glow: #ffd700;
+}
+
+#trophyEffect.legendary #trophyEffectIcon {
+  --trophy-glow: #b46aff;
+}
+
+#trophyEffect.show #trophyEffectIcon img {
+  animation:
+    trophyPop 0.8s ease-out both,
+    trophyGlow 1.5s ease-in-out 0.8s infinite;
+}
+
+/* プロフィールのカードデザイン */
+#profileStats {
+  background: #202a3d;
+  border: 1px solid #3d465a;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+
+#profileTitle {
+  color: #f1f2f6;
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+
+
+#profileStats > div:first-of-type {
+  padding: 12px;
+}
+
+#profileAvatar {
+  margin: 0 auto 12px;
+}
+
+
+#profileStats h4 {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+#profileStats p {
+  line-height: 1.7;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+
+.profileHeader > div {
+  min-width: 0;
+}
+
+.profileHeader #profileTitle {
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.profileSubtitle {
+  margin: 0;
+  color: #aeb7c9;
+  font-size: 12px;
+}
+
+
+#profileHeaderAvatar {
+  flex-shrink: 0;
+  border: 3px solid #58647a;
+}
+
+
+/* プロフィール画像の重複表示を防ぐ */
+#profileAvatar {
+  display: none !important;
+}
+
+/* プロフィール画像変更欄 */
+#profileStats > div:nth-of-type(2) {
+  background: transparent;
+  padding: 0;
+}
+
+/* 獲得トロフィー・達成率をカード化 */
+#profileStats > p {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+
+  width: calc(50% - 6px);
+  min-height: 100px;
+  margin: 8px 3px;
+  padding: 12px 6px;
+
+  background: #263148;
+  border: 1px solid #3d465a;
+  border-radius: 12px;
+
+  color: #aeb7c9;
+  font-size: 13px;
+  text-align: center;
+}
+
+#profileUnlocked,
+#profileRate {
+  display: block;
+  margin: 6px 0;
+  color: #f1f2f6;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* レアリティ別の獲得状況 */
+#rarityStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+
+#rarityStats h4,
+#rarityStats > div:first-of-type,
+#rarityProgress {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+
+#rarityStats > p {
+  margin: 0;
+  padding: 14px 8px;
+  background: #263148;
+  border: 1px solid #3d465a;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 14px;
+  min-width: 0;
+}
+
+#rarityStats > p strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 25px;
+  color: #e4bd68;
+}
+
+
+#rarityStats h4 {
+  margin: 0 0 4px;
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+#rarityStats > p[hidden] {
+  display: none;
+}
+
+
+/* プロフィール編集欄 */
+#bioEditor,
+#profileEditPanel > div:has(#profileUsername),
+#profileEditPanel > div:has(#avatarInput) {
+  display: none;
+}
+
+/* 編集モード中だけ表示 */
+
+#signedIn.editing #bioEditor,
+#signedIn.editing #profileEditPanel > div:has(#profileUsername),
+#signedIn.editing #profileEditPanel > div:has(#avatarInput) {
+
+  display: block;
+}
+
+/* プロフィール中心型ホーム */
+#signedIn {
+  display: flex;
+  flex-direction: column;
+}
+
+/* プロフィールを最上部に */
+#profileStats {
+  order: -1;
+}
+
+/* プロフィールカードの余白 */
+#profileStats {
+  margin-top: 0 !important;
+  margin-bottom: 16px;
+}
+
+/* スマホ画面への収まりを調整 */
+#userAuth,
+#profileStats {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ログアウト中はプロフィールを非表示 */
+#signedIn[hidden] {
+  display: none !important;
+}
+
+/* ホームメニュー */
+.homeMenu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* メニューカード */
+.homeMenuItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-width: 0;
+  padding: 22px 10px;
+
+  background: #202a3d;
+  border: 1px solid #3d465a;
+  border-radius: 16px;
+
+  color: #f1f2f6;
+  text-decoration: none;
+  text-align: center;
+
+  transition: 0.2s;
+}
+
+/* アイコン */
+.homeMenuItem span {
+  font-size: 32px;
+}
+
+/* メニュー名 */
+.homeMenuItem strong {
+  font-size: 16px;
+}
+
+/* 説明文 */
+.homeMenuItem small {
+  color: #aeb7c9;
+  font-size: 11px;
+}
+
+/* タップ時 */
+.homeMenuItem:active {
+  transform: scale(0.97);
+  background: #2b3852;
+}
+
+#announcementDate {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 部屋告知カードの余白調整 */
+#announcementList > .panel {
+  padding: 16px;
+}
+
+#announcementList > .panel h3 {
+  margin: 8px 0 12px;
+}
+
+#announcementList > .panel p {
+  margin: 8px 0;
+}
+
+
+/* プロフィール編集の見出し */
+
+#signedIn.editing #profileEditHeading {
+  display: block !important;
+  color: #f1f2f6;
+  margin: 20px 0 12px;
+}
+
+/* 役職編集欄は通常非表示 */
+#roleEditor {
+  display: none;
+}
+
+/* 編集モード中だけ表示 */
+#signedIn.editing #roleEditor {
+  display: block;
+}
+
+#roleEditor select {
+  display: block;
+  width: 100%;
+  margin: 6px 0 12px;
+}
+
+
+/* プロフィール編集画面の見出し */
+#signedIn.editing #profileEditHeading {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+  
+
+
+
+
+
+/* プロフィール編集パネル */
+#profileEditPanel {
+  display: none;
+  flex-direction: column;
+  background: #202a3d;
+  border: 1px solid #3d465a;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+
+
+
+#signedIn.editing #profileEditPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+
+#profileEditHeading {
+  order: -2;
+}
+
+#profileEditPanel > div:has(#profileUsername) {
+  order: -1;
+}
+
+/* 個別保存ボタンを非表示 */
+#saveUsernameBtn,
+#saveBioBtn,
+#saveRolesBtn,
+#uploadAvatarBtn {
+  display: none;
+}
+
+
+/* 編集中はプロフィール閲覧画面を隠す */
+#signedIn.editing #profileStats {
+  display: none;
+}
+
+/* プロフィール編集画面の統一デザイン */
+#profileEditPanel {
+  gap: 16px;
+}
+
+#profileEditPanel > div {
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+
+#profileEditPanel input[type="text"],
+#profileEditPanel textarea,
+#profileEditPanel select {
+  width: 100%;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+  
+
+#profileEditPanel textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+
+#profileEditPanel #saveProfileBtn {
+  width: 100%;
+  padding: 16px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+
+/* 役職編集欄を2列にする */
+#signedIn.editing #roleEditor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 8px;
+}
+
+#roleEditor h4,
+#roleMessage {
+  grid-column: 1 / -1;
+}
+
+#roleEditor label {
+  min-width: 0;
+  font-size: 14px;
+}
+
+#roleEditor select {
+  min-width: 0;
+  margin: 0;
+}
+
+/* 好き・苦手な役職の入力欄を整える */
+#roleEditor > div {
+  min-width: 0;
+}
+
+#roleEditor > div label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+#roleEditor > div select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* プロフィール編集画面の不要な見出しを隠す */
+#signedIn.editing #bioEditor h3,
+#signedIn.editing #roleEditor h4 {
+  display: none;
+}
+
+/* 編集画面の余白をコンパクトに */
+#profileEditPanel {
+  gap: 12px;
+  padding: 16px;
+}
+
+#profileEditPanel > div p:empty {
+  display: none;
+}
+
+#profileEditPanel #bioEditor textarea {
+  margin-top: 8px;
+}
+
+#signedIn.editing #profileEditHeading {
+  margin: 0 0 4px;
+}
+
+/* 自己紹介の見出しと入力欄を近づける */
+
+#profileEditPanel #bioEditor label {
+  margin-bottom: 8px !important;
+
+}
+
+#profileEditPanel #bioEditor textarea {
+  margin-top: 0 !important;
+}
+
+/* プロフィール編集の各項目を等間隔にする */
+#signedIn.editing #profileEditPanel {
+  gap: 20px;
+}
+
+#profileEditPanel > div p:empty {
+  display: none;
+}
+
+#profileEditPanel #bioEditor textarea {
+  margin-top: 0 !important;
+}
+
+/* プロフィール編集の項目間隔を統一 */
+#signedIn.editing #profileEditPanel > div {
+  margin: 0 !important;
+}
+
+#signedIn.editing #profileEditPanel > div > p:empty {
+  display: none;
+}
+
+#signedIn.editing #profileEditPanel {
+  gap: 16px;
+}
+
+/* 保存ボタンとログイン情報の間隔を縮める */
+#signedIn.editing #profileEditPanel {
+  margin-bottom: 0 !important;
+}
+
+#signedIn.editing #saveProfileMessage:empty {
+  display: none;
+}
+
+#signedIn.editing #signedInEmail {
+  margin-top: 12px;
+}
+
+/* 保存ボタンは編集画面だけに表示 */
+#saveProfileBtn {
+  display: none;
+}
+
+#signedIn.editing #saveProfileBtn {
+  display: block;
+}
+
+/* 閲覧画面の保存ボタン跡の余白をなくす */
+#signedIn:not(.editing) #profileEditPanel {
+  display: none !important;
+}
+
+#signedIn:not(.editing) #profileStats {
+  margin-bottom: 0 !important;
+}
+
+#signedIn:not(.editing) #signedInEmail {
+  margin-top: 12px;
+}
+
+/* 好き・苦手な役職の見出しを白色に統一 */
+#signedIn.editing #roleEditor label {
+  color: #fff !important;
+}
+
+#profileStats div[style*="font-size:12px"] {
+  color: #aeb7c9;
+}
+
+.progress-white {
+  color: #f1f2f6 !important;
+}
+
+.progress-bronze {
+  color: #cd7f32 !important;
+}
+
+.progress-silver {
+  color: #c0c0c0 !important;
+}
+
+.progress-gold {
+  color: #ffd700 !important;
+}
+
+
+.progress-rainbow {
+  display: inline-block !important;
+  width: fit-content;
+  margin-inline: auto !important;
+  background: linear-gradient(90deg,
+    #ff5555, #ffb347, #ffe66d,
+    #54d88a, #55b9ff, #c57aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+#publicProfileName {
+  color: #f1f2f6;
+}
+
+#publicProfileAvatar {
+  border-color: #58647a;
+}
+
+#publicProfile h3 {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#publicTrophyStats p {
+  color: #aeb7c9;
+}
+
+#publicRoleStats div[style*="font-size:12px"] {
+  color: #aeb7c9;
+}
+
+#publicFavoriteRole,
+#publicDislikedRole {
+  color: #f1f2f6;
+}
+
+#bronzeCount {
+  color: #cd7f32;
+}
+
+#silverCount {
+  color: #c0c0c0;
+}
+
+#goldCount {
+  color: #ffd700;
+}
+
+
+#legendCount {
+  display: inline-block !important;
+  width: fit-content;
+  background: linear-gradient(90deg,
+    #ff5555, #ffb347, #ffe66d,
+    #54d88a, #55b9ff, #c57aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+#rarityProgressBars,
+#rarityProgressBars *,
+#signedInEmail,
+#signedInEmail *,
+a[x-apple-data-detectors] {
+  text-decoration: none !important;
+}
+
+#announcementForm label {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#announcementForm input,
+#announcementForm select {
+  width: 100%;
+  min-height: 48px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+#announcementForm h3 {
+  color: #f1f2f6;
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+#announcementForm label {
+  margin-bottom: 8px !important;
+}
+
+#announcementForm input,
+#announcementForm select {
+  margin-bottom: 16px !important;
+}
+
+#postAnnouncementBtn {
+  width: 100%;
+  padding: 16px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#profileEditPanel label:not([for="avatarInput"]) {
+  color: #aeb7c9 !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#profileBioSection h4,
+#rarityStats h4 {
+  margin: 0 0 16px;
+}
+
+#profileBio {
+  margin-top: 0;
+}
+
+#rarityStats > div:first-of-type {
+  margin-top: 0 !important;
+}
+
+#profileBioSection h4,
+#rarityStats h4 {
+  margin: 0 0 8px;
+}
+
+#profileBio {
+  margin-top: 0;
+}
+
+#rarityStats {
+  row-gap: 0;
+}
+
+#rarityStats > div:first-of-type {
+  margin-top: 0 !important;
+}
+#signedIn.editing #profileEditPanel #roleEditor label {
+  color: #aeb7c9 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+#profileEditActions {
+  display: flex;
+  gap: 12px;
+}
+
+#profileEditActions #closeProfileBtn {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 8px;
+  background: #263148;
+  color: #f1f2f6;
+  border: 1px solid #58647a;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#profileEditActions #saveProfileBtn {
+  flex: 2;
+  width: auto;
+  min-width: 0;
+}
+
+#announcementForm select:has(option[value=""]:checked) {
+  color: #9ca3af;
+}
+
+#announcementForm select option {
+  color: #f1f2f6;
+}
+
+#announcementForm select option[value=""] {
+  color: #9ca3af;
+}
+
+#announcementDate {
+  position: relative;
+}
+
+#announcementDate:not(:valid)::before {
+  content: "YYYY/MM/DD HH:mm";
+  color: #9ca3af;
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+}
+
+#announcementVersion {
+  width: 34% !important;
+  display: inline-block;
+  vertical-align: top;
+}
+
+#announcementTitle {
+  width: 62% !important;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 2%;
+}
+
+#announcementEditForm h3 {
+  color: #f1f2f6;
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+#announcementEditForm label {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px !important;
+}
+
+#announcementEditForm input,
+#announcementEditForm select {
+  width: 100%;
+  min-height: 48px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  box-sizing: border-box;
+  margin-bottom: 16px !important;
+}
+
+#edit_announcementVersion {
+  width: 34% !important;
+  display: inline-block;
+  vertical-align: top;
+}
+
+#edit_announcementTitle {
+  width: 62% !important;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 2%;
+}
+
+#announcementEditForm select:has(option[value=""]:checked) {
+  color: #9ca3af;
+}
+
+#announcementEditActions {
+  display: flex;
+  gap: 12px;
+}
+
+#announcementEditActions button {
+  padding: 16px 8px;
+  color: #f1f2f6;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#cancelAnnouncementEditBtn {
+  flex: 1;
+  background: #263148;
+  border: 1px solid #58647a;
+}
+
+#saveAnnouncementEditBtn {
+  flex: 2;
+  background: #34415c;
+  border: none;
+}
+
+#edit_announcementDate {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+}
+
+#edit_announcementDate:not(:valid)::before {
+  content: "YYYY/MM/DD HH:mm";
+  color: #9ca3af;
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+}
+
+.achievement:not(.done) {
+  border-color: #555b6c;
+  box-shadow: none;
+}
+
+.achievement:not(.done) {
+  background: #171b25;
+}
+
+.achievement.done {
+  opacity: 1;
+}
+
+.achievement.rarity-bronze.done {
+  background: linear-gradient(135deg, #30251f, #1b2333);
+  box-shadow: 0 0 8px rgba(205,127,50,0.2);
+}
+
+.achievement.rarity-silver.done {
+  background: linear-gradient(135deg, #303640, #1b2333);
+  box-shadow: 0 0 10px rgba(192,192,192,0.25);
+}
+
+.achievement.rarity-gold.done {
+  background: linear-gradient(135deg, #38301c, #1b2333);
+  box-shadow: 0 0 14px rgba(255,215,0,0.3);
+}
+
+/* 未獲得トロフィー */
+.achievement:not(.done) h3 {
+  color: #858b98;
+}
+
+/* 銅トロフィー */
+.achievement.rarity-bronze.done h3 {
+  color: #cd7f32;
+}
+
+/* 銀トロフィー */
+.achievement.rarity-silver.done h3 {
+  color: #c0c0c0;
+}
+
+/* 金トロフィー */
+.achievement.rarity-gold.done h3 {
+  color: #ffd700;
+}
+
+/* 伝説トロフィー */
+.achievement.rarity-legend.done h3 {
+  background: linear-gradient(
+    90deg,
+    #ff5555,
+    #ffb347,
+    #ffe66d,
+    #54d88a,
+    #55b9ff,
+    #c57aff
+  );
+  width: fit-content;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.achievement:not(.done) .tag:last-child {
+  color: #858b98;
+  border-color: #555b6c;
+}
+
+.achievement.rarity-bronze.done .tag:last-child {
+  color: #cd7f32;
+  border-color: #cd7f32;
+}
+
+.achievement.rarity-silver.done .tag:last-child {
+  color: #c0c0c0;
+  border-color: #c0c0c0;
+}
+
+.achievement.rarity-gold.done .tag:last-child {
+  color: #ffd700;
+  border-color: #ffd700;
+}
+
+.achievement.rarity-legend.done .tag:last-child {
+  color: #c57aff;
+  border-color: #c57aff;
+}
+
+.achievement:not(.done) input {
+  accent-color: #555b6c;
+}
+
+.achievement.rarity-bronze.done input {
+  accent-color: #cd7f32;
+}
+
+.achievement.rarity-silver.done input {
+  accent-color: #c0c0c0;
+}
+
+.achievement.rarity-gold.done input {
+  accent-color: #ffd700;
+}
+
+.achievement.rarity-legend.done input {
+  accent-color: #c57aff;
+}
+
+.achievement.done input:disabled {
+  opacity: 1;
+}
+
+/* 参加希望ボタン */
+.participantBtn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: 1px solid #58647a;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.participantBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.participantCount {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 通知ベル */
+header {
+  position: relative;
+}
+
+#notificationBtn {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: #263148;
+  border: 1px solid #58647a;
+  border-radius: 50%;
+  color: #f1f2f6;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#notificationBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 20px;
+  text-align: center;
+}
+
+/* 通知一覧 */
+#notificationPanel {
+  width: calc(100% - 32px);
+  max-width: 500px;
+  margin: 0 auto 20px;
+  padding: 18px;
+  background: #202a3d;
+  border: 1px solid #3d465a;
+  border-radius: 16px;
+}
+
+#notificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+#notificationHeader h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+#closeNotificationBtn {
+  background: transparent;
+  border: none;
+  color: #f1f2f6;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#readAllNotificationsBtn {
+  width: 100%;
+  padding: 12px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#notificationList {
+  max-height: 420px;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+
+.notificationItem {
+  padding: 14px;
+  margin-bottom: 8px;
+  background: #263148;
+  border: 1px solid #3d465a;
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+
+.notificationItem.unread {
+  background: #2c3953;
+  border-left: 4px solid #85baff;
+}
+
+.notificationItem h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: #f1f2f6;
+}
+
+.notificationItem p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #c5cddd;
+}
+
+.notificationItem time {
+  font-size: 12px;
+  color: #8590a4;
+}
+
+#pushNotificationBtn {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 4px;
+  background: #263148;
+  color: #f1f2f6;
+  border: 1px solid #58647a;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#pushNotificationBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#pushNotificationStatus {
+  font-size: 12px;
+  color: #aab3c5;
+  text-align: center;
+  margin: 4px 0 14px;
+}
+
+/* 獲得トロフィー称号 */
+.trophy-title {display:block; font-size:14px; font-weight:700; margin:0 0 8px; overflow-wrap:anywhere;}
+.trophy-title[hidden], .title-remove[hidden] {display:none!important;}
+.trophy-title[data-rarity="銅"] {color:#e0a06b;}
+.trophy-title[data-rarity="銀"] {color:#dce6f5;}
+.trophy-title[data-rarity="金"] {color:#ffd700;}
+.trophy-title[data-rarity="伝説"] {color:#d6a4ff; background:linear-gradient(90deg,#ff7777,#ffc96a,#ffe66d,#54d88a,#55b9ff,#c57aff); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 5px #b46aff66);}
+.title-action,.title-remove {background:#34415c;color:#f1f2f6;border:1px solid #58647a;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;}
+.title-action {display:block;margin-top:8px;}
+.title-action:disabled,.title-remove:disabled {opacity:.6;cursor:default;}
+.title-remove {margin:0 0 8px;}
+</style>
+
+</head>
+<body>
+<header>
+
+<button id="notificationBtn" type="button"
+        aria-label="通知" aria-expanded="false" hidden>
+  🔔
+  <span id="notificationBadge" hidden>0</span>
+</button>
+<h1>逆村広場</h1>
+<p>逆村プレイヤー集まる場所</p>
+</header>
+  
+
+<section id="notificationPanel" hidden>
+  <div id="notificationHeader">
+    <h2>🔔 通知</h2>
+    <button id="closeNotificationBtn" type="button">
+      ✕
+    </button>
+  </div>
+
+  
+<button id="pushNotificationBtn" type="button">
+  🔔 プッシュ通知を有効にする
+</button>
+
+<p id="pushNotificationStatus" class="muted">
+  プッシュ通知：設定確認中
+</p>
+<button id="readAllNotificationsBtn" type="button">
+    すべて既読にする
+  </button>
+
+  <div id="notificationList">
+    <p class="muted">通知はありません。</p>
+  </div>
+</section>
+<section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#f1f2f6">
+
+  <h2>🏆 ユーザーアカウント</h2>
+  <div id="authForm">
+    <input id="userEmail" type="email" placeholder="メールアドレス" autocomplete="email" style="width:100%;padding:12px;margin:6px 0">
+    <input id="userPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0">
+    <button id="signupBtn" type="button">新規登録</button>
+    <button id="signinBtn" type="button">ログイン</button>
+  </div>
+  <div id="signedIn" hidden>
+    
+
+
+  
+<div id="profileEditPanel">
+ <h3 id="profileEditHeading" style="display:none;">✏️ プロフィール編集</h3> <div style="margin: 15px 0;">
+  <img id="profileAvatar"
+       alt="プロフィール画像"
+       width="100"
+       height="100"
+       style="border-radius:50%; object-fit:cover; display:none;">
+
+  <div style="margin-top:10px;">
+   
+
+
+<label style="display:block;margin-bottom:8px;color:#fff;">
+  プロフィール画像
+</label>
+
+ 
+<input id="avatarInput" type="file" accept="image/*" style="display:none;">
+
+<label for="avatarInput" style="display:block;background:#34415c;color:#9ca3af;padding:14px;border-radius:10px;cursor:pointer;">
+
+  画像を変更
+</label>
+
+    <button id="uploadAvatarBtn" type="button">
+      プロフィール画像を保存
+    </button>
+  </div>
+
+  <p id="avatarMessage" role="status"></p>
+</div>
+<div style="margin-top:12px;">
+  
+<label for="profileUsername" style="display:block;margin-bottom:8px;color:#fff;">
+  ユーザー名
+</label>
+<input id="profileUsername" type="text" maxlength="20" placeholder="ユーザー名（20文字以内）">
+  <button id="saveUsernameBtn" type="button">ユーザー名を保存</button>
+  <p id="profileMessage" role="status"></p>
+</div><div id="bioEditor" style="margin-top:20px;">
+  
+<label for="bioInput" style="display:block;margin-bottom:8px;color:#fff;">
+  自己紹介
+</label>
+
+  <textarea
+    id="bioInput"
+    maxlength="500"
+    rows="5"
+    placeholder="自己紹介を入力してください（500文字以内）"
+    style="width:100%;box-sizing:border-box;"
+  ></textarea>
+  <button id="saveBioBtn" type="button">
+    自己紹介を保存
+  </button>
+  <p id="bioMessage"></p>
+</div>
+
+
+<div id="characterEditor">
+  <label for="favoriteCharacterSelect" style="display:block; margin-bottom:8px;">
+    好きなキャラクター
+  </label>
+<select id="favoriteCharacterSelect">
+  <option value="">未設定</option>
+  <option>アンナ</option>
+  <option>マイク</option>
+  <option>エリック</option>
+  <option>バニラ</option>
+  <option>メアリー</option>
+  <option>ジェイ</option>
+  <option>ショーン</option>
+  <option>ローラ</option>
+  <option>ビル</option>
+  <option>ミカ</option>
+  <option>リリアン</option>
+  <option>メリル</option>
+  <option>ゲイル</option>
+  <option>スーザン</option>
+  <option>ロディ</option>
+  <option>エマ</option>
+  <option>フランク</option>
+  <option>トーマス</option>
+  <option>クリス</option>
+  <option>ジェシカ</option>
+  <option>サンドラ</option>
+  <option>フェイ</option>
+  <option>ヒュー</option>
+  <option>マリアンヌ</option>
+  <option>ニック</option>
+  <option>ソフィア</option>
+  <option>チャン</option>
+  <option>カミラ</option>
+  <option>フレディ</option>
+  <option>アーニー</option>
+  <option>ケイト</option>
+  <option>ウィル</option>
+  <option>セリーヌ</option>
+  <option>ポール</option>
+  <option>モーガン</option>
+  <option>ペネロペ</option>
+</select>
+</div>
+<div id="roleEditor" style="margin-top:12px;">
+  <h4>🎭 好きな役職・苦手な役職を編集</h4>
+
+  
+<div>
+  <label for="favoriteRoleSelect">好きな役職</label>
+  <select id="favoriteRoleSelect">
+    <option value="">未設定</option>
+  </select>
+</div>
+
+<div>
+  <label for="dislikedRoleSelect">苦手な役職</label>
+  <select id="dislikedRoleSelect">
+    <option value="">未設定</option>
+  </select>
+</div>
+
+
+  <button id="saveRolesBtn" type="button">
+    役職を保存
+  </button>
+  <p id="roleMessage"></p>
+</div>
+  
+
+<div id="profileEditActions">
+  <button id="closeProfileBtn" type="button">
+    ✕ 閉じる
+  </button>
+  <button id="saveProfileBtn" type="button">
+    変更を保存
+  </button>
+</div>
+
+<p id="saveProfileMessage" role="status"></p>
+</div>
+<div id="profileStats" style="margin-top:20px;">
+
+<div class="profileHeader">
+  <img id="profileHeaderAvatar"
+       alt="プロフィール画像"
+       width="80"
+       height="80"
+       style="display:none; border-radius:50%; object-fit:cover;">
+
+  <div>
+    <div id="myTrophyTitle" class="trophy-title" hidden></div>
+<button id="removeTrophyTitle" class="title-remove" type="button" hidden>称号を外す</button>
+<h3 id="profileTitle">🏆 マイプロフィール</h3>
+    
+<button id="editProfileBtn" type="button">
+  ✏️ 編集
+</button>
+
+<button id="privacyToggleBtn" type="button"
+  style="margin-left:6px;white-space:nowrap;">
+
+  🌐 公開設定を読み込み中...
+</button>
+
+<p id="privacyMessage"
+  style="font-size:12px;color:#aeb7c9;">
+</p>
+
+
+    
+  </div>
+  
+</div>
+
+ 
+
+ 
+<div id="profileBioSection" style="margin-top:16px;">
+  <h4>📝 自己紹介</h4>
+  <p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p>
+</div>
+
+  
+
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+ 
+<div style="grid-column:1 / -1;background:#263249;border-radius:10px;padding:12px;text-align:center;">
+  <div style="font-size:12px;">👤 好きなキャラクター</div>
+  <strong id="favoriteCharacterDisplay" style="color:#f1f2f6;">未設定</strong>
+</div>
+ <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">❤️ 好きな役職</div>
+    <strong id="favoriteRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
+  </div>
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">💔 苦手な役職</div>
+    <strong id="dislikedRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
+  </div>
+</div>
+
+
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+  <div style="text-align:center;padding:12px 6px;background:#263249;border-radius:10px;">
+    <div style="font-size:12px;">🏆 獲得トロフィー</div>
+    
+<strong id="profileUnlocked" style="display:block;font-size:26px;margin-top:6px;">0</strong>
+
+  </div>
+  <div style="text-align:center;padding:12px 6px;background:#263249;border-radius:10px;">
+    <div style="font-size:12px;">📊 獲得率</div>
+    <strong id="profileRate" style="display:block;font-size:26px;margin-top:6px;">0%</strong>
+  </div>
+</div>
+
+
+<div id="rarityStats" style="margin-top:16px;">
+  <h4>🏅 レアリティ別獲得状況</h4>
+  
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥉 銅</div>
+    <strong id="bronzeCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥈 銀</div>
+    <strong id="silverCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥇 金</div>
+    <strong id="goldCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div id="legendStatsRow" hidden style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🌈 伝説</div>
+    <strong id="legendCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+</div>
+
+
+
+<div id="rarityProgress" style="margin-top:20px;">
+  <h4>📊 レアリティ別達成率</h4>
+  <div id="rarityProgressBars"></div>
+</div>
+</div>
+</div>
+
+    
+<p id="signedInEmail"></p>
+<button id="signoutBtn" type="button">ログアウト</button>
+
+
+
+
+</div>
+<p id="authMessage" role="status"></p>
+</section>
+
+<main>
+
+
+<nav class="homeMenu" aria-label="メインメニュー">
+  <a href="#playerSearch" class="homeMenuItem"
+     style="grid-column:1 / -1;">
+    <span>🔎</span>
+    <strong>プレイヤー検索</strong>
+    <small>他のプレイヤーを探す</small>
+  </a>
+
+  <a href="#roomAnnouncements" class="homeMenuItem">
+    <span>📢</span>
+    <strong>部屋告知</strong>
+    <small>募集・開催情報をチェック</small>
+  </a>
+
+  <a href="#achievements" class="homeMenuItem">
+    <span>🏆</span>
+    <strong>トロフィー一覧</strong>
+    <small>トロフィーの獲得状況を確認</small>
+  </a>
+</nav>
+
+
+
+
+
+<section id="playerSearch" class="panel">
+  <h2>🔎 プレイヤー検索</h2>
+  <p class="muted">
+    プレイヤー名を1文字以上入力して検索できます。
+  </p>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <input
+      id="playerSearchInput"
+      type="search"
+      maxlength="20"
+      placeholder="プレイヤー名を入力"
+      style="flex:1;min-width:0;"
+    >
+    <button id="playerSearchBtn" type="button">
+      🔎 検索
+    </button>
+  </div>
+
+  <p id="playerSearchMessage" class="muted"></p>
+  <div id="playerSearchResults"></div>
+</section>
+<section id="publicProfile" class="panel" hidden>
+  <button id="backToAnnouncements" type="button">
+    ← 部屋告知に戻る
+  </button>
+
+  <div id="publicTrophyTitle" class="trophy-title" hidden></div>
+<h2 id="publicProfileName">👤 プロフィール</h2>
+
+  <img id="publicProfileAvatar"
+       alt="プロフィール画像"
+       width="100"
+       height="100"
+       style="display:none;border-radius:50%;object-fit:cover;">
+
+  <h3>📝 自己紹介</h3>
+  <p id="publicProfileBio"
+     style="white-space:pre-wrap;overflow-wrap:anywhere;">
+    読み込み中...
+  </p>
+
+
+<div id="publicRoleStats"
+  style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+
+<div style="grid-column:1 / -1;background:#263249;border-radius:10px;padding:12px;text-align:center;">
+  <div style="font-size:12px;">👤 好きなキャラクター</div>
+  <strong id="publicFavoriteCharacter" style="color:#f1f2f6;">未設定</strong>
+</div>
+
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">❤️ 好きな役職</div>
+    <strong id="publicFavoriteRole" style="display:block;margin-top:6px;">
+      未設定
+    </strong>
+  </div>
+
+  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:12px;">💔 苦手な役職</div>
+    <strong id="publicDislikedRole" style="display:block;margin-top:6px;">
+      未設定
+    </strong>
+  </div>
+
+</div>
+<div id="publicTrophyStats"
+     style="display:flex;gap:12px;margin-top:20px;">
+
+  <div style="flex:1;min-width:0;background:#263148;padding:16px 8px;border-radius:12px;text-align:center;">
+    <p>🏆 獲得トロフィー</p>
+    <strong id="publicProfileUnlocked"
+            style="font-size:28px;color:#e4bd68;">—</strong>
+  </div>
+
+  <div style="flex:1;min-width:0;background:#263148;padding:16px 8px;border-radius:12px;text-align:center;">
+    <p>📊 獲得率</p>
+    <strong id="publicProfileRate"
+            style="font-size:28px;color:#e4bd68;">—</strong>
+  </div>
+
+</div>
+</section>
+<section id="roomAnnouncements" class="panel">
+  <h2>📢 部屋告知</h2>
+  <p class="muted">
+    逆村の開催予定や参加者募集をチェック！
+  </p>
+
+ 
+<div id="announcementForm" hidden>
+  <h3>✏️ 部屋告知を投稿</h3>
+
+  
+
+<label for="announcementType"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  🏷️ 部屋の種類
+</label>
+<select id="announcementType"
+        style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
+  <option value="">部屋の種類を選択</option>
+  <option value="スタ逆">スタンダード逆村</option>
+  <option value="特殊逆">特殊逆村</option>
+</select>
+<label for="announcementTitle"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  🎭 部屋主のキャラクター
+</label>
+
+<select id="announcementVersion">
+  <option value="">バージョンを選択</option>
+  <option>N</option>
+  <option>SP1</option>
+  <option>SP2</option>
+  <option>SP3</option>
+  <option>SP4</option>
+  <option>MN</option>
+  <option>MSP1</option>
+  <option>MSP2</option>
+  <option>DSP1</option>
+  <option>JVIP</option>
+  <option>DVIP</option>
+</select>
+
+<select id="announcementTitle">
+  <option value="">キャラクターを選択</option>
+  <option>アンナ</option>
+  <option>マイク</option>
+  <option>エリック</option>
+  <option>バニラ</option>
+  <option>メアリー</option>
+  <option>ジェイ</option>
+  <option>ショーン</option>
+  <option>ローラ</option>
+  <option>ビル</option>
+  <option>ミカ</option>
+  <option>リリアン</option>
+  <option>メリル</option>
+  <option>ゲイル</option>
+  <option>スーザン</option>
+  <option>ロディ</option>
+  <option>エマ</option>
+  <option>フランク</option>
+  <option>トーマス</option>
+  <option>クリス</option>
+  <option>ジェシカ</option>
+  <option>サンドラ</option>
+  <option>フェイ</option>
+  <option>ヒュー</option>
+  <option>マリアンヌ</option>
+  <option>ニック</option>
+  <option>ソフィア</option>
+  <option>チャン</option>
+  <option>カミラ</option>
+  <option>フレディ</option>
+  <option>アーニー</option>
+  <option>ケイト</option>
+  <option>ウィル</option>
+  <option>セリーヌ</option>
+  <option>ポール</option>
+  <option>モーガン</option>
+  <option>ペネロペ</option>
+</select>
+
+
+
+<label for="announcementPlayers"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  👥 人数
+</label>
+<select id="announcementPlayers"
+        style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
+  <option value="">人数を選択</option>
+  <option value="4">4人</option>
+  <option value="5">5人</option>
+  <option value="6">6人</option>
+  <option value="7">7人</option>
+  <option value="8">8人</option>
+  <option value="9">9人</option>
+  <option value="10">10人</option>
+  <option value="11">11人</option>
+  <option value="12">12人</option>
+  <option value="13">13人</option>
+  <option value="14">14人</option>
+  <option value="15">15人</option>
+  <option value="16">16人</option>
+  <option value="17">17人</option>
+  <option value="18">18人</option>
+  <option value="19">19人</option>
+  <option value="20">20人</option>
+</select>
+ 
+<label for="announcementDate"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  📅 開催日時
+</label>
+ <input
+    id="announcementDate"
+    type="datetime-local"
+   required
+    
+style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin-bottom:10px;"
+
+  >
+
+  
+<label for="announcementBody"
+       style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
+  🎯 募集するプレイヤー
+</label>
+<select id="announcementBody"
+        style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
+  <option value="">募集対象を選択</option>
+  <option value="誰でも">誰でも</option>
+  <option value="初心者">初心者</option>
+  <option value="準初心者">準初心者</option>
+  <option value="上級者">上級者</option>
+</select>
+
+
+  <button id="postAnnouncementBtn" type="button">
+    📢 告知を投稿
+  </button>
+
+  <p id="announcementMessage" role="status"></p>
+</div>
+
+<div id="announcementEditForm" hidden>
+  <h3>✏️ 部屋告知を編集</h3>
+
+  <div id="announcementEditFields"></div>
+
+  <div id="announcementEditActions">
+    <button id="cancelAnnouncementEditBtn" type="button">
+      ✕ 閉じる
+    </button>
+    <button id="saveAnnouncementEditBtn" type="button">
+      変更を保存
+    </button>
+  </div>
+
+  <p id="announcementEditMessage" role="status"></p>
+</div>
+ <div id="announcementList">
+    <p class="muted">現在、告知はありません。</p>
+  </div>
+</section>
+<section id="achievements" class="panel">
+<strong>トロフィー獲得状況</strong>
+<h2 id="count">0 / 0 獲得</h2>
+<div class="progress"><div id="bar"></div></div>
+<div id="percent" class="muted">獲得率 0%</div>
+</section>
+<div class="controls">
+<input id="search" placeholder="トロフィーを検索">
+<select id="rarity">
+<option value="">全レア度</option>
+<option>銅</option><option>銀</option>
+<option>金</option><option>伝説</option>
+</select>
+<select id="status">
+<option value="">すべて</option>
+<option value="done">獲得済み</option>
+<option value="todo">未獲得</option>
+</select>
+<select id="sort">
+  <option value="default">標準順</option>
+  <option value="todo">未獲得を優先</option>
+  <option value="done">獲得済みを優先</option>
+  <option value="high">レアリティが高い順</option>
+  <option value="low">レアリティが低い順</option>
+</select>
+
+</div>
+<div id="list"></div>
+</main>
+<footer>猫逆トロフィー | 獲得は自己申告制</footer>
+  
+<div id="trophyEffect" hidden>
+  <div id="trophyEffectContent">
+    
+<div id="trophyEffectIcon">
+  <svg viewBox="0 0 120 120" width="100" height="100"
+       xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="trophyMetal" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fff3c0"/>
+        <stop offset="35%" stop-color="#ffd700"/>
+        <stop offset="70%" stop-color="#b8860b"/>
+        <stop offset="100%" stop-color="#fff0a0"/>
+      </linearGradient>
+    </defs>
+    <g fill="url(#trophyMetal)" stroke="#654321" stroke-width="2">
+      <path d="M32 18 H88 L82 67 Q60 90 38 67 Z"/>
+      <path d="M32 27 H18 V40 Q18 61 40 61"
+            fill="none" stroke-width="8"/>
+      <path d="M88 27 H102 V40 Q102 61 80 61"
+            fill="none" stroke-width="8"/>
+      <rect x="55" y="78" width="10" height="19"/>
+      <rect x="38" y="97" width="44" height="10" rx="3"/>
+    </g>
+  </svg>
+</div>
+
+    <h2 id="trophyEffectTitle"></h2>
+    <p id="trophyEffectName"></p>
+  </div>
+</div>
+
+<script>
+let achievements = [];
+const key="neko-trophy-progress-v1";
+let completed={};
+let titleUserId = null;
+let equippedTitleId = null;
+let titleReady = false;
+let titleSaving = false;
+let titleRequest = 0;
+let publicTitleRequest = 0;
+function paintTrophyTitle(element, achievement) {
+  element.hidden = !achievement;
+  element.textContent = achievement ? achievement.name : "";
+  element.dataset.rarity = achievement?.rarity || "";
+}
+function renderMyTrophyTitle() {
+  const trophy = titleReady && achievements.find(a => String(a.id) === equippedTitleId && completed[a.id]);
+  paintTrophyTitle(document.getElementById("myTrophyTitle"), trophy);
+  const remove = document.getElementById("removeTrophyTitle");
+  remove.hidden = !titleReady || equippedTitleId === null;
+  remove.disabled = titleSaving;
+}
+async function loadEquippedTitle() {
+  const request = ++titleRequest;
+  titleReady = false;
+  titleUserId = null;
+  equippedTitleId = null;
+  render();
+  const {data:{user}} = await db.auth.getUser();
+  if (request !== titleRequest || !user) return;
+  const {data,error} = await db.from("profiles").select("equipped_achievement_id").eq("id",user.id).maybeSingle();
+  if (request !== titleRequest) return;
+  if (error) { console.error("称号読み込み失敗",error.message); return; }
+  titleUserId = user.id;
+  equippedTitleId = data?.equipped_achievement_id == null ? null : String(data.equipped_achievement_id);
+  titleReady = true;
+  render();
+}
+async function setTrophyTitle(id) {
+  if (!titleReady || titleSaving) return;
+  titleSaving = true;
+  render();
+  try {
+    const {data:{user},error:authError} = await db.auth.getUser();
+    if (authError || !user || user.id !== titleUserId) throw new Error("ログインし直してください。");
+    if (id !== null && !completed[id]) throw new Error("獲得済みのトロフィーを選んでください。");
+    const {data,error} = await db.from("profiles").update({equipped_achievement_id:id}).eq("id",user.id).select("equipped_achievement_id").single();
+    if (error) throw error;
+    if (titleUserId === user.id) equippedTitleId = data.equipped_achievement_id == null ? null : String(data.equipped_achievement_id);
+  } catch (error) { alert("称号の保存失敗：" + error.message); }
+  finally { titleSaving = false; render(); }
+}
+function clearPublicTrophyTitle() {
+  ++publicTitleRequest;
+  paintTrophyTitle(document.getElementById("publicTrophyTitle"), null);
+}
+async function loadPublicTrophyTitle(userId, canView, request) {
+  if (!canView || request !== publicTitleRequest) return;
+  const {data,error} = await db.from("profiles").select("equipped_achievement_id").eq("id",userId).maybeSingle();
+  if (request !== publicTitleRequest || error || data?.equipped_achievement_id == null) return;
+  const trophy = achievements.find(a => String(a.id) === String(data.equipped_achievement_id));
+  paintTrophyTitle(document.getElementById("publicTrophyTitle"), trophy);
+}
+ document.getElementById("removeTrophyTitle").addEventListener("click", () => setTrophyTitle(null));
+try{completed=JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(e){}
+const list=document.getElementById("list");
+function render(){
+renderMyTrophyTitle();
+const q=document.getElementById("search").value.toLowerCase();
+const rarity=document.getElementById("rarity").value;
+const status=document.getElementById("status").value;
+const total=achievements.length;
+const done=achievements.filter(a=>completed[a.id]).length;
+document.getElementById("count").textContent=`${done} / ${total} 達成`;
+
+const pct =
+  total === 0 || done === 0 ? 0 :
+  done === total ? 100 :
+  Math.max(1, Math.floor(done / total * 100));
+
+
+const rarityCounts = {
+  "銅": 0,
+  "銀": 0,
+  "金": 0,
+  "伝説": 0
+};
+
+achievements.forEach(a => {
+  if (completed[a.id] && a.rarity in rarityCounts) {
+    rarityCounts[a.rarity]++;
+  }
+});
+
+document.getElementById("bronzeCount").textContent = rarityCounts["銅"];
+document.getElementById("silverCount").textContent = rarityCounts["銀"];
+document.getElementById("goldCount").textContent = rarityCounts["金"];
+document.getElementById("legendCount").textContent = rarityCounts["伝説"];
+
+document.getElementById("legendStatsRow").hidden =
+  rarityCounts["伝説"] === 0;
+
+const raritySettings = [
+  { name: "銅", icon: "🥉", color: "#cd7f32" },
+  { name: "銀", icon: "🥈", color: "#c0c0c0" },
+  { name: "金", icon: "🥇", color: "#ffd700" },
+  { name: "伝説", icon: "🌈", color: "#a569ff" }
+];
+
+const progressContainer =
+  document.getElementById("rarityProgressBars");
+
+progressContainer.replaceChildren();
+
+raritySettings.forEach(({ name, icon, color }) => {
+  
+  if (name === "伝説" && rarityCounts["伝説"] === 0) {
+    return;
+  }
+
+  const total = achievements.filter(
+    a => a.rarity === name
+  ).length;
+
+  const unlocked = rarityCounts[name];
+  const rate = total
+    ? Math.round(unlocked / total * 100)
+    : 0;
+
+  
+  const row = document.createElement("div");
+
+  row.style.cssText =
+    "display:flex;align-items:center;" +
+    "justify-content:space-between;" +
+    "gap:8px;padding:10px 12px;" +
+    "margin-bottom:6px;background:#263148;" +
+    "border-radius:8px;";
+
+  const label = document.createElement("span");
+  label.textContent = `${icon} ${name}`;
+
+  const value = document.createElement("strong");
+  value.textContent = `${unlocked}/${total}（${rate}%）`;
+  
+if (name === "伝説") {
+  value.classList.add("progress-rainbow");
+  value.style.setProperty("margin-inline", "0", "important");
+} else {
+  value.style.color = color;
+}
+
+  value.style.fontSize = "14px";
+  value.style.whiteSpace = "nowrap";
+
+  row.append(label, value);
+  progressContainer.append(row);
+
+});
+  
+document.getElementById("profileUnlocked").textContent = done;
+document.getElementById("profileRate").textContent = pct + "%";
+
+const progressClass =
+  done === 0 ? "progress-white" :
+  done === total ? "progress-rainbow" :
+  done / total >= 0.8 ? "progress-gold" :
+  done / total >= 0.5 ? "progress-silver" :
+  "progress-bronze";
+
+["profileUnlocked", "profileRate"].forEach(id => {
+  const el = document.getElementById(id);
+
+  el.classList.remove(
+    "progress-white",
+    "progress-bronze",
+    "progress-silver",
+    "progress-gold",
+    "progress-rainbow"
+  );
+
+  el.classList.add(progressClass);
+});
+
+document.getElementById("bar").style.width=pct+"%";
+document.getElementById("percent").textContent=`獲得率 ${pct}%`;
+list.replaceChildren();
+const filtered=achievements.filter(a=>
+
+((completed[a.id] ? a.name : "")+a.description+a.role).toLowerCase().includes(q)&&
+
+(!rarity||a.rarity===rarity)&&
+(!status||(status==="done"?!!completed[a.id]:!completed[a.id]))
+);
+
+const sort = document.getElementById("sort").value;
+
+const rarityOrder = {
+  "銅": 1,
+  "銀": 2,
+  "金": 3,
+  "伝説": 4
+};
+
+filtered.sort((a, b) => {
+  
+  // 未獲得の伝説トロフィーは必ず最後に表示
+  const hiddenA = a.rarity === "伝説" && !completed[a.id];
+  const hiddenB = b.rarity === "伝説" && !completed[b.id];
+
+  if (hiddenA !== hiddenB) {
+    return hiddenA ? 1 : -1;
+  }
+
+  if (sort === "todo") {
+    return Number(!!completed[a.id]) - Number(!!completed[b.id]);
+  }
+
+  if (sort === "done") {
+    return Number(!!completed[b.id]) - Number(!!completed[a.id]);
+  }
+
+  if (sort === "high") {
+    return rarityOrder[b.rarity] - rarityOrder[a.rarity];
+  }
+
+  if (sort === "low") {
+    return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+  }
+
+  return 0;
+});
+
+if(!filtered.length){list.textContent="該当するトロフィーがありません";return}
+filtered.forEach(a=>{
+const card=document.createElement("article");
+
+const rarityClass = {
+  "銅": "rarity-bronze",
+  "銀": "rarity-silver",
+  "金": "rarity-gold",
+  "伝説": "rarity-legend"
+};
+
+card.className = "achievement " +
+  (rarityClass[a.rarity] || "") +
+  (completed[a.id] ? " done" : "");
+
+
+const check = document.createElement("input");
+check.type = "checkbox";
+
+const allNormalUnlocked = achievements
+  .filter(item => item.rarity !== "伝説")
+  .every(item => completed[item.id]);
+
+const legendLocked =
+  a.rarity === "伝説" && !allNormalUnlocked;
+
+check.checked = !!completed[a.id];
+
+check.disabled =
+  !!completed[a.id] || legendLocked;
+
+
+check.setAttribute("aria-label",a.name+"を獲得");
+
+check.addEventListener("change", async () => {
+  const wasChecked = !check.checked;
+
+  check.disabled = true;
+
+  const { data: { user } } = await db.auth.getUser();
+
+  if (!user) {
+    alert("トロフィーを獲得するにはログインしてください。");
+    check.checked = wasChecked;
+    check.disabled = false;
+    return;
+  }
+
+  const result = check.checked
+    ? await db.from("user_achievements").upsert({
+        user_id: user.id,
+        achievement_id: a.id
+      })
+    : await db.from("user_achievements")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("achievement_id", a.id);
+
+  if (result.error) {
+    alert("保存失敗：" + result.error.message);
+    check.checked = wasChecked;
+    check.disabled = false;
+    return;
+  }
+
+  
+
+
+if (check.checked) {
+  completed[a.id] = true;
+  showTrophyEffect(a);
+} else {
+  delete completed[a.id];
+}
+
+render();
+
+});
+
+const content=document.createElement("div");
+
+const title=document.createElement("h3");
+
+title.textContent =
+  !completed[a.id]
+    ? "🔒 ？？？？？？"
+    : a.name;
+
+
+const desc = document.createElement("p");
+
+if (a.rarity === "伝説" && legendLocked) {
+  const normalAchievements = achievements.filter(
+    item => item.rarity !== "伝説"
+  );
+
+  const unlockedCount = normalAchievements.filter(
+    item => completed[item.id]
+  ).length;
+
+  desc.textContent =
+    `🔒 解放条件：通常トロフィーをすべて獲得（${unlockedCount}/${normalAchievements.length}）`;
+} else {
+  desc.textContent = a.description;
+}
+
+const role=document.createElement("span");
+role.className="tag";role.textContent=a.role;
+const level=document.createElement("span");
+level.className = "tag";
+level.textContent = !completed[a.id]
+  ? "未獲得"
+  : ({
+      "銅": "🥉 銅",
+      "銀": "🥈 銀",
+      "金": "🥇 金",
+      "伝説": "🌈 伝説"
+    }[a.rarity]);
+content.append(title,desc,role,level);
+if (titleReady && completed[a.id]) {
+  const action = document.createElement("button");
+  action.type = "button";
+  action.className = "title-action";
+  const active = equippedTitleId === String(a.id);
+  action.textContent = active ? "✓ 装備中・外す" : "称号に設定";
+  action.disabled = titleSaving;
+  action.addEventListener("click", () => setTrophyTitle(active ? null : String(a.id)));
+  content.append(action);
+}
+card.append(check,content);
+list.append(card);
+});
+}
+
+
+let trophyEffectTimer;
+
+function showTrophyEffect(achievement) {
+  const effect = document.getElementById("trophyEffect");
+  const isLegend = achievement.rarity === "伝説";
+
+  clearTimeout(trophyEffectTimer);
+
+  
+effect.classList.remove(
+  "bronze", "silver", "gold", "legendary"
+);
+
+const effectClasses = {
+  "銅": "bronze",
+  "銀": "silver",
+  "金": "gold",
+  "伝説": "legendary"
+};
+
+effect.classList.add(
+  effectClasses[achievement.rarity] || "gold"
+);
+
+
+  
+
+
+const trophyIcon = document.getElementById("trophyEffectIcon");
+
+const trophyImages = {
+  "銅": "DD12C370-5B0B-48A9-B4B8-D82A58A75C5F.png",
+  "銀": "FE5334A6-05ED-4D18-9268-C4A80665A74F.png",
+  "金": "C302C0C0-2636-4FCE-A1BB-A3A7B398CD7D.png",
+  "伝説": "7592707B-2DA2-4B5F-9131-D481572EE8F2.png"
+};
+
+const trophyImage = document.createElement("img");
+trophyImage.src = trophyImages[achievement.rarity] || trophyImages["金"];
+trophyImage.alt = achievement.rarity + "トロフィー";
+trophyImage.style.width = "160px";
+trophyImage.style.height = "160px";
+trophyImage.style.objectFit = "contain";
+trophyImage.style.display = "block";
+trophyImage.style.margin = "0 auto";
+
+trophyIcon.replaceChildren(trophyImage);
+trophyIcon.style.background = "";
+trophyIcon.style.filter = "";
+
+
+
+
+  document.getElementById("trophyEffectTitle").textContent =
+    isLegend ? "LEGENDARY ACHIEVEMENT" : "TROPHY UNLOCKED!";
+
+  document.getElementById("trophyEffectName").textContent =
+    achievement.name;
+
+  effect.hidden = false;
+effect.classList.remove("show");
+void effect.offsetWidth;
+effect.classList.add("show");
+
+  trophyEffectTimer = setTimeout(() => {
+    effect.hidden = true;
+    effect.classList.remove("show");
+  }, 2500);
+}
+["search","rarity","status","sort"].forEach(id=>
+document.getElementById(id).addEventListener("input",render));
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = "https://qwmraeabwlnkwsaqwqqg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+async function loadAchievements() {
+  const { data, error } = await db
+    .from("achievements")
+    .select("*")
+    .eq("is_published", true)
+    .order("id");
+  if (error) {
+  console.error("Supabaseエラー:", error);
+    return;
+  }
+
+  if (data && data.length > 0) {
+    achievements = data.map(a => ({
+      ...a,
+      rarity: a.rarity,
+      role: a.role || ""
+    }));
+    render();
+  }
+}  
+loadAchievements();</script>
+
+
+
+<script>
+const authMessage = document.getElementById("authMessage");
+const authForm = document.getElementById("authForm");
+const signedIn = document.getElementById("signedIn");
+
+async function refreshUserAuth(){
+  const {data:{user}} = await db.auth.getUser();
+  authForm.hidden = !!user;
+signedIn.hidden = !user;
+
+document.getElementById("announcementForm").hidden = !user;
+  document.getElementById("signedInEmail").textContent =
+    user ? "ログイン中：" + user.email : "";
+}
+
+document.getElementById("signupBtn").onclick = async()=>{
+  const email = document.getElementById("userEmail").value.trim();
+  const password = document.getElementById("userPassword").value;
+  if(!email || password.length < 6){
+    authMessage.textContent = "メールアドレスと6文字以上のパスワードを入力してください。";
+    return;
+  }
+  authMessage.textContent = "登録処理中...";
+  const {data,error} = await db.auth.signUp({
+    email,password,
+    options:{
+      emailRedirectTo: "https://soyogi1117.github.io/reverse-achievements/"
+    }
+  });
+  authMessage.textContent = error
+    ? "登録失敗：" + error.message
+    : data.session
+      ? "登録してログインしました。"
+      : "確認メールを送信しました。メール内のリンクを開いてください。";
+  document.getElementById("userPassword").value = "";
+  await refreshUserAuth();
+};
+
+document.getElementById("signinBtn").onclick = async()=>{
+  const email = document.getElementById("userEmail").value.trim();
+  const password = document.getElementById("userPassword").value;
+  authMessage.textContent = "ログイン中...";
+  const {error} = await db.auth.signInWithPassword({email,password});
+  authMessage.textContent = error
+    ? "ログイン失敗：" + error.message
+    : "ログインしました！";
+  document.getElementById("userPassword").value = "";
+  await refreshUserAuth();
+};
+
+document.getElementById("signoutBtn").onclick = async()=>{
+  const {error} = await db.auth.signOut();
+  authMessage.textContent = error
+    ? "ログアウト失敗：" + error.message
+    : "ログアウトしました。";
+  await refreshUserAuth();
+};
+
+db.auth.onAuthStateChange(()=>{
+  setTimeout(refreshUserAuth,0);
+});
+refreshUserAuth();
+
+async function loadUsername() {
+  const input = document.getElementById("profileUsername");
+  const message = document.getElementById("profileMessage");
+
+  
+input.value = "";
+message.textContent = "";
+
+document.getElementById("profileTitle").textContent =
+  "🏆 マイプロフィール";
+
+
+input.value = "";
+message.textContent = "";
+
+document.getElementById("profileTitle").textContent =
+  "🏆 マイプロフィール";
+
+input.value = "";
+  message.textContent = "";
+  
+input.value = "";
+message.textContent = "";
+
+document.getElementById("profileTitle").textContent =
+  "🏆 マイプロフィール";
+
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    
+.select("username, avatar_url")
+.eq("id", user.id)
+.maybeSingle();
+
+
+  if (error) {
+    message.textContent = "読み込み失敗：" + error.message;
+    return;
+  }
+
+  
+if (data) {
+const avatar = document.getElementById("profileAvatar");
+
+
+const headerAvatar = document.getElementById("profileHeaderAvatar");
+
+if (data.avatar_url) {
+  avatar.src = data.avatar_url;
+  avatar.style.display = "block";
+
+  headerAvatar.src = data.avatar_url;
+  headerAvatar.style.display = "block";
+} else {
+  avatar.removeAttribute("src");
+  avatar.style.display = "none";
+
+  headerAvatar.removeAttribute("src");
+  headerAvatar.style.display = "none";
+}
+
+
+  input.value = data.username;
+
+  
+document.getElementById("profileTitle").textContent =
+  data.username;
+
+
+}
+
+}
+async function saveBio() {
+  const input = document.getElementById("bioInput");
+  const message = document.getElementById("bioMessage");
+  const button = document.getElementById("saveBioBtn");
+  const bio = input.value.trim();
+
+  if (bio.length > 500) {
+    message.textContent = "自己紹介は500文字以内にしてください。";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "保存中...";
+
+  try {
+    const { data: { user }, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    const { error } = await db
+      .from("profiles")
+      .update({
+        bio: bio,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      message.textContent = "保存失敗：" + error.message;
+      return;
+    }
+
+    document.getElementById("profileBio").textContent =
+      bio || "自己紹介はまだありません。";
+
+    message.textContent = "自己紹介を保存しました！";
+  } catch (error) {
+    message.textContent = "保存失敗：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById("saveBioBtn")
+  .addEventListener("click", saveBio);
+
+async function loadBio() {
+  const input = document.getElementById("bioInput");
+  const display = document.getElementById("profileBio");
+  const message = document.getElementById("bioMessage");
+
+  input.value = "";
+  display.textContent = "自己紹介はまだありません。";
+  message.textContent = "";
+
+  const { data: { user }, error: authError } =
+    await db.auth.getUser();
+
+  if (authError || !user) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("bio")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    message.textContent = "自己紹介の読み込みに失敗しました。";
+    return;
+  }
+
+  const bio = data?.bio || "";
+
+  input.value = bio;
+  display.textContent = bio || "自己紹介はまだありません。";
+}
+
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadUsername, 0);
+  setTimeout(loadBio, 0);
+});
+
+
+loadUsername(); 
+loadBio();
+ 
+
+document.getElementById("saveUsernameBtn").onclick = async () => {
+  const username = document.getElementById("profileUsername").value.trim();
+  const message = document.getElementById("profileMessage");
+  const button = document.getElementById("saveUsernameBtn");
+
+  if (username.length < 1 || username.length > 20) {
+    message.textContent = "ユーザー名は1〜20文字で入力してください。";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "保存中...";
+
+  try {
+    const { data: { user }, error: authError } = await db.auth.getUser();
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    const { error } = await db.from("profiles").upsert({
+      id: user.id,
+      username: username,
+      updated_at: new Date().toISOString()
+    });
+
+    
+if (error) {
+  message.textContent = "保存失敗：" + error.message;
+} else {
+  message.textContent = "ユーザー名を保存しました！";
+
+  
+document.getElementById("profileTitle").textContent =
+  username;
+
+
+}
+
+  } catch (error) {
+    message.textContent = "保存失敗：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+};
+</script>
+
+<script>
+async function loadUserProgress() {
+  const { data: { user }, error: authError } =
+    await db.auth.getUser();
+
+  if (authError || !user) {
+    completed = {};
+    render();
+    return;
+  }
+
+  const { data, error } = await db
+    .from("user_achievements")
+    .select("achievement_id")
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("達成状況の取得失敗:", error);
+    return;
+  }
+
+  completed = {};
+  for (const item of data) {
+    completed[item.achievement_id] = true;
+  }
+
+  render();
+}
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(async () => { await loadUserProgress(); await loadEquippedTitle(); }, 0);
+});
+
+loadUserProgress().then(loadEquippedTitle);
+
+// ここにプロフィール画像の処理を追加する
+
+async function uploadAvatar(file) {
+  const { data: { user }, error: authError } = await db.auth.getUser();
+
+  if (authError || !user) {
+    alert("ログインしてください");
+    return;
+  }
+
+  const filePath = `${user.id}/avatar-${Date.now()}.png`;
+
+  const { error: uploadError } = await db.storage
+    .from("avatars")
+    .upload(filePath, file, {
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    alert("画像のアップロードに失敗しました：" + uploadError.message);
+    return;
+  }
+
+  const { data } = db.storage
+    .from("avatars")
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+}
+
+document.getElementById("uploadAvatarBtn").addEventListener("click", async () => {
+  const input = document.getElementById("avatarInput");
+  const message = document.getElementById("avatarMessage");
+  const button = document.getElementById("uploadAvatarBtn");
+
+  if (!input.files.length) {
+    message.textContent = "画像を選択してください";
+    return;
+  }
+
+  const file = input.files[0];
+
+  if (!file.type.startsWith("image/")) {
+    message.textContent = "画像ファイルを選択してください";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "アップロード中...";
+
+  try {
+    const url = await uploadAvatar(file);
+
+    if (!url) {
+      message.textContent = "アップロードに失敗しました";
+      return;
+    }
+
+    
+const { data: { user } } = await db.auth.getUser();
+
+const { error: saveError } = await db
+  .from("profiles")
+  .update({
+    avatar_url: url,
+    updated_at: new Date().toISOString()
+  })
+  .eq("id", user.id);
+
+if (saveError) {
+  message.textContent = "画像URLの保存に失敗：" + saveError.message;
+  return;
+}
+const avatar = document.getElementById("profileAvatar");
+    avatar.src = url;
+    avatar.style.display = "block";
+
+    message.textContent = "プロフィール画像を保存しました！";
+  } catch (error) {
+    message.textContent = "エラー：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+
+
+
+document.getElementById("backToAnnouncements")
+  .addEventListener("click", () => {
+    const profile = document.getElementById("publicProfile");
+    const returnTo = profile.dataset.returnTo;
+
+    profile.hidden = true;
+
+    if (returnTo === "playerSearch") {
+      document.getElementById("playerSearch")
+        .scrollIntoView({ behavior: "smooth" });
+    } else {
+      document.getElementById("roomAnnouncements").hidden = false;
+      document.getElementById("roomAnnouncements")
+        .scrollIntoView({ behavior: "smooth" });
+    }
+
+    delete profile.dataset.returnTo;
+  });
+
+
+
+const privacyToggleBtn = document.getElementById("privacyToggleBtn");
+const privacyMessage = document.getElementById("privacyMessage");
+
+async function loadPrivacySetting() {
+  const { data: { user } } = await db.auth.getUser();
+
+  privacyToggleBtn.disabled = !user;
+
+  if (!user) {
+    privacyToggleBtn.textContent = "🔒 ログインが必要です";
+    return;
+  }
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("is_private")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    privacyToggleBtn.textContent = "設定を取得できません";
+    return;
+  }
+
+  privacyToggleBtn.textContent = data.is_private
+    ? "🔒 非公開"
+    : "🌐 公開中";
+}
+
+privacyToggleBtn.addEventListener("click", async () => {
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return;
+
+  privacyToggleBtn.disabled = true;
+  privacyMessage.textContent = "変更中...";
+
+  try {
+    const { data, error } = await db
+      .from("profiles")
+      .select("is_private")
+      .eq("id", user.id)
+      .single();
+
+    if (error) throw error;
+
+    const nextPrivate = !data.is_private;
+
+    const { error: updateError } = await db
+      .from("profiles")
+      .update({ is_private: nextPrivate })
+      .eq("id", user.id);
+
+    if (updateError) throw updateError;
+
+    privacyMessage.textContent = nextPrivate
+      ? "🔒 非公開に設定しました"
+      : "🌐 公開に設定しました";
+
+    await loadPrivacySetting();
+  } catch (error) {
+    privacyMessage.textContent = "変更失敗：" + error.message;
+  } finally {
+    privacyToggleBtn.disabled = false;
+  }
+});
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadPrivacySetting, 0);
+});
+
+loadPrivacySetting();
+
+const saveProfileBtn = document.getElementById("saveProfileBtn");
+const saveProfileMessage = document.getElementById("saveProfileMessage");
+const editProfileBtn = document.getElementById("editProfileBtn");
+
+
+
+saveProfileBtn.addEventListener("click", async () => {
+  const username = document.getElementById("profileUsername").value.trim();
+  const bio = document.getElementById("bioInput").value.trim();
+  const favorite = document.getElementById("favoriteRoleSelect").value;
+  const disliked = document.getElementById("dislikedRoleSelect").value;
+
+  if (!username || username.length > 20) {
+    saveProfileMessage.textContent = "ユーザー名は1〜20文字で入力してください。";
+    return;
+  }
+
+  saveProfileBtn.disabled = true;
+  saveProfileMessage.textContent = "保存中...";
+
+  try {
+    
+let avatarUrl;
+
+const avatarFile = document.getElementById("avatarInput").files[0];
+
+if (avatarFile) {
+  if (!avatarFile.type.startsWith("image/")) {
+    throw new Error("画像ファイルを選択してください。");
+  }
+
+  avatarUrl = await uploadAvatar(avatarFile);
+
+  if (!avatarUrl) {
+    throw new Error("プロフィール画像のアップロードに失敗しました。");
+  }
+}
+const { data: { user }, error: authError } = await db.auth.getUser();
+    if (authError || !user) throw new Error("ログインしてください。");
+
+    
+
+const profileData = {
+  id: user.id,
+  username,
+  bio,
+  favorite_role: favorite || null,
+  disliked_role: disliked || null,
+  favorite_character: document.getElementById("favoriteCharacterSelect").value || null,
+  updated_at: new Date().toISOString()
+};
+
+  
+
+if (avatarUrl) {
+  profileData.avatar_url = avatarUrl;
+}
+
+const { error } = await db.from("profiles").upsert(profileData);
+
+
+    if (error) throw error;
+
+if (avatarUrl) {
+  const headerAvatar = document.getElementById("profileHeaderAvatar");
+  headerAvatar.src = avatarUrl;
+  headerAvatar.style.display = "block";
+
+  const profileAvatar = document.getElementById("profileAvatar");
+  profileAvatar.src = avatarUrl;
+  document.getElementById("avatarInput").value = "";
+}
+
+    document.getElementById("profileTitle").textContent = username;
+    document.getElementById("profileBio").textContent =
+      bio || "自己紹介はまだありません。";
+    document.getElementById("favoriteRoleDisplay").textContent =
+      favorite || "未設定";
+    document.getElementById("dislikedRoleDisplay").textContent =
+      disliked || "未設定";
+
+    document.getElementById("favoriteCharacterDisplay").textContent =
+  profileData.favorite_character || "未設定";
+
+saveProfileMessage.textContent = "変更を保存しました！";
+    
+
+signedIn.classList.remove("editing");
+editProfileBtn.textContent = "✏️ 編集";
+
+
+  } catch (error) {
+    saveProfileMessage.textContent = "保存失敗：" + error.message;
+  } finally {
+    saveProfileBtn.disabled = false;
+  }
+});
+
+editProfileBtn.addEventListener("click", () => {
+  const editing = signedIn.classList.toggle("editing");
+
+  editProfileBtn.textContent = editing
+    ? "✕ 閉じる"
+    : "✏️ 編集";
+});
+
+document.getElementById("postAnnouncementBtn")
+  .addEventListener("click", async () => {
+
+    const button = document.getElementById("postAnnouncementBtn");
+    const message = document.getElementById("announcementMessage");
+
+    
+const version = document.getElementById("announcementVersion").value;
+const character = document.getElementById("announcementTitle").value;
+const title = version && character ? version + character : "";
+
+    
+const roomType = document.getElementById("announcementType").value;
+
+const players = document.getElementById("announcementPlayers").value;
+const date = document.getElementById("announcementDate").value;
+    const body = document.getElementById("announcementBody").value.trim();
+
+    
+
+
+if (!roomType || !title || !players || !date || !body) {
+
+
+  message.textContent =
+    
+"部屋の種類・部屋主のキャラクター・人数・開催日時・募集するプレイヤーをすべて入力してください。";
+
+  return;
+}
+
+
+    const { data: { user }, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    button.disabled = true;
+    message.textContent = "投稿中...";
+
+    try {
+      const { error } = await db
+        .from("room_announcements")
+        .insert({
+          user_id: user.id,
+          
+room_type: roomType,
+          
+players: Number(players),
+
+title: title,
+          event_date: new Date(date).toISOString(),
+          body: body
+        });
+
+      if (error) throw error;
+
+      message.textContent = "告知を投稿しました！";
+await loadAnnouncements();
+
+
+      
+document.getElementById("announcementType").value = "";
+document.getElementById("announcementTitle").value = "";
+
+document.getElementById("announcementVersion").value = "";
+      
+document.getElementById("announcementPlayers").value = "";
+document.getElementById("announcementDate").value = "";
+      document.getElementById("announcementBody").value = "";
+
+    } catch (error) {
+      message.textContent = "投稿失敗：" + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+async function loadAnnouncements() {
+  const list = document.getElementById("announcementList");
+  const { data: { user } } = await db.auth.getUser();
+  const currentUserId = user?.id || null;
+
+
+  const { data, error } = await db
+    .from("room_announcements")
+    
+
+
+.select("id, user_id, room_type, players, title, event_date, body, created_at, is_closed")
+
+
+
+    .order("event_date", { ascending: true });
+
+  if (error) {
+    list.textContent = "告知の読み込みに失敗しました。";
+    console.error(error);
+    return;
+  }
+
+  list.replaceChildren();
+
+  const { data: authors, error: authorsError } = await db
+    .rpc("get_announcement_authors");
+
+  if (authorsError) {
+    console.error("投稿者名の取得失敗:", authorsError);
+  }
+
+  const authorNames = new Map(
+    (authors || []).map(author => [
+      author.user_id,
+      author.username || "名前未設定"
+    ])
+  );
+
+  if (!data || data.length === 0) {
+    list.textContent = "現在、告知はありません。";
+    return;
+  }
+
+  
+  const now = Date.now();
+
+  data.sort((a, b) => {
+    const timeA = new Date(a.event_date).getTime();
+    const timeB = new Date(b.event_date).getTime();
+
+    
+
+const endedA = a.is_closed || timeA + 2 * 60 * 60 * 1000 <= now;
+const endedB = b.is_closed || timeB + 2 * 60 * 60 * 1000 <= now;
+
+
+
+    if (endedA !== endedB) {
+      return endedA ? 1 : -1;
+    }
+
+    return timeA - timeB;
+  });
+data.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "panel";
+card.style.position = "relative";
+
+
+    
+const typeLabel = document.createElement("span");
+
+typeLabel.textContent =
+  item.room_type === "スタ逆" ? "スタ逆" :
+  item.room_type === "特殊逆" ? "特殊逆" :
+  "部屋の種類：未設定";
+
+typeLabel.style.cssText = `
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  background: ${item.room_type === "スタ逆" ? "#1c3554" :
+                item.room_type === "特殊逆" ? "#38234f" : "#343c4c"};
+  color: ${item.room_type === "スタ逆" ? "#8bc5ff" :
+           item.room_type === "特殊逆" ? "#d3a5ff" : "#aeb7c9"};
+`;
+const title = document.createElement("h3");
+    title.textContent = "📢 " + item.title;
+
+const playersDisplay = document.createElement("p");
+playersDisplay.className = "muted";
+playersDisplay.textContent = item.players
+  ? "👥 人数：" + item.players + "人"
+  : "👥 人数：未設定";
+
+    const date = document.createElement("p");
+    date.className = "muted";
+
+date.style.cssText = `
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  background: transparent;
+  color: #e4bd68;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 8px 0;
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+
+    
+const eventDate = new Date(item.event_date);
+
+const dateText = eventDate.toLocaleString("ja-JP", {
+  month: "long",
+  day: "numeric",
+  weekday: "short",
+  hour: "2-digit",
+  minute: "2-digit"
+});
+
+date.textContent = "📅 " + dateText;
+
+
+    
+const body = document.createElement("div");
+body.style.cssText = `
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+`;
+
+const bodyLabel = document.createElement("span");
+bodyLabel.textContent = "募集対象";
+bodyLabel.style.color = "#9ca3af";
+
+const bodyBadge = document.createElement("span");
+bodyBadge.textContent = item.body;
+bodyBadge.style.cssText = `
+  display: inline-block;
+  background: #374151;
+  color: #e5e7eb;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+`;
+
+body.append(bodyLabel, bodyBadge);
+
+
+    
+    
+const author = document.createElement("button");
+author.type = "button";
+author.textContent =
+  "👤 投稿者：" +
+  (authorNames.get(item.user_id) || "名前未設定");
+
+author.style.cssText = `
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 4px 0;
+  color: #8bc5ff;
+  text-decoration: underline;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+`;
+author.addEventListener("click", async () => {
+  document.getElementById("backToAnnouncements").textContent = "← 部屋告知に戻る";
+  const profileSection = document.getElementById("publicProfile");
+  const profileName = document.getElementById("publicProfileName");
+  const profileBio = document.getElementById("publicProfileBio");
+  const profileAvatar = document.getElementById("publicProfileAvatar");
+
+  clearPublicTrophyTitle();
+  const titleViewRequest = publicTitleRequest;
+  profileName.textContent = "👤 読み込み中...";
+  profileBio.textContent = "";
+  profileAvatar.style.display = "none";
+  profileAvatar.removeAttribute("src");
+
+document.getElementById("publicRoleStats").style.display = "none";
+
+  profileSection.hidden = false;
+  document.getElementById("roomAnnouncements").hidden = true;
+  profileSection.scrollIntoView({ behavior: "smooth" });
+
+  
+const { data: publicProfiles, error: publicError } = await db
+  .rpc("get_public_profile", {
+    target_user_id: item.user_id
+  });
+
+const publicData = publicProfiles?.[0];
+if (!publicError && publicData) void loadPublicTrophyTitle(item.user_id, !publicData.is_private || item.user_id === currentUserId, titleViewRequest);
+const publicTrophyStats = document.getElementById("publicTrophyStats");
+
+if (publicTrophyStats) {
+  publicTrophyStats.style.display =
+    publicData && (!publicData.is_private || item.user_id === currentUserId)
+      ? "flex"
+      : "none";
+}
+
+const unlockedDisplay = document.getElementById("publicProfileUnlocked");
+const rateDisplay = document.getElementById("publicProfileRate");
+
+unlockedDisplay.textContent = "—";
+rateDisplay.textContent = "—";
+
+if (publicData && (!publicData.is_private || item.user_id === currentUserId)) {
+  const { data: trophyData, error: trophyError } = await db
+    .from("user_achievements")
+    .select("achievement_id")
+    .eq("user_id", item.user_id);
+
+  if (!trophyError) {
+    const unlockedIds = new Set(
+      (trophyData || []).map(trophy => String(trophy.achievement_id))
+    );
+
+    const total = achievements.length;
+    const unlocked = achievements.filter(
+      achievement => unlockedIds.has(String(achievement.id))
+    ).length;
+
+    
+const pct =
+  total === 0 || unlocked === 0 ? 0 :
+  unlocked === total ? 100 :
+  Math.max(1, Math.floor(unlocked / total * 100));
+
+unlockedDisplay.textContent = unlocked;
+rateDisplay.textContent = pct + "%";
+
+const progressClass =
+  pct === 0 ? "progress-white" :
+  pct === 100 ? "progress-rainbow" :
+  pct >= 80 ? "progress-gold" :
+  pct >= 50 ? "progress-silver" :
+  "progress-bronze";
+
+[unlockedDisplay, rateDisplay].forEach(el => {
+  el.classList.remove(
+    "progress-white",
+    "progress-bronze",
+    "progress-silver",
+    "progress-gold",
+    "progress-rainbow"
+  );
+
+  el.classList.add(progressClass);
+});
+
+  } else {
+    console.error("トロフィー取得失敗:", trophyError);
+  }
+}
+
+
+const { data, error } = publicError || !publicData
+  ? { data: null, error: publicError || new Error("プロフィールが見つかりません") }
+  : publicData.is_private && item.user_id !== currentUserId
+    ? {
+        data: {
+          username: publicData.username,
+          avatar_url: publicData.avatar_url,
+          bio: "🔒 このプロフィールは非公開です。"
+        },
+        error: null
+      }
+    : await db
+        .from("profiles")
+        
+.select("username, avatar_url, bio, favorite_role, disliked_role, favorite_character")
+
+        .eq("id", item.user_id)
+        .maybeSingle();
+
+
+  if (error || !data) {
+    profileName.textContent = "プロフィールを表示できません";
+    profileBio.textContent = error
+      ? "プロフィールの読み込みに失敗しました。"
+      : "プロフィールが見つかりません。";
+    return;
+  }
+
+  
+profileName.textContent =
+  "👤 " +
+  (data.username || "名前未設定") +
+  "のプロフィール" +
+  (publicData.is_private ? " 🔒" : "");
+
+
+  profileBio.textContent =
+    data.bio || "自己紹介はまだありません。";
+
+const roleStats = document.getElementById("publicRoleStats");
+
+const canViewRoles =
+  !publicData.is_private || item.user_id === currentUserId;
+
+roleStats.style.display = canViewRoles ? "grid" : "none";
+
+document.getElementById("publicFavoriteCharacter").textContent =
+  canViewRoles ? (data.favorite_character || "未設定") : "未設定";
+
+document.getElementById("publicFavoriteRole").textContent =
+  canViewRoles ? (data.favorite_role || "未設定") : "未設定";
+
+document.getElementById("publicDislikedRole").textContent =
+  canViewRoles ? (data.disliked_role || "未設定") : "未設定";
+
+  if (data.avatar_url) {
+    profileAvatar.src = data.avatar_url;
+    profileAvatar.style.display = "block";
+  }
+});
+
+
+
+    
+
+const infoRow = document.createElement("div");
+infoRow.style.cssText = `
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 6px 0;
+`;
+
+playersDisplay.textContent = item.players
+  ? "👥 " + item.players + "人"
+  : "👥 人数未設定";
+
+author.style.margin = "0";
+
+infoRow.append(playersDisplay, author);
+
+card.append(typeLabel, title, infoRow, date, body);
+
+
+
+
+    
+
+if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
+
+
+      const endedLabel = document.createElement("span");
+      endedLabel.textContent = "終了";
+      endedLabel.style.cssText = `
+        display: inline-block;
+        width: fit-content;
+        padding: 5px 12px;
+        margin-bottom: 12px;
+        border-radius: 20px;
+        background: #343c4c;
+        color: #aeb7c9;
+        border: 1px solid #58647a;
+        font-size: 12px;
+        font-weight: bold;
+      `;
+
+      card.append(endedLabel);
+      card.style.opacity = "0.7";
+    
+    } else {
+      const upcomingLabel = document.createElement("span");
+      upcomingLabel.textContent =
+  new Date(item.event_date).getTime() > Date.now()
+    ? "開催予定"
+    : "開催中";
+      upcomingLabel.style.cssText = `
+position: absolute;
+top: 16px;
+right: 16px;
+
+        display: inline-block;
+        width: fit-content;
+        padding: 5px 12px;
+        margin-bottom: 12px;
+        border-radius: 20px;
+        
+        
+background: #193d32;
+color: #70e0a4;
+
+
+        border: 1px solid #348866;
+        font-size: 12px;
+        font-weight: bold;
+      `;
+
+      card.append(upcomingLabel);
+    }
+
+
+
+const participantBtn = document.createElement("button");
+participantBtn.type = "button";
+participantBtn.className = "participantBtn";
+participantBtn.textContent = "＋ 参加希望する";
+participantBtn.disabled = true;
+
+const participantCount = document.createElement("p");
+participantCount.className = "participantCount";
+participantCount.textContent = "参加希望者：読み込み中...";
+card.append(participantCount);
+
+async function updateParticipantCount() {
+  
+const { data: count, error } = await db
+  .rpc("get_room_participant_count", {
+    p_announcement_id: item.id
+  });
+
+
+  
+participantCount.textContent = error
+  ? "参加希望人数の取得に失敗"
+  : `参加希望者：${count} / ${item.players}人`;
+
+participantBar.style.width = error
+  ? "0%"
+  : `${Math.min(100, count / item.players * 100)}%`;
+
+}
+
+updateParticipantCount();
+
+card.append(participantBtn);
+
+const participantProgress = document.createElement("div");
+participantProgress.style.cssText =
+  "height:8px;background:#343c4c;border-radius:20px;overflow:hidden;margin:8px 0 14px;";
+
+const participantBar = document.createElement("div");
+participantBar.style.cssText =
+  "height:100%;width:0;background:#54d88a;border-radius:20px;transition:width .3s ease;";
+
+participantProgress.append(participantBar);
+
+card.insertBefore(participantProgress, participantBtn);
+
+
+async function setupParticipantButton() {
+  if (!currentUserId) {
+    participantBtn.textContent = "ログインして参加希望";
+    return;
+  }
+
+  const { data, error } = await db
+    .from("room_participants")
+    .select("user_id")
+    .eq("announcement_id", item.id)
+    .eq("user_id", currentUserId)
+    .maybeSingle();
+
+  if (error) {
+    participantBtn.textContent = "読み込み失敗";
+    return;
+  }
+
+  let joined = !!data;
+
+  function updateButton() {
+    participantBtn.textContent = joined
+      ? "✓ 参加希望済み（取消）"
+      : "＋ 参加希望する";
+
+    
+const ended =
+  item.is_closed ||
+  new Date(item.event_date) <= new Date();
+
+participantBtn.disabled = ended && !joined;
+
+if (ended && !joined) {
+  participantBtn.textContent = "募集終了";
+}
+
+  }
+
+  updateButton();
+
+  participantBtn.addEventListener("click", async () => {
+    participantBtn.disabled = true;
+
+    try {
+      const result = joined
+        ? await db.from("room_participants")
+            .delete()
+            .eq("announcement_id", item.id)
+            .eq("user_id", currentUserId)
+        : await db.from("room_participants")
+            .insert({
+              announcement_id: item.id,
+              user_id: currentUserId
+            });
+
+      if (result.error) throw result.error;
+
+      joined = !joined;
+
+await updateParticipantCount();
+
+    } catch (error) {
+      alert("操作に失敗しました：" + error.message);
+    } finally {
+      updateButton();
+    }
+  });
+}
+
+setupParticipantButton();
+
+    if (currentUserId && item.user_id === currentUserId) {
+      const actions = document.createElement("div");
+      
+actions.style.cssText = `
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #374151;
+  flex-wrap: wrap;
+`;
+
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.textContent = "✏️ 編集";
+      
+editBtn.addEventListener("click", () => {
+  const form = document.getElementById("announcementEditForm");
+
+  form.dataset.editId = item.id;
+
+  document.getElementById("edit_announcementType").value =
+    item.room_type;
+
+  const versions = Array.from(editVersion.options)
+    .map(option => option.value)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+
+  const version = versions.find(v =>
+    item.title.startsWith(v)
+  ) || "";
+
+  editVersion.value = version;
+  updateEditCharacters();
+
+  editCharacter.value = version
+    ? item.title.slice(version.length)
+    : "";
+
+  document.getElementById("edit_announcementPlayers").value =
+    item.players;
+
+  const date = new Date(item.event_date);
+
+  document.getElementById("edit_announcementDate").value =
+    new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    ).toISOString().slice(0, 16);
+
+  document.getElementById("edit_announcementBody").value =
+    item.body;
+
+  document.getElementById("announcementEditMessage").textContent = "";
+
+  document.getElementById("announcementForm").hidden = true;
+  document.getElementById("announcementList").hidden = true;
+
+  form.hidden = false;
+  form.scrollIntoView({ behavior: "smooth" });
+});
+
+
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.textContent = "🗑️ 削除";
+      deleteBtn.addEventListener("click", async () => {
+        const confirmed = confirm(
+          "この部屋告知を削除しますか？"
+        );
+
+        if (!confirmed) return;
+
+        deleteBtn.disabled = true;
+
+        const { error } = await db
+          .from("room_announcements")
+          .delete()
+          .eq("id", item.id)
+          .eq("user_id", currentUserId);
+
+        if (error) {
+          alert("削除失敗：" + error.message);
+          deleteBtn.disabled = false;
+          return;
+        }
+
+        await loadAnnouncements();
+      });
+
+
+      
+      if (!item.is_closed &&
+          new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 > Date.now()) {
+
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.textContent = "🔒 募集を終了する";
+
+        closeBtn.addEventListener("click", async () => {
+          if (!confirm("この部屋の募集を終了しますか？")) return;
+
+          closeBtn.disabled = true;
+
+          const { error } = await db
+            .from("room_announcements")
+            .update({ is_closed: true })
+            .eq("id", item.id)
+            .eq("user_id", currentUserId);
+
+          if (error) {
+            alert("募集終了に失敗しました：" + error.message);
+            closeBtn.disabled = false;
+            return;
+          }
+
+          await loadAnnouncements();
+        });
+
+        actions.append(closeBtn);
+      }
+
+const rightActions = document.createElement("div");
+rightActions.style.cssText = `
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+`;
+
+rightActions.append(editBtn, deleteBtn);
+actions.append(rightActions);
+
+      card.append(actions);
+    }
+
+    list.append(card);
+  });
+}
+
+loadAnnouncements();
+
+setInterval(() => {
+  if (!document.hidden) {
+    loadAnnouncements();
+  }
+}, 60 * 1000);
+</script>
+
+<script>
+async function openPlayerProfile(userId) {
+  const section = document.getElementById("publicProfile");
+  const name = document.getElementById("publicProfileName");
+  const bio = document.getElementById("publicProfileBio");
+  const avatar = document.getElementById("publicProfileAvatar");
+  const stats = document.getElementById("publicTrophyStats");
+
+const roleStats = document.getElementById("publicRoleStats");
+roleStats.style.display = "none";
+
+  clearPublicTrophyTitle();
+  const titleViewRequest = publicTitleRequest;
+  name.textContent = "👤 読み込み中...";
+  bio.textContent = "";
+  avatar.style.display = "none";
+  avatar.removeAttribute("src");
+  stats.style.display = "none";
+
+  section.hidden = false;
+  document.getElementById("roomAnnouncements").hidden = true;
+  section.scrollIntoView({ behavior: "smooth" });
+
+  const { data: { user } } = await db.auth.getUser();
+
+  const { data: profiles, error } = await db.rpc(
+    "get_public_profile",
+    { target_user_id: userId }
+  );
+
+  const profile = profiles?.[0];
+
+  if (error || !profile) {
+    name.textContent = "プロフィールを表示できません";
+    bio.textContent = "読み込みに失敗しました。";
+    return;
+  }
+
+  const isOwner = user?.id === userId;
+  const canView = !profile.is_private || isOwner;
+  void loadPublicTrophyTitle(userId, canView, titleViewRequest);
+
+  name.textContent =
+    "👤 " + (profile.username || "名前未設定") +
+    "のプロフィール" + (profile.is_private ? " 🔒" : "");
+
+  if (profile.avatar_url) {
+    avatar.src = profile.avatar_url;
+    avatar.style.display = "block";
+  }
+
+  if (!canView) {
+    bio.textContent = "🔒 このプロフィールは非公開です。";
+    return;
+  }
+
+  const { data: details } = await db
+    .from("profiles")
+    
+.select("bio, favorite_role, disliked_role, favorite_character")
+
+    .eq("id", userId)
+    .maybeSingle();
+
+  
+bio.textContent =
+  details?.bio || "自己紹介はまだありません。";
+
+document.getElementById("publicFavoriteRole").textContent =
+  details?.favorite_role || "未設定";
+
+document.getElementById("publicDislikedRole").textContent =
+  details?.disliked_role || "未設定";
+
+
+document.getElementById("publicFavoriteCharacter").textContent =
+  details?.favorite_character || "未設定";
+roleStats.style.display = "grid";
+
+
+  stats.style.display = "flex";
+
+  const unlockedDisplay =
+    document.getElementById("publicProfileUnlocked");
+  const rateDisplay =
+    document.getElementById("publicProfileRate");
+
+  unlockedDisplay.textContent = "—";
+  rateDisplay.textContent = "—";
+
+  const { data: trophies, error: trophyError } = await db
+    .from("user_achievements")
+    .select("achievement_id")
+    .eq("user_id", userId);
+
+  if (trophyError) {
+    console.error("トロフィー取得失敗:", trophyError);
+    return;
+  }
+
+  const ids = new Set(
+    (trophies || []).map(t => String(t.achievement_id))
+  );
+
+  const total = achievements.length;
+  const unlocked = achievements.filter(
+    a => ids.has(String(a.id))
+  ).length;
+
+  
+const pct =
+  total === 0 || unlocked === 0 ? 0 :
+  unlocked === total ? 100 :
+  Math.max(1, Math.floor(unlocked / total * 100));
+
+unlockedDisplay.textContent = unlocked;
+rateDisplay.textContent = pct + "%";
+
+const progressClass =
+  pct === 0 ? "progress-white" :
+  pct === 100 ? "progress-rainbow" :
+  pct >= 80 ? "progress-gold" :
+  pct >= 50 ? "progress-silver" :
+  "progress-bronze";
+
+[unlockedDisplay, rateDisplay].forEach(el => {
+  el.classList.remove(
+    "progress-white",
+    "progress-bronze",
+    "progress-silver",
+    "progress-gold",
+    "progress-rainbow"
+  );
+
+  el.classList.add(progressClass);
+});
+
+}
+
+document.getElementById("playerSearchBtn")
+  .addEventListener("click", async () => {
+    const input = document.getElementById("playerSearchInput");
+    const message = document.getElementById("playerSearchMessage");
+    const results = document.getElementById("playerSearchResults");
+    const name = input.value.trim();
+
+    results.replaceChildren();
+
+    if (!name) {
+      message.textContent = "プレイヤー名を入力してください。";
+      return;
+    }
+
+    message.textContent = "検索中...";
+
+    const { data, error } = await db.rpc("search_players", {
+      search_name: name
+    });
+
+    if (error) {
+      console.error(error);
+      message.textContent = "検索に失敗しました。";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      message.textContent = "該当するプレイヤーはいません。";
+      return;
+    }
+
+    message.textContent = `${data.length}人見つかりました。`;
+
+    data.forEach(player => {
+      
+const item = document.createElement("button");
+item.type = "button";
+item.style.cssText =
+  "display:block;width:100%;text-align:left;" +
+  "padding:12px;border:0;" +
+  "border-bottom:1px solid #46516a;" +
+  "background:transparent;color:#e4bd68;" +
+  "font-size:16px;cursor:pointer;";
+
+
+      const name = document.createElement("strong");
+      name.textContent =
+        player.username + (player.is_private ? " 🔒" : "");
+
+      
+item.addEventListener("click", () => {
+ 
+document.getElementById("publicProfile").dataset.returnTo = "playerSearch";
+ 
+
+document.getElementById("backToAnnouncements").textContent = "← プレイヤー検索に戻る";
+openPlayerProfile(player.id);
+
+});
+item.appendChild(name);
+      results.appendChild(item);
+    });
+  });
+</script>
+
+
+<script>
+const nekoRoles = [
+  "サイコ",
+  "狂信者",
+  "狂人",
+  "黒猫",
+  "妖術師",
+  "ささやく狂人",
+  "人狼",
+  "賢狼",
+  "魔女",
+  "暗殺者",
+  "猫又",
+  "わら人形",
+  "賢者",
+  "独裁者"
+];
+
+["favoriteRoleSelect", "dislikedRoleSelect"].forEach(id => {
+  const select = document.getElementById(id);
+
+  nekoRoles.forEach(role => {
+    const option = document.createElement("option");
+    option.value = role;
+    option.textContent = role;
+    select.appendChild(option);
+  });
+});
+</script>
+
+<script>
+document.getElementById("saveRolesBtn").addEventListener("click", async () => {
+  const favorite = document.getElementById("favoriteRoleSelect").value;
+  const disliked = document.getElementById("dislikedRoleSelect").value;
+  const message = document.getElementById("roleMessage");
+  const button = document.getElementById("saveRolesBtn");
+
+  button.disabled = true;
+  message.textContent = "保存中...";
+
+  try {
+    const { data: { user }, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !user) {
+      message.textContent = "ログインしてください。";
+      return;
+    }
+
+    const { error } = await db
+      .from("profiles")
+      .update({
+        favorite_role: favorite || null,
+        disliked_role: disliked || null
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      message.textContent = "保存失敗：" + error.message;
+      return;
+    }
+
+    document.getElementById("favoriteRoleDisplay").textContent =
+      favorite || "未設定";
+
+    document.getElementById("dislikedRoleDisplay").textContent =
+      disliked || "未設定";
+
+    message.textContent = "役職を保存しました！";
+
+  } catch (error) {
+    message.textContent = "保存失敗：" + error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+
+<script>
+async function loadRoles() {
+  const { data: { user }, error: authError } =
+    await db.auth.getUser();
+
+  if (authError || !user) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("favorite_role, disliked_role, favorite_character")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("役職の読み込み失敗:", error);
+    return;
+  }
+
+  const favorite = data?.favorite_role || "";
+  const disliked = data?.disliked_role || "";
+
+  document.getElementById("favoriteRoleDisplay").textContent =
+    favorite || "未設定";
+
+  
+document.getElementById("dislikedRoleDisplay").textContent =
+  disliked || "未設定";
+
+document.getElementById("favoriteCharacterSelect").value =
+  data?.favorite_character || "";
+
+document.getElementById("favoriteCharacterDisplay").textContent =
+  data?.favorite_character || "未設定";
+
+
+  document.getElementById("favoriteRoleSelect").value = favorite;
+  document.getElementById("dislikedRoleSelect").value = disliked;
+}
+
+db.auth.onAuthStateChange(() => {
+  setTimeout(loadRoles, 0);
+});
+
+loadRoles();
+
+document.getElementById("closeProfileBtn").addEventListener("click", () => {
+  document.getElementById("signedIn").classList.remove("editing");
+  document.getElementById("editProfileBtn").textContent = "✏️ 編集";
+});
+</script>
+
+<script>
+const versionSelect = document.getElementById("announcementVersion");
+const characterSelect = document.getElementById("announcementTitle");
+
+const vipCharacters = [
+  "ケイト", "ウィル", "セリーヌ",
+  "ポール", "モーガン", "ペネロペ"
+];
+
+const normalCharacters = Array.from(characterSelect.options)
+  .map(option => option.value)
+  .filter(name => name && !vipCharacters.includes(name));
+
+function updateAnnouncementCharacters() {
+  const version = versionSelect.value;
+
+  characterSelect.replaceChildren(
+    new Option("キャラクターを選択", "")
+  );
+
+  characterSelect.disabled = !version;
+
+  if (!version) return;
+
+  const characters =
+    version === "JVIP" || version === "DVIP"
+      ? vipCharacters
+      : normalCharacters;
+
+  characters.forEach(name => {
+    characterSelect.add(new Option(name, name));
+  });
+}
+
+versionSelect.addEventListener("change", updateAnnouncementCharacters);
+
+document.getElementById("postAnnouncementBtn")
+  .addEventListener("click", () => {
+    setTimeout(updateAnnouncementCharacters, 0);
+  });
+
+new MutationObserver(() => {
+  if (!versionSelect.value) updateAnnouncementCharacters();
+}).observe(document.getElementById("announcementMessage"), {
+  childList: true,
+  subtree: true
+});
+
+updateAnnouncementCharacters();
+</script>
+
+<script>
+const editFields = document.getElementById("announcementEditFields");
+
+const editSourceFields = [
+  "announcementType",
+  "announcementVersion",
+  "announcementTitle",
+  "announcementPlayers",
+  "announcementDate",
+  "announcementBody"
+];
+
+editSourceFields.forEach(id => {
+  const source = document.getElementById(id);
+  const label = document.querySelector(`label[for="${id}"]`);
+  const clone = source.cloneNode(true);
+
+  clone.id = "edit_" + id;
+
+  if (label) {
+    const newLabel = label.cloneNode(true);
+    newLabel.htmlFor = clone.id;
+    if (id === "announcementTitle") {
+  editFields.insertBefore(
+    newLabel,
+    document.getElementById("edit_announcementVersion")
+  );
+} else {
+  editFields.appendChild(newLabel);
+}
+}
+  editFields.appendChild(clone);
+});
+
+const editVersion = document.getElementById("edit_announcementVersion");
+const editCharacter = document.getElementById("edit_announcementTitle");
+
+function updateEditCharacters() {
+  const version = editVersion.value;
+
+  editCharacter.replaceChildren(
+    new Option("キャラクターを選択", "")
+  );
+
+  editCharacter.disabled = !version;
+
+  if (!version) return;
+
+  const characters =
+    version === "JVIP" || version === "DVIP"
+      ? vipCharacters
+      : normalCharacters;
+
+  characters.forEach(name => {
+    editCharacter.add(new Option(name, name));
+  });
+}
+
+editVersion.addEventListener("change", updateEditCharacters);
+updateEditCharacters();
+</script>
+
+<script>
+function closeAnnouncementEdit() {
+  const form = document.getElementById("announcementEditForm");
+
+  form.hidden = true;
+  delete form.dataset.editId;
+
+  document.getElementById("announcementForm").hidden = false;
+  document.getElementById("announcementList").hidden = false;
+}
+
+document.getElementById("cancelAnnouncementEditBtn")
+  .addEventListener("click", closeAnnouncementEdit);
+
+document.getElementById("saveAnnouncementEditBtn")
+  .addEventListener("click", async () => {
+
+    const form = document.getElementById("announcementEditForm");
+    const button = document.getElementById("saveAnnouncementEditBtn");
+    const message = document.getElementById("announcementEditMessage");
+
+    const roomType = document.getElementById("edit_announcementType").value;
+    const version = editVersion.value;
+    const character = editCharacter.value;
+    const players = document.getElementById("edit_announcementPlayers").value;
+    const date = document.getElementById("edit_announcementDate").value;
+    const body = document.getElementById("edit_announcementBody").value;
+
+    if (!roomType || !version || !character || !players || !date || !body) {
+      message.textContent = "すべての項目を入力してください。";
+      return;
+    }
+
+    button.disabled = true;
+    message.textContent = "保存中...";
+
+    try {
+      const { data: { user }, error: authError } =
+        await db.auth.getUser();
+
+      if (authError || !user) {
+        throw new Error("ログインしてください。");
+      }
+
+      const { error } = await db
+        .from("room_announcements")
+        .update({
+          room_type: roomType,
+          title: version + character,
+          players: Number(players),
+          event_date: new Date(date).toISOString(),
+          body: body,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", form.dataset.editId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      closeAnnouncementEdit();
+      await loadAnnouncements();
+
+      document.getElementById("announcementMessage").textContent =
+        "告知を更新しました！";
+
+    } catch (error) {
+      message.textContent = "保存失敗：" + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
+
+<script>
+async function loadNotifications() {
+  const btn = document.getElementById("notificationBtn");
+  const badge = document.getElementById("notificationBadge");
+  const panel = document.getElementById("notificationPanel");
+  const list = document.getElementById("notificationList");
+
+  const { data: { user } } = await db.auth.getUser();
+
+  btn.hidden = !user;
+
+  if (!user) {
+    panel.hidden = true;
+    badge.hidden = true;
+    list.replaceChildren();
+    return;
+  }
+
+  const { data, error } = await db
+    .from("notifications")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    list.textContent = "通知の取得に失敗しました。";
+    return;
+  }
+
+  const unreadCount = data.filter(n => !n.is_read).length;
+
+  badge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+  badge.hidden = unreadCount === 0;
+
+  list.replaceChildren();
+
+  if (data.length === 0) {
+    list.textContent = "通知はありません。";
+    return;
+  }
+
+  data.forEach(n => {
+    const item = document.createElement("div");
+    item.className = "notificationItem"
+      + (n.is_read ? "" : " unread");
+
+    const title = document.createElement("h3");
+    title.textContent = n.title;
+
+    const message = document.createElement("p");
+    message.textContent = n.message;
+
+    const time = document.createElement("time");
+    time.textContent = new Date(n.created_at)
+      .toLocaleString("ja-JP");
+
+    item.append(title, message, time);
+    list.append(item);
+  });
+}
+</script>
+
+<script>
+document.getElementById("notificationBtn")
+  .addEventListener("click", async () => {
+    const panel = document.getElementById("notificationPanel");
+    const btn = document.getElementById("notificationBtn");
+
+    panel.hidden = !panel.hidden;
+    btn.setAttribute("aria-expanded", String(!panel.hidden));
+
+    if (!panel.hidden) {
+      await loadNotifications();
+    }
+  });
+
+document.getElementById("closeNotificationBtn")
+  .addEventListener("click", () => {
+    document.getElementById("notificationPanel").hidden = true;
+    document.getElementById("notificationBtn")
+      .setAttribute("aria-expanded", "false");
+  });
+
+document.getElementById("readAllNotificationsBtn")
+  .addEventListener("click", async () => {
+    const { data: { user } } = await db.auth.getUser();
+
+    if (!user) return;
+
+    const { error } = await db
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+
+    if (error) {
+      alert("既読処理に失敗しました。");
+      return;
+    }
+
+    await loadNotifications();
+  });
+</script>
+
+<script>
+db.auth.onAuthStateChange((event, session) => {
+  if (!session) {
+    document.getElementById("notificationBtn").hidden = true;
+    document.getElementById("notificationBadge").hidden = true;
+    document.getElementById("notificationPanel").hidden = true;
+    document.getElementById("notificationList").replaceChildren();
+    document.getElementById("notificationBtn")
+      .setAttribute("aria-expanded", "false");
+  } else {
+    setTimeout(() => loadNotifications(), 0);
+  }
+});
+
+setInterval(() => {
+  if (!document.hidden) {
+    loadNotifications();
+  }
+}, 30000);
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    loadNotifications();
+  }
+});
+
+loadNotifications();
+</script>
+
+<script>
+function updatePushNotificationStatus() {
+  const btn = document.getElementById("pushNotificationBtn");
+  const status = document.getElementById("pushNotificationStatus");
+
+  if (
+    !("serviceWorker" in navigator) ||
+    !("PushManager" in window) ||
+    !("Notification" in window)
+  ) {
+    btn.disabled = true;
+    status.textContent = "ホーム画面に追加して起動してください。";
+    return;
+  }
+
+  if (Notification.permission === "denied") {
+    btn.disabled = true;
+    status.textContent = "端末の設定で通知が拒否されています。";
+    return;
+  }
+
+  btn.disabled = false;
+
+  if (Notification.permission === "granted") {
+    status.textContent = "通知許可済み・配信設定未確認";
+  } else {
+    status.textContent = "プッシュ通知：未設定";
+  }
+}
+
+updatePushNotificationStatus();
+
+window.addEventListener("focus", updatePushNotificationStatus);
+</script>
+
+
+<script>
+const VAPID_PUBLIC_KEY = "BHtP1LrA8t3BGOdaahzK5izF3HbibABCmrHtlBaFJZ05Aa2E58ghI7zgk1n59pc3CSyPtiaFwV05NCjK-Xajowk";
+
+function convertVapidKey(key) {
+  const padding = "=".repeat((4 - key.length % 4) % 4);
+  const base64 = (key + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  return Uint8Array.from(
+    atob(base64),
+    c => c.charCodeAt(0)
+  );
+}
+
+document.getElementById("pushNotificationBtn")
+  .addEventListener("click", async () => {
+    const btn = document.getElementById("pushNotificationBtn");
+    const status = document.getElementById("pushNotificationStatus");
+
+    btn.disabled = true;
+
+    try {
+      const permission = await Notification.requestPermission();
+
+      if (permission !== "granted") {
+        updatePushNotificationStatus();
+        return;
+      }
+
+      const { data: { user } } = await db.auth.getUser();
+
+      if (!user) {
+        throw new Error("ログインしてください。");
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+
+      let subscription =
+        await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertVapidKey(VAPID_PUBLIC_KEY)
+        });
+      }
+
+      const info = subscription.toJSON();
+
+      const { error } = await db
+        .from("push_subscriptions")
+        .upsert({
+          user_id: user.id,
+          endpoint: info.endpoint,
+          p256dh: info.keys.p256dh,
+          auth: info.keys.auth
+        }, {
+          onConflict: "endpoint"
+        });
+
+      if (error) throw error;
+
+      status.textContent = "プッシュ通知：有効";
+      alert("プッシュ通知を有効にしました。");
+
+    } catch (error) {
+      alert("端末登録に失敗しました：" + error.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
