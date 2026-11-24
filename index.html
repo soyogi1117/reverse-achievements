@@ -1238,6 +1238,30 @@ a[x-apple-data-detectors] {
   color: #c57aff;
   border-color: #c57aff;
 }
+
+.achievement:not(.done) input {
+  accent-color: #555b6c;
+}
+
+.achievement.rarity-bronze.done input {
+  accent-color: #cd7f32;
+}
+
+.achievement.rarity-silver.done input {
+  accent-color: #c0c0c0;
+}
+
+.achievement.rarity-gold.done input {
+  accent-color: #ffd700;
+}
+
+.achievement.rarity-legend.done input {
+  accent-color: #c57aff;
+}
+
+.achievement.done input:disabled {
+  opacity: 1;
+}
 </style>
 
 </head>
