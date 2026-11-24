@@ -1104,6 +1104,54 @@ a[x-apple-data-detectors] {
   <p id="bioMessage"></p>
 </div>
 
+
+<div id="characterEditor">
+  <label for="favoriteCharacterSelect" style="display:block; margin-bottom:8px;">
+    好きなキャラクター
+  </label>
+  <select id="favoriteCharacterSelect">
+    <option value="">未設定</option>
+  
+<select id="favoriteCharacterSelect">
+  <option value="">未設定</option>
+  <option>アンナ</option>
+  <option>マイク</option>
+  <option>エリック</option>
+  <option>バニラ</option>
+  <option>メアリー</option>
+  <option>ジェイ</option>
+  <option>ショーン</option>
+  <option>ローラ</option>
+  <option>ビル</option>
+  <option>ミカ</option>
+  <option>リリアン</option>
+  <option>メリル</option>
+  <option>ゲイル</option>
+  <option>スーザン</option>
+  <option>ロディ</option>
+  <option>エマ</option>
+  <option>フランク</option>
+  <option>トーマス</option>
+  <option>クリス</option>
+  <option>ジェシカ</option>
+  <option>サンドラ</option>
+  <option>フェイ</option>
+  <option>ヒュー</option>
+  <option>マリアンヌ</option>
+  <option>ニック</option>
+  <option>ソフィア</option>
+  <option>チャン</option>
+  <option>カミラ</option>
+  <option>フレディ</option>
+  <option>アーニー</option>
+  <option>ケイト</option>
+  <option>ウィル</option>
+  <option>セリーヌ</option>
+  <option>ポール</option>
+  <option>モーガン</option>
+  <option>ペネロペ</option>
+</select>
+</div>
 <div id="roleEditor" style="margin-top:12px;">
   <h4>🎭 好きな役職・苦手な役職を編集</h4>
 
@@ -1184,7 +1232,12 @@ a[x-apple-data-detectors] {
   
 
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
-  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
+ 
+<div style="grid-column:1 / -1;background:#263249;border-radius:10px;padding:12px;text-align:center;">
+  <div style="font-size:12px;">👤 好きなキャラクター</div>
+  <strong id="favoriteCharacterDisplay" style="color:#f1f2f6;">未設定</strong>
+</div>
+ <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
     <div style="font-size:12px;">❤️ 好きな役職</div>
     <strong id="favoriteRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
   </div>
@@ -1323,6 +1376,11 @@ a[x-apple-data-detectors] {
 
 <div id="publicRoleStats"
   style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
+
+<div style="grid-column:1 / -1;background:#263249;border-radius:10px;padding:12px;text-align:center;">
+  <div style="font-size:12px;">👤 好きなキャラクター</div>
+  <strong id="publicFavoriteCharacter" style="color:#f1f2f6;">未設定</strong>
+</div>
 
   <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
     <div style="font-size:12px;">❤️ 好きな役職</div>
@@ -2441,7 +2499,17 @@ const { data: { user }, error: authError } = await db.auth.getUser();
     if (authError || !user) throw new Error("ログインしてください。");
 
     
+
 const profileData = {
+  id: user.id,
+  username,
+  bio,
+  favorite_role: favorite || null,
+  disliked_role: disliked || null,
+  favorite_character: document.getElementById("favoriteCharacterSelect").value || null,
+  updated_at: new Date().toISOString()
+};
+
   id: user.id,
   username,
   bio,
@@ -2477,7 +2545,10 @@ if (avatarUrl) {
     document.getElementById("dislikedRoleDisplay").textContent =
       disliked || "未設定";
 
-    saveProfileMessage.textContent = "変更を保存しました！";
+    document.getElementById("favoriteCharacterDisplay").textContent =
+  profileData.favorite_character || "未設定";
+
+saveProfileMessage.textContent = "変更を保存しました！";
     
 
 signedIn.classList.remove("editing");
@@ -2856,7 +2927,7 @@ const { data, error } = publicError || !publicData
     : await db
         .from("profiles")
         
-.select("username, avatar_url, bio, favorite_role, disliked_role")
+.select("username, avatar_url, bio, favorite_role, disliked_role, favorite_character")
 
         .eq("id", item.user_id)
         .maybeSingle();
@@ -2887,6 +2958,9 @@ const canViewRoles =
   !publicData.is_private || item.user_id === currentUserId;
 
 roleStats.style.display = canViewRoles ? "grid" : "none";
+
+document.getElementById("publicFavoriteCharacter").textContent =
+  canViewRoles ? (data.favorite_character || "未設定") : "未設定";
 
 document.getElementById("publicFavoriteRole").textContent =
   canViewRoles ? (data.favorite_role || "未設定") : "未設定";
@@ -3265,7 +3339,7 @@ roleStats.style.display = "none";
   const { data: details } = await db
     .from("profiles")
     
-.select("bio, favorite_role, disliked_role")
+.select("bio, favorite_role, disliked_role, favorite_character")
 
     .eq("id", userId)
     .maybeSingle();
@@ -3280,6 +3354,9 @@ document.getElementById("publicFavoriteRole").textContent =
 document.getElementById("publicDislikedRole").textContent =
   details?.disliked_role || "未設定";
 
+
+document.getElementById("publicFavoriteCharacter").textContent =
+  details?.favorite_character || "未設定";
 roleStats.style.display = "grid";
 
 
@@ -3495,7 +3572,7 @@ async function loadRoles() {
 
   const { data, error } = await db
     .from("profiles")
-    .select("favorite_role, disliked_role")
+    .select("favorite_role, disliked_role, favorite_character")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -3511,6 +3588,13 @@ async function loadRoles() {
     favorite || "未設定";
 
   document.getElementById("dislikedRoleDisplay").textContent =
+    
+document.getElementById("favoriteCharacterSelect").value =
+  data?.favorite_character || "";
+
+document.getElementById("favoriteCharacterDisplay").textContent =
+  data?.favorite_character || "未設定";
+
     disliked || "未設定";
 
   document.getElementById("favoriteRoleSelect").value = favorite;
