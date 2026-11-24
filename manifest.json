@@ -1,0 +1,13 @@
+
+{
+  "id": "/reverse-achievements/",
+  "name": "逆村広場",
+  "short_name": "逆村広場",
+  "description": "逆村プレイヤー集まる場所",
+  "lang": "ja",
+  "start_url": "/reverse-achievements/",
+  "scope": "/reverse-achievements/",
+  "display": "standalone",
+  "background_color": "#101522",
+  "theme_color": "#101522"
+}
