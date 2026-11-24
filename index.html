@@ -3437,7 +3437,9 @@ participantBar.style.cssText =
   "height:100%;width:0;background:#54d88a;border-radius:20px;transition:width .3s ease;";
 
 participantProgress.append(participantBar);
-card.append(participantProgress);
+
+card.insertBefore(participantProgress, participantBtn);
+
 
 async function setupParticipantButton() {
   if (!currentUserId) {
