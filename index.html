@@ -1485,6 +1485,21 @@ header {
 .matchPlayerHeader strong{flex:1;overflow-wrap:anywhere}
 .matchPlayerCard{background:#263249;border-radius:10px;padding:12px;margin:10px 0}
 #matchStatus{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* iOS: keep match date inside the registration panel */
+#matchCenter #matchDate {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+#matchCenter #matchDate::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: center;
+}
 </style>
 
 </head>
