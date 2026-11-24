@@ -1416,6 +1416,31 @@ header {
   font-size: 12px;
   color: #8590a4;
 }
+
+#pushNotificationBtn {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 4px;
+  background: #263148;
+  color: #f1f2f6;
+  border: 1px solid #58647a;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#pushNotificationBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#pushNotificationStatus {
+  font-size: 12px;
+  color: #aab3c5;
+  text-align: center;
+  margin: 4px 0 14px;
+}
 </style>
 
 </head>
@@ -1440,7 +1465,15 @@ header {
     </button>
   </div>
 
-  <button id="readAllNotificationsBtn" type="button">
+  
+<button id="pushNotificationBtn" type="button">
+  🔔 プッシュ通知を有効にする
+</button>
+
+<p id="pushNotificationStatus" class="muted">
+  プッシュ通知：設定確認中
+</p>
+<button id="readAllNotificationsBtn" type="button">
     すべて既読にする
   </button>
 
@@ -4463,6 +4496,61 @@ document.addEventListener("visibilitychange", () => {
 });
 
 loadNotifications();
+</script>
+
+<script>
+function updatePushNotificationStatus() {
+  const btn = document.getElementById("pushNotificationBtn");
+  const status = document.getElementById("pushNotificationStatus");
+
+  if (
+    !("serviceWorker" in navigator) ||
+    !("PushManager" in window) ||
+    !("Notification" in window)
+  ) {
+    btn.disabled = true;
+    status.textContent = "ホーム画面に追加して起動してください。";
+    return;
+  }
+
+  if (Notification.permission === "denied") {
+    btn.disabled = true;
+    status.textContent = "端末の設定で通知が拒否されています。";
+    return;
+  }
+
+  btn.disabled = false;
+
+  if (Notification.permission === "granted") {
+    status.textContent = "通知許可済み・配信設定未確認";
+  } else {
+    status.textContent = "プッシュ通知：未設定";
+  }
+}
+
+updatePushNotificationStatus();
+
+window.addEventListener("focus", updatePushNotificationStatus);
+</script>
+
+<script>
+document.getElementById("pushNotificationBtn")
+  .addEventListener("click", async () => {
+    try {
+      const permission = await Notification.requestPermission();
+
+      updatePushNotificationStatus();
+
+      if (permission === "granted") {
+        alert("通知が許可されました。");
+      } else if (permission === "denied") {
+        alert("通知が拒否されました。");
+      }
+    } catch (error) {
+      alert("通知設定に失敗しました。");
+      console.error(error);
+    }
+  });
 </script>
 </body>
 </html>
