@@ -1492,14 +1492,14 @@ a[x-apple-data-detectors] {
 
   </div>
   <div style="text-align:center;padding:12px 6px;background:#263249;border-radius:10px;">
-    <div style="font-size:12px;">📊 達成率</div>
+    <div style="font-size:12px;">📊 獲得率</div>
     <strong id="profileRate" style="display:block;font-size:26px;margin-top:6px;">0%</strong>
   </div>
 </div>
 
 
 <div id="rarityStats" style="margin-top:16px;">
-  <h4>🏅 レアリティ別の獲得状況</h4>
+  <h4>🏅 レアリティ別獲得状況</h4>
   
 <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
   <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
@@ -1643,7 +1643,7 @@ a[x-apple-data-detectors] {
   </div>
 
   <div style="flex:1;min-width:0;background:#263148;padding:16px 8px;border-radius:12px;text-align:center;">
-    <p>📊 達成率</p>
+    <p>📊 獲得率</p>
     <strong id="publicProfileRate"
             style="font-size:28px;color:#e4bd68;">—</strong>
   </div>
@@ -1817,9 +1817,9 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 </section>
 <section id="achievements" class="panel">
 <strong>トロフィー獲得状況</strong>
-<h2 id="count">0 / 0 達成</h2>
+<h2 id="count">0 / 0 獲得</h2>
 <div class="progress"><div id="bar"></div></div>
-<div id="percent" class="muted">達成率 0%</div>
+<div id="percent" class="muted">獲得率 0%</div>
 </section>
 <div class="controls">
 <input id="search" placeholder="トロフィーを検索">
@@ -2001,10 +2001,12 @@ const progressClass =
 });
 
 document.getElementById("bar").style.width=pct+"%";
-document.getElementById("percent").textContent=`達成率 ${pct}%`;
+document.getElementById("percent").textContent=`獲得率 ${pct}%`;
 list.replaceChildren();
 const filtered=achievements.filter(a=>
-(a.name+a.description+a.role).toLowerCase().includes(q)&&
+
+((completed[a.id] ? a.name : "")+a.description+a.role).toLowerCase().includes(q)&&
+
 (!rarity||a.rarity===rarity)&&
 (!status||(status==="done"?!!completed[a.id]:!completed[a.id]))
 );
@@ -2079,7 +2081,7 @@ check.disabled =
   !!completed[a.id] || legendLocked;
 
 
-check.setAttribute("aria-label",a.name+"を達成");
+check.setAttribute("aria-label",a.name+"を獲得");
 
 check.addEventListener("change", async () => {
   const wasChecked = !check.checked;
