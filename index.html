@@ -1060,6 +1060,75 @@ a[x-apple-data-detectors] {
   vertical-align: top;
   margin-left: 2%;
 }
+
+#announcementEditForm h3 {
+  color: #f1f2f6;
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+#announcementEditForm label {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px !important;
+}
+
+#announcementEditForm input,
+#announcementEditForm select {
+  width: 100%;
+  min-height: 48px;
+  background: #34415c;
+  color: #f1f2f6;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  box-sizing: border-box;
+  margin-bottom: 16px !important;
+}
+
+#edit_announcementVersion {
+  width: 34% !important;
+  display: inline-block;
+  vertical-align: top;
+}
+
+#edit_announcementTitle {
+  width: 62% !important;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 2%;
+}
+
+#announcementEditForm select:has(option[value=""]:checked) {
+  color: #9ca3af;
+}
+
+#announcementEditActions {
+  display: flex;
+  gap: 12px;
+}
+
+#announcementEditActions button {
+  padding: 16px 8px;
+  color: #f1f2f6;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#cancelAnnouncementEditBtn {
+  flex: 1;
+  background: #263148;
+  border: 1px solid #58647a;
+}
+
+#saveAnnouncementEditBtn {
+  flex: 2;
+  background: #34415c;
+  border: none;
+}
 </style>
 
 </head>
@@ -1591,6 +1660,23 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   </button>
 
   <p id="announcementMessage" role="status"></p>
+</div>
+
+<div id="announcementEditForm" hidden>
+  <h3>✏️ 部屋告知を編集</h3>
+
+  <div id="announcementEditFields"></div>
+
+  <div id="announcementEditActions">
+    <button id="cancelAnnouncementEditBtn" type="button">
+      ✕ 閉じる
+    </button>
+    <button id="saveAnnouncementEditBtn" type="button">
+      変更を保存
+    </button>
+  </div>
+
+  <p id="announcementEditMessage" role="status"></p>
 </div>
  <div id="announcementList">
     <p class="muted">現在、告知はありません。</p>
@@ -3154,129 +3240,53 @@ actions.style.cssText = `
       const editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.textContent = "✏️ 編集";
-      editBtn.addEventListener("click", async () => {
-        const newTitle = prompt("部屋主のキャラクターを編集", item.title);
-        if (newTitle === null) return;
+      
+editBtn.addEventListener("click", () => {
+  const form = document.getElementById("announcementEditForm");
 
-        const title = newTitle.trim();
-        if (!title || title.length > 100) {
-          alert("部屋名は1〜100文字で入力してください。");
-          return;
-        }
+  form.dataset.editId = item.id;
 
-        const newDate = prompt(
-          "開催日時を入力（例：2026-12-01T20:00）",
-          new Date(
-            new Date(item.event_date).getTime()
-            - new Date().getTimezoneOffset() * 60000
-          ).toISOString().slice(0, 16)
-        );
-        if (newDate === null) return;
+  document.getElementById("edit_announcementType").value =
+    item.room_type;
 
-        const parsedDate = new Date(newDate);
-        if (!newDate.trim() || isNaN(parsedDate.getTime())) {
-          alert("開催日時の形式が正しくありません。");
-          return;
-        }
+  const versions = Array.from(editVersion.options)
+    .map(option => option.value)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
 
-        
+  const version = versions.find(v =>
+    item.title.startsWith(v)
+  ) || "";
 
-const roomTypeOptions = [
-  "スタ逆",
-  "特殊逆"
-];
+  editVersion.value = version;
+  updateEditCharacters();
 
-const selectedRoomType = prompt(
-  "部屋の種類を選択\n" +
-  "1：スタ逆\n" +
-  "2：特殊逆",
-  String(roomTypeOptions.indexOf(item.room_type) + 1)
-);
+  editCharacter.value = version
+    ? item.title.slice(version.length)
+    : "";
 
-if (selectedRoomType === null) return;
+  document.getElementById("edit_announcementPlayers").value =
+    item.players;
 
-const newRoomType =
-  roomTypeOptions[Number(selectedRoomType) - 1];
+  const date = new Date(item.event_date);
 
-if (!newRoomType) {
-  alert("1か2を入力してください。");
-  return;
-}
+  document.getElementById("edit_announcementDate").value =
+    new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    ).toISOString().slice(0, 16);
 
-const newPlayersInput = prompt(
-  "人数を編集（4〜20人）",
-  String(item.players ?? 15)
-);
+  document.getElementById("edit_announcementBody").value =
+    item.body;
 
-if (newPlayersInput === null) return;
+  document.getElementById("announcementEditMessage").textContent = "";
 
-const newPlayers = Number(newPlayersInput);
+  document.getElementById("announcementForm").hidden = true;
+  document.getElementById("announcementList").hidden = true;
 
-if (
-  !Number.isInteger(newPlayers) ||
-  newPlayers < 4 ||
-  newPlayers > 20
-) {
-  alert("人数は4〜20の整数で入力してください。");
-  return;
-}
-const playerOptions = [
-  "誰でも",
-  "初心者",
-  "準初心者",
-  "上級者"
-];
+  form.hidden = false;
+  form.scrollIntoView({ behavior: "smooth" });
+});
 
-const selectedNumber = prompt(
-  "募集するプレイヤーを選択\n" +
-  "1：誰でも\n" +
-  "2：初心者\n" +
-  "3：準初心者\n" +
-  "4：上級者",
-  String(playerOptions.indexOf(item.body) + 1)
-);
-
-if (selectedNumber === null) return;
-
-const newBody = playerOptions[Number(selectedNumber) - 1];
-
-if (!newBody) {
-  alert("1〜4の番号を入力してください。");
-  return;
-}
-
-
-        if (newBody.length > 1000) {
-          alert("詳細は1000文字以内で入力してください。");
-          return;
-        }
-
-        editBtn.disabled = true;
-
-        const { error } = await db
-          .from("room_announcements")
-          .update({
-            
-room_type: newRoomType,
-
-players: newPlayers,
-title: title,
-            event_date: parsedDate.toISOString(),
-            body: newBody.trim(),
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", item.id)
-          .eq("user_id", currentUserId);
-
-        if (error) {
-          alert("編集失敗：" + error.message);
-          editBtn.disabled = false;
-          return;
-        }
-
-        await loadAnnouncements();
-        alert("告知を更新しました！");
-      });
 
 
       const deleteBtn = document.createElement("button");
@@ -3745,6 +3755,135 @@ new MutationObserver(() => {
 });
 
 updateAnnouncementCharacters();
+</script>
+
+<script>
+const editFields = document.getElementById("announcementEditFields");
+
+const editSourceFields = [
+  "announcementType",
+  "announcementVersion",
+  "announcementTitle",
+  "announcementPlayers",
+  "announcementDate",
+  "announcementBody"
+];
+
+editSourceFields.forEach(id => {
+  const source = document.getElementById(id);
+  const label = document.querySelector(`label[for="${id}"]`);
+  const clone = source.cloneNode(true);
+
+  clone.id = "edit_" + id;
+
+  if (label) {
+    const newLabel = label.cloneNode(true);
+    newLabel.htmlFor = clone.id;
+    editFields.appendChild(newLabel);
+  }
+
+  editFields.appendChild(clone);
+});
+
+const editVersion = document.getElementById("edit_announcementVersion");
+const editCharacter = document.getElementById("edit_announcementTitle");
+
+function updateEditCharacters() {
+  const version = editVersion.value;
+
+  editCharacter.replaceChildren(
+    new Option("キャラクターを選択", "")
+  );
+
+  editCharacter.disabled = !version;
+
+  if (!version) return;
+
+  const characters =
+    version === "JVIP" || version === "DVIP"
+      ? vipCharacters
+      : normalCharacters;
+
+  characters.forEach(name => {
+    editCharacter.add(new Option(name, name));
+  });
+}
+
+editVersion.addEventListener("change", updateEditCharacters);
+updateEditCharacters();
+</script>
+
+<script>
+function closeAnnouncementEdit() {
+  const form = document.getElementById("announcementEditForm");
+
+  form.hidden = true;
+  delete form.dataset.editId;
+
+  document.getElementById("announcementForm").hidden = false;
+  document.getElementById("announcementList").hidden = false;
+}
+
+document.getElementById("cancelAnnouncementEditBtn")
+  .addEventListener("click", closeAnnouncementEdit);
+
+document.getElementById("saveAnnouncementEditBtn")
+  .addEventListener("click", async () => {
+
+    const form = document.getElementById("announcementEditForm");
+    const button = document.getElementById("saveAnnouncementEditBtn");
+    const message = document.getElementById("announcementEditMessage");
+
+    const roomType = document.getElementById("edit_announcementType").value;
+    const version = editVersion.value;
+    const character = editCharacter.value;
+    const players = document.getElementById("edit_announcementPlayers").value;
+    const date = document.getElementById("edit_announcementDate").value;
+    const body = document.getElementById("edit_announcementBody").value;
+
+    if (!roomType || !version || !character || !players || !date || !body) {
+      message.textContent = "すべての項目を入力してください。";
+      return;
+    }
+
+    button.disabled = true;
+    message.textContent = "保存中...";
+
+    try {
+      const { data: { user }, error: authError } =
+        await db.auth.getUser();
+
+      if (authError || !user) {
+        throw new Error("ログインしてください。");
+      }
+
+      const { error } = await db
+        .from("room_announcements")
+        .update({
+          room_type: roomType,
+          title: version + character,
+          players: Number(players),
+          event_date: new Date(date).toISOString(),
+          body: body,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", form.dataset.editId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      closeAnnouncementEdit();
+      await loadAnnouncements();
+
+      document.getElementById("announcementMessage").textContent =
+        "告知を更新しました！";
+
+    } catch (error) {
+      message.textContent = "保存失敗：" + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
 </script>
 </body>
 </html>
