@@ -9,7 +9,9 @@
 <style>
 :root{color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:#101522;color:#e4bd68;font-family:system-ui,sans-serif}
+
+body{margin:0;background:#101522;color:#f1f2f6;font-family:system-ui,sans-serif}
+
 header{text-align:center;padding:38px 16px 22px;background:linear-gradient(#20283b,#101522)}
 h1{font-size:clamp(24px,6vw,36px);margin:0}
 header p,.muted{color:#aeb7c9}
@@ -52,7 +54,9 @@ main{max-width:850px;margin:auto;padding:16px}
 input,select{background:#222c40;color:#fff;border:1px solid #58647a;border-radius:9px;padding:12px;font-size:16px;min-width:0;flex:1}
 .achievement{display:flex;align-items:flex-start;gap:12px;color:#f1f2f6}
 .achievement input{flex:none;width:23px;height:23px;accent-color:#d9ad53}
-.achievement h3{margin:0 0 8px;color:#e4bd68}
+
+.achievement h3{margin:0 0 8px;color:#f1f2f6}
+
 .achievement p{margin:0 0 10px;color:#b9c2d2;font-size:14px}
 .tag{display:inline-block;border:1px solid #6b7284;border-radius:20px;padding:4px 10px;font-size:12px;margin:0 5px 5px 0}
 .done{opacity:.65}
@@ -276,25 +280,29 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   padding: 16px;
 }
 
+
 #profileTitle {
-  color: #e4bd68;
+  color: #f1f2f6;
   font-size: 22px;
   margin: 0 0 16px;
 }
 
+
 #profileStats > div:first-of-type {
   padding: 12px;
-  background: #263148;
-  border-radius: 12px;
-}
+  
 
 #profileAvatar {
   margin: 0 auto 12px;
 }
 
+
 #profileStats h4 {
-  color: #e4bd68;
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
 }
+
 
 #profileStats p {
   line-height: 1.7;
@@ -323,10 +331,12 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   font-size: 12px;
 }
 
+
 #profileHeaderAvatar {
   flex-shrink: 0;
-  border: 3px solid #e4bd68;
+  border: 3px solid #58647a;
 }
+
 
 /* プロフィール画像の重複表示を防ぐ */
 #profileAvatar {
@@ -405,10 +415,14 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   color: #e4bd68;
 }
 
+
 #rarityStats h4 {
   margin: 0 0 4px;
-  color: #e4bd68;
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
 }
+
 
 #rarityStats > p[hidden] {
   display: none;
@@ -484,7 +498,7 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
   border: 1px solid #3d465a;
   border-radius: 16px;
 
-  color: #e4bd68;
+  color: #f1f2f6;
   text-decoration: none;
   text-align: center;
 
@@ -538,11 +552,13 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 
 
 /* プロフィール編集の見出し */
+
 #signedIn.editing #profileEditHeading {
   display: block !important;
-  color: #e4bd68;
+  color: #f1f2f6;
   margin: 20px 0 12px;
 }
+
 /* 役職編集欄は通常非表示 */
 #roleEditor {
   display: none;
@@ -633,30 +649,25 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 #profileEditPanel input[type="text"],
 #profileEditPanel textarea,
 #profileEditPanel select {
-  width: 100%;
-  background: #34415c;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 14px;
-  box-sizing: border-box;
-}
+  
 
 #profileEditPanel textarea {
   min-height: 100px;
   resize: vertical;
 }
 
+
 #profileEditPanel #saveProfileBtn {
   width: 100%;
   padding: 16px;
   background: #34415c;
-  color: #e4bd68;
+  color: #f1f2f6;
   border: none;
   border-radius: 10px;
   font-size: 17px;
   font-weight: bold;
 }
+
 
 /* 役職編集欄を2列にする */
 #signedIn.editing #roleEditor {
@@ -798,6 +809,53 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 #signedIn.editing #roleEditor label {
   color: #fff !important;
 }
+
+#profileStats div[style*="font-size:12px"] {
+  color: #aeb7c9;
+}
+
+.progress-white {
+  color: #f1f2f6 !important;
+}
+
+.progress-bronze {
+  color: #cd7f32 !important;
+}
+
+.progress-silver {
+  color: #c0c0c0 !important;
+}
+
+.progress-gold {
+  color: #ffd700 !important;
+}
+
+.progress-rainbow {
+  background: linear-gradient(90deg,
+    #ff5555, #ffb347, #ffe66d,
+    #54d88a, #55b9ff, #c57aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#publicProfileName {
+  color: #f1f2f6;
+}
+
+#publicProfileAvatar {
+  border-color: #58647a;
+}
+
+#publicProfile h3 {
+  color: #aeb7c9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#publicTrophyStats p {
+  color: #aeb7c9;
+}
 </style>
 
 </head>
@@ -806,7 +864,9 @@ footer{text-align:center;color:#8590a4;padding:30px;font-size:12px}
 <h1>逆村広場</h1>
 <p>逆村プレイヤー集まる場所</p>
 </header>
-  <section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#e5c16c">
+  
+<section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#f1f2f6">
+
   <h2>🏆 ユーザーアカウント</h2>
   <div id="authForm">
     <input id="userEmail" type="email" placeholder="メールアドレス" autocomplete="email" style="width:100%;padding:12px;margin:6px 0">
@@ -1297,7 +1357,12 @@ const status=document.getElementById("status").value;
 const total=achievements.length;
 const done=achievements.filter(a=>completed[a.id]).length;
 document.getElementById("count").textContent=`${done} / ${total} 達成`;
-const pct=total?Math.round(done/total*100):0;
+
+const pct =
+  total === 0 || done === 0 ? 0 :
+  done === total ? 100 :
+  Math.max(1, Math.floor(done / total * 100));
+
 
 const rarityCounts = {
   "銅": 0,
@@ -1373,6 +1438,27 @@ raritySettings.forEach(({ name, icon, color }) => {
   
 document.getElementById("profileUnlocked").textContent = done;
 document.getElementById("profileRate").textContent = pct + "%";
+
+const progressClass =
+  done === 0 ? "progress-white" :
+  done === total ? "progress-rainbow" :
+  done / total >= 0.8 ? "progress-gold" :
+  done / total >= 0.5 ? "progress-silver" :
+  "progress-bronze";
+
+["profileUnlocked", "profileRate"].forEach(id => {
+  const el = document.getElementById(id);
+
+  el.classList.remove(
+    "progress-white",
+    "progress-bronze",
+    "progress-silver",
+    "progress-gold",
+    "progress-rainbow"
+  );
+
+  el.classList.add(progressClass);
+});
 
 document.getElementById("bar").style.width=pct+"%";
 document.getElementById("percent").textContent=`達成率 ${pct}%`;
@@ -2538,9 +2624,34 @@ if (publicData && (!publicData.is_private || item.user_id === currentUserId)) {
       achievement => unlockedIds.has(String(achievement.id))
     ).length;
 
-    unlockedDisplay.textContent = unlocked;
-    rateDisplay.textContent =
-      (total ? Math.round(unlocked / total * 100) : 0) + "%";
+    
+const pct =
+  total === 0 || unlocked === 0 ? 0 :
+  unlocked === total ? 100 :
+  Math.max(1, Math.floor(unlocked / total * 100));
+
+unlockedDisplay.textContent = unlocked;
+rateDisplay.textContent = pct + "%";
+
+const progressClass =
+  pct === 0 ? "progress-white" :
+  pct === 100 ? "progress-rainbow" :
+  pct >= 80 ? "progress-gold" :
+  pct >= 50 ? "progress-silver" :
+  "progress-bronze";
+
+[unlockedDisplay, rateDisplay].forEach(el => {
+  el.classList.remove(
+    "progress-white",
+    "progress-bronze",
+    "progress-silver",
+    "progress-gold",
+    "progress-rainbow"
+  );
+
+  el.classList.add(progressClass);
+});
+
   } else {
     console.error("トロフィー取得失敗:", trophyError);
   }
