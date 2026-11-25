@@ -4157,6 +4157,33 @@ participantProgress.append(participantBar);
 
 card.insertBefore(participantProgress, participantBtn);
 
+const rosterDetails = document.createElement('details');
+rosterDetails.style.cssText='margin:8px 0 12px;border:1px solid #45434e;border-radius:8px;padding:10px;';
+const rosterSummary = document.createElement('summary');
+rosterSummary.textContent='参加希望者一覧';
+const rosterNames = document.createElement('div');
+rosterNames.style.cssText='margin-top:10px;';
+rosterDetails.append(rosterSummary,rosterNames);
+if(currentUserId) card.insertBefore(rosterDetails, participantBtn);
+let rosterVersion=0;
+async function loadRoomRoster(){
+ const seq=++rosterVersion;
+ rosterNames.textContent='読み込み中…';
+ const {data,error}=await db.rpc('room_participant_names',{p_announcement_id:String(item.id)});
+ if(seq!==rosterVersion)return;
+ rosterNames.replaceChildren();
+ if(error){rosterNames.textContent='一覧取得失敗：'+error.message;return;}
+ for(const p of data||[]){const line=document.createElement('div');line.style.cssText='padding:5px 0;overflow-wrap:anywhere;';line.textContent=p.username+(p.is_host?'（主催者）':'');rosterNames.append(line);}
+ if(!data?.length)rosterNames.textContent='参加希望者はいません。';
+ if(item.user_id===currentUserId && liveStatus==='finished' && data?.length){
+  const importBtn=document.createElement('button');importBtn.type='button';importBtn.textContent='参加希望者を戦績登録へ引き継ぐ';
+  importBtn.onclick=()=>{if(typeof window.importRoomRoster==='function')window.importRoomRoster(item,data);};
+  rosterNames.append(importBtn);
+ }
+}
+rosterDetails.addEventListener('toggle',()=>{if(rosterDetails.open)void loadRoomRoster();else rosterVersion++;});
+
+
 
 async function setupParticipantButton() {
   if (!currentUserId) {
@@ -4215,6 +4242,7 @@ participantBtn.hidden = ended && !joined;
       joined = !joined;
 
 await updateParticipantCount();
+if(rosterDetails.open)void loadRoomRoster();
 
     } catch (error) {
       alert("操作に失敗しました：" + error.message);
@@ -5236,6 +5264,17 @@ void loadTrophyTitle();
    const wrap=(title,node)=>{const l=document.createElement('label');l.textContent=title;l.append(node);return l;};
    card.append(header,wrap('役職',role),custom,wrap('陣営（勝敗判定用）',faction));roster.append(card);players.set(p.id,{role,custom,faction});
  }
+ window.importRoomRoster=(item,rows)=>{
+   if(!allowed||saving){alert('戦績登録には部屋主または管理者権限が必要です。');return;}
+   if(item.user_id!==owner||item.live_status!=='finished')return;
+   if(players.size && !confirm('入力中の対戦登録を置き換えますか？'))return;
+   reset();searchRevision++;form.hidden=false;
+   el('matchRoom').value=String(item.title||item.room_type||'').slice(0,80);
+   const d=new Date(item.event_date);if(!Number.isNaN(d.getTime())){d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el('matchDate').value=d.toISOString().slice(0,16);}
+   for(const p of rows)if(p.player_id)add({id:p.player_id,username:p.username});
+   status.textContent='参加希望者を取り込みました。実際の参加者・対戦日時・役職・陣営を確認してから登録してください。';
+   el('matchCenter').scrollIntoView({block:'start',behavior:'smooth'});
+ };
  el('matchFind').onclick=async()=>{
    if(!allowed||saving)return;
    const q=el('matchSearch').value.trim(), seq=++searchRevision, target=el('matchResults'), msg=el('matchSearchStatus');target.replaceChildren();
