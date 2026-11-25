@@ -5501,9 +5501,9 @@ $('tlText').oninput=()=>{$('tlCount').textContent=$('tlText').value.length+' / 2
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){++seq;uid=null;form.reset();form.hidden=true;list.replaceChildren();status.textContent='ログインすると投稿・閲覧できます。';}if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event))setTimeout(load,0);});void load();})();
 </script>
 
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap">
 <style id="gothicFinal">
-:root{--portal-bg:#0c0d13;--portal-card:#161720;--portal-gold:#b6a587;--portal-line:#45434e;--portal-muted:#b0adbc;--heading-font:"Noto Serif JP","Hiragino Mincho ProN",serif;--body-font:"Noto Sans JP",system-ui,sans-serif;--number-font:"Cinzel","Noto Serif JP",serif}
+:root{--portal-bg:#0c0d13;--portal-card:#161720;--portal-gold:#b6a587;--portal-line:#45434e;--portal-muted:#b0adbc;--heading-font:"Noto Serif JP","Hiragino Mincho ProN",serif;--body-font:var(--heading-font);--number-font:var(--heading-font)}
 body{background:#0c0d13!important;color:#ede9f1;font-family:var(--body-font);line-height:1.65}
 body > header{border-bottom:1px solid #56515f}
 .panel,#userAuth,#notificationPanel,#profileStats,#profileEditPanel{background:#161720!important;border:1px solid #45434e!important;border-radius:5px!important;box-shadow:none!important}
@@ -5529,5 +5529,8 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:4px!i
 footer{color:#a19cab;border-color:#45434e}
 </style>
 
+<style id="allMincho">
+body, body *, button, input, select, textarea {font-family:var(--heading-font)!important;}
+</style>
 </body>
 </html>
