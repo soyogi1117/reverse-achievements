@@ -1801,6 +1801,10 @@ footer{color:#b4a38c;border-color:#534230}
 #userAuth #accountDeleteSettings .accountGuide {background:linear-gradient(145deg,#30271f,#211c18);color:#e3d6c4;margin:12px auto;text-align:center;}
 #userAuth #accountDeleteButton {background:#843b48!important;color:#fff!important;}
 @media(max-width:480px){#userAuth.account-guiding,#userAuth.recovering{padding:14px!important;}#userAuth #accountGuide,#userAuth #passwordRecoveryPanel{padding:15px 12px!important;}}
+
+/* Remove decorative button shadow from the password reset text link only. */
+#userAuth #forgotPasswordBtn {box-shadow:none!important;border:0!important;background:transparent!important;border-radius:0!important;}
+#userAuth #forgotPasswordBtn:focus-visible {outline:2px solid #e5c99a;outline-offset:3px;}
 </style>
 </head>
 <body>
