@@ -77,6 +77,22 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 </section>
 
 <section id="admin" hidden>
+<details id="archiveAdmin" style="margin:24px 0">
+<summary style="font-size:20px;font-weight:bold;cursor:pointer">逆村資料館の管理</summary>
+<form id="archiveForm">
+<h3 id="archiveHeading">資料の新規作成</h3>
+<label for="archiveTitle">タイトル</label><input id="archiveTitle" required maxlength="200">
+<label for="archiveCategory">カテゴリー</label><select id="archiveCategory"><option>逆村入門</option><option>配役・ルール集</option><option>役職図鑑</option><option>戦術・指南書</option><option>逆村の歴史</option></select>
+<label for="archiveSummary">概要</label><textarea id="archiveSummary" rows="2"></textarea>
+<label for="archiveContent">本文（改行を保持）</label><textarea id="archiveContent" rows="12" required></textarea>
+<label for="archiveAuthor">執筆者</label><input id="archiveAuthor">
+<label for="archiveImage">画像URL（任意・HTTPS）</label><input id="archiveImage" type="url" placeholder="https://...">
+<label for="archiveOrder">表示順（小さい順）</label><input id="archiveOrder" type="number" min="0" max="2147483647" step="1" value="0" required>
+<label class="check"><input id="archivePublished" type="checkbox">公開する</label>
+<button id="archiveSave" type="submit">資料を保存</button><button id="archiveReset" type="button" class="secondary">新規作成に戻る</button>
+</form><p id="archiveStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
+<button id="archiveReload" type="button" class="secondary">資料一覧を更新</button><div id="archiveRows"></div>
+</details>
 <section id="roomHostAdmin">
   <h2>🏠 部屋主権限管理</h2>
   <label for="hostSearch">プレイヤー名</label>
@@ -703,5 +719,18 @@ function previewTrophy(rarity) {
 }
 </style>
 
+<script>
+(()=>{
+ const el=id=>document.getElementById(id); let editing=null,busy=false,seq=0;
+ const fields={title:'archiveTitle',category:'archiveCategory',summary:'archiveSummary',content:'archiveContent',author_name:'archiveAuthor',image_url:'archiveImage',sort_order:'archiveOrder',is_published:'archivePublished'};
+ const status=t=>el('archiveStatus').textContent=t;
+ function reset(){editing=null;el('archiveForm').reset();el('archiveHeading').textContent='資料の新規作成';}
+ function edit(a){editing=a.id;for(const [k,id] of Object.entries(fields)){if(k==='is_published')el(id).checked=a[k];else el(id).value=a[k]??'';}el('archiveHeading').textContent='資料を編集';el('archiveHeading').scrollIntoView({block:'center'});}
+ async function load(){const n=++seq;const {data,error}=await db.from('archive_articles').select('*').order('sort_order').order('id');if(n!==seq)return;if(error){status('取得失敗：'+error.message);return;}const rows=el('archiveRows');rows.replaceChildren();if(!data.length)rows.textContent='資料はまだありません。';for(const a of data){const card=document.createElement('div');card.style.cssText='border:1px solid #665039;padding:12px;margin:10px 0;border-radius:8px;overflow-wrap:anywhere';const title=document.createElement('strong');title.textContent=a.title;const meta=document.createElement('p');meta.textContent=a.category+' ｜ '+(a.is_published?'公開':'下書き')+' ｜ 順位 '+a.sort_order+' ｜ 更新 '+new Date(a.updated_at).toLocaleDateString('ja-JP');card.append(title,meta);for(const [label,fn] of [['編集',()=>edit(a)],['削除',async()=>{if(busy||!confirm('「'+a.title+'」を削除しますか？'))return;busy=true;try{const {error}=await db.from('archive_articles').delete().eq('id',a.id).select('id').single();if(error)throw error;if(editing===a.id)reset();await load();status('削除しました。');}catch(e){status('削除失敗：'+e.message);}finally{busy=false;}}]]){const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;b.onclick=fn;card.append(b);}rows.append(card);}}
+ el('archiveForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;const payload={};for(const [k,id] of Object.entries(fields))payload[k]=k==='is_published'?el(id).checked:k==='sort_order'?Number(el(id).value):el(id).value.trim();if(!payload.title||!payload.content){status('タイトルと本文を入力してください。');return;}if(payload.image_url){try{if(new URL(payload.image_url).protocol!=='https:')throw Error();}catch{status('画像URLはHTTPSで指定してください。');return;}}else payload.image_url=null;busy=true;el('archiveSave').disabled=true;try{const q=editing===null?db.from('archive_articles').insert(payload):db.from('archive_articles').update(payload).eq('id',editing);const {error}=await q.select('id').single();if(error)throw error;reset();await load();status('保存しました。');}catch(e){status('保存失敗：'+e.message);}finally{busy=false;el('archiveSave').disabled=false;}});
+ el('archiveReset').onclick=()=>{if(!busy)reset();};el('archiveReload').onclick=load;el('archiveAdmin').addEventListener('toggle',()=>{if(el('archiveAdmin').open)load();});
+ new MutationObserver(()=>{if(el('admin').hidden){++seq;reset();el('archiveRows').replaceChildren();el('archiveAdmin').open=false;status('');}}).observe(el('admin'),{attributes:true,attributeFilter:['hidden']});
+})();
+</script>
 </body>
 </html>
