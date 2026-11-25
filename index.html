@@ -1730,6 +1730,23 @@ footer{color:#b4a38c;border-color:#534230}
 #announcementList .announcementActions button{flex:1;min-width:0;min-height:44px;padding:10px 6px!important;font-size:13px!important;white-space:normal;overflow-wrap:anywhere}
 #announcementList .announcementActions>button{flex:0 0 100%}
 
+
+/* Announcement calendar */
+#announcementBrowser[hidden],#announcementBrowser [hidden],#announcementList .announcementCard[hidden],#announcementList .calEmpty[hidden]{display:none!important}
+#announcementBrowser{margin:18px 0 12px;min-width:0}
+.calSwitch,.calNav{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+#announcementBrowser button{font:inherit;cursor:pointer;min-width:0;color:#e7c68a;background:#30271f;border:1px solid #765e42;border-radius:8px;padding:10px 6px}
+.calSwitch button{flex:1}.calSwitch button[aria-pressed=true]{background:#e7c68a!important;color:#241b13!important;font-weight:700}
+.calNav strong{flex:1;text-align:center;color:#e7c68a}.calNav button{min-width:44px!important;min-height:44px}
+.calGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calWeek{text-align:center;color:#c8b9a4;font-size:12px;padding:4px 0}
+#announcementBrowser .calDay{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:5px 0;font-size:14px;background:#241f1b;border-color:#4c4034}
+#announcementBrowser .calDay[aria-pressed=true]{border-color:#e7c68a;background:#59452d;box-shadow:inset 0 0 0 1px #e7c68a}
+#announcementBrowser .calDay[aria-current=date]{font-weight:bold;color:#fff1c9}
+.calDots{display:flex;gap:3px;align-items:center;justify-content:center;min-height:6px;max-width:100%;font-size:9px;line-height:1}
+.calDots i{width:5px;height:5px;border-radius:50%;background:#d2b17b;display:block}.calDots i.standard{background:#83baff}.calDots i.special{background:#d3a5ff}
+#calDateHeading{margin:16px 0 8px;color:#e7c68a;font-weight:bold;font-size:15px}
+.calEmpty{color:#c8b9a4;padding:12px 0;text-align:center}
 </style>
 
 <style>
@@ -2045,47 +2062,16 @@ footer{color:#b4a38c;border-color:#534230}
     <small>募集・開催情報をチェック</small>
   </a>
 
-  <a href="#achievements" class="homeMenuItem">
+  <a href="#matchCenter" class="homeMenuItem">
+    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg></span><strong>戦績</strong><small>対戦記録</small>
+  </a>
+  <a href="#achievements" class="homeMenuItem" style="grid-column:1 / -1;">
     <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg></span>
     <strong>トロフィー</strong>
     <small>トロフィーの獲得状況を確認</small>
   </a>
-  <a href="#matchCenter" class="homeMenuItem" style="grid-column:1 / -1;">
-    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg></span><strong>戦績</strong><small>対戦記録</small>
-  </a>
 </nav>
-<section id="matchCenter" class="panel">
-<h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg> 戦績</h2><p id="matchAccess" class="muted" role="status">権限を確認中...</p>
-<div id="myMatchStats" class="matchStatsPanel" hidden></div>
-<button id="matchOpen" type="button" hidden>＋ 対戦結果を登録</button>
-<form id="matchForm" hidden>
-<label>対戦日時<input id="matchDate" type="datetime-local" required></label>
-<label>部屋の種類<input id="matchRoom" placeholder="例：猫逆、罠逆" maxlength="80" required></label>
-<label>勝利陣営<select id="matchWinner" required><option value="">選択してください</option><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
-<h3>参加プレイヤー</h3><p class="muted">登録済みの参加者だけ追加してください。</p>
-<div class="matchSearchRow"><input id="matchSearch" type="search" placeholder="プレイヤー名" maxlength="20"><button id="matchFind" type="button">検索</button></div>
-<p id="matchSearchStatus" class="muted" role="status"></p><div id="matchResults"></div>
-<div id="matchRoster"></div>
-<label>備考（任意）<textarea id="matchMemo" rows="3" maxlength="500"></textarea></label>
-<button id="matchSave" type="submit">対戦結果を一括登録</button>
-</form><p id="matchStatus" role="status" aria-live="polite"></p>
-<button id="manageMatchesOpen" type="button" hidden style="width:100%;margin-top:8px">対戦結果を管理</button>
-<div id="manageMatchesPanel" hidden>
-<p id="manageMatchesStatus" role="status" class="muted"></p>
-<div id="manageMatchesList"></div>
-<div id="matchAuditLookup"><label>変更履歴を検索（削除済みも含む）<input id="matchAuditId" type="number" min="1" step="1" placeholder="対戦ID"></label><button id="matchAuditFind" type="button">履歴を表示</button></div>
-<div id="matchAuditView" hidden></div>
-<form id="manageMatchEdit" hidden>
-<h3>対戦結果を修正</h3>
-<label>対戦日時<input id="manageMatchDate" type="datetime-local" required></label>
-<label>部屋の種類<input id="manageMatchRoom" required maxlength="80"></label>
-<label>勝利陣営<select id="manageMatchWinner" required><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
-<label>備考<textarea id="manageMatchMemo" rows="3" maxlength="500"></textarea></label>
-<h3>参加プレイヤー</h3><div class="matchSearchRow"><input id="managePlayerSearch" type="search" placeholder="プレイヤー名" maxlength="20"><button id="managePlayerFind" type="button">検索</button></div>
-<p id="managePlayerStatus" role="status" class="muted"></p><div id="managePlayerResults"></div><div id="managePlayerRoster"></div>
-<div style="display:flex;gap:8px"><button id="manageMatchCancel" type="button" style="flex:1">キャンセル</button><button type="submit" style="flex:2">変更を保存</button></div>
-</form></div>
-</section>
+
 
 
 
@@ -2337,9 +2323,52 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 
   <p id="announcementEditMessage" role="status"></p>
 </div>
+<div id="announcementBrowser">
+  <div class="calSwitch" role="group" aria-label="告知の表示形式">
+    <button type="button" id="calListMode" aria-pressed="true">一覧表示</button>
+    <button type="button" id="calMonthMode" aria-pressed="false">カレンダー表示</button>
+  </div>
+  <div id="calPanel" hidden>
+    <div class="calNav"><button type="button" id="calPrev" aria-label="前月">‹</button><strong id="calMonthTitle" aria-live="polite"></strong><button type="button" id="calToday">今日</button><button type="button" id="calNext" aria-label="翌月">›</button></div>
+    <div class="calGrid" id="calGrid"></div>
+    <p id="calDateHeading" aria-live="polite"></p>
+  </div>
+</div>
  <div id="announcementList">
     <p class="muted">現在、告知はありません。</p>
   </div>
+</section>
+<section id="matchCenter" class="panel">
+<h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg> 戦績</h2><p id="matchAccess" class="muted" role="status">権限を確認中...</p>
+<div id="myMatchStats" class="matchStatsPanel" hidden></div>
+<button id="matchOpen" type="button" hidden>＋ 対戦結果を登録</button>
+<form id="matchForm" hidden>
+<label>対戦日時<input id="matchDate" type="datetime-local" required></label>
+<label>部屋の種類<input id="matchRoom" placeholder="例：猫逆、罠逆" maxlength="80" required></label>
+<label>勝利陣営<select id="matchWinner" required><option value="">選択してください</option><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
+<h3>参加プレイヤー</h3><p class="muted">登録済みの参加者だけ追加してください。</p>
+<div class="matchSearchRow"><input id="matchSearch" type="search" placeholder="プレイヤー名" maxlength="20"><button id="matchFind" type="button">検索</button></div>
+<p id="matchSearchStatus" class="muted" role="status"></p><div id="matchResults"></div>
+<div id="matchRoster"></div>
+<label>備考（任意）<textarea id="matchMemo" rows="3" maxlength="500"></textarea></label>
+<button id="matchSave" type="submit">対戦結果を一括登録</button>
+</form><p id="matchStatus" role="status" aria-live="polite"></p>
+<button id="manageMatchesOpen" type="button" hidden style="width:100%;margin-top:8px">対戦結果を管理</button>
+<div id="manageMatchesPanel" hidden>
+<p id="manageMatchesStatus" role="status" class="muted"></p>
+<div id="manageMatchesList"></div>
+<div id="matchAuditLookup"><label>変更履歴を検索（削除済みも含む）<input id="matchAuditId" type="number" min="1" step="1" placeholder="対戦ID"></label><button id="matchAuditFind" type="button">履歴を表示</button></div>
+<div id="matchAuditView" hidden></div>
+<form id="manageMatchEdit" hidden>
+<h3>対戦結果を修正</h3>
+<label>対戦日時<input id="manageMatchDate" type="datetime-local" required></label>
+<label>部屋の種類<input id="manageMatchRoom" required maxlength="80"></label>
+<label>勝利陣営<select id="manageMatchWinner" required><option>市民陣営</option><option>人狼陣営</option><option>その他</option><option>廃村</option></select></label>
+<label>備考<textarea id="manageMatchMemo" rows="3" maxlength="500"></textarea></label>
+<h3>参加プレイヤー</h3><div class="matchSearchRow"><input id="managePlayerSearch" type="search" placeholder="プレイヤー名" maxlength="20"><button id="managePlayerFind" type="button">検索</button></div>
+<p id="managePlayerStatus" role="status" class="muted"></p><div id="managePlayerResults"></div><div id="managePlayerRoster"></div>
+<div style="display:flex;gap:8px"><button id="manageMatchCancel" type="button" style="flex:1">キャンセル</button><button type="submit" style="flex:2">変更を保存</button></div>
+</form></div>
 </section>
 <section id="achievements" class="panel">
 <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> トロフィー</h2>
@@ -3529,7 +3558,59 @@ document.getElementById("announcementDate").value = "";
     }
   });
 
+// Calendar uses the very same announcement cards and their existing actions.
+const announcementCalendar = (() => {
+  const el = id => document.getElementById(id);
+  const dateKey = value => {
+    const d = new Date(value);
+    if (!Number.isFinite(d.getTime())) return '';
+    return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+  };
+  let mode = 'list', selected = dateKey(new Date()), month = new Date();
+  month = new Date(month.getFullYear(),month.getMonth(),1);
+  let failed = false;
+  const cards = () => Array.from(el('announcementList').querySelectorAll('.announcementCard'));
+  function render() {
+    const active = mode === 'calendar';
+    el('calPanel').hidden = !active;
+    el('calListMode').setAttribute('aria-pressed',String(!active));
+    el('calMonthMode').setAttribute('aria-pressed',String(active));
+    const all = cards();
+    all.forEach(c => {c.hidden = active && c.dataset.calendarDate !== selected;});
+    el('announcementList').querySelector('.calEmpty')?.remove();
+    if (!active) return;
+    const y=month.getFullYear(), m=month.getMonth();
+    el('calMonthTitle').textContent = `${y}年 ${m+1}月`;
+    const grid=el('calGrid'); grid.replaceChildren();
+    for(const w of ['日','月','火','水','木','金','土']) {const e=document.createElement('div');e.className='calWeek';e.textContent=w;grid.append(e);}
+    for(let i=0;i<month.getDay();i++) grid.append(document.createElement('div'));
+    const today=dateKey(new Date());
+    for(let d=1;d<=new Date(y,m+1,0).getDate();d++) {
+      const key=dateKey(new Date(y,m,d));
+      const entries=all.filter(c=>c.dataset.calendarDate===key);
+      const b=document.createElement('button');b.type='button';b.className='calDay';b.setAttribute('aria-pressed',String(key===selected));b.setAttribute('aria-label',`${m+1}月${d}日、告知${entries.length}件`);if(key===today)b.setAttribute('aria-current','date');
+      const num=document.createElement('span');num.textContent=d;b.append(num);
+      const dots=document.createElement('span');dots.className='calDots';dots.setAttribute('aria-hidden','true');
+      entries.slice(0,3).forEach(c=>{const dot=document.createElement('i');dot.className=c.dataset.calendarType==='スタ逆'?'standard':c.dataset.calendarType==='特殊逆'?'special':'';dots.append(dot);});
+      if(entries.length>3){const more=document.createElement('span');more.textContent='+';dots.append(more);}b.append(dots);
+      b.addEventListener('click',()=>{selected=key;render();});grid.append(b);
+    }
+    const count=all.filter(c=>c.dataset.calendarDate===selected).length;
+    el('calDateHeading').textContent=`${Number(selected.slice(5,7))}月${Number(selected.slice(8,10))}日の開催予定（${count}件）`;
+    // Existing no-data/error text is left in place; only add a day-specific empty message when cards exist.
+    if(!count && all.length && !failed){const p=document.createElement('p');p.className='calEmpty';p.textContent='この日の告知はありません。';el('announcementList').append(p);}
+  }
+  function move(delta){month=new Date(month.getFullYear(),month.getMonth()+delta,1);selected=dateKey(month);render();}
+  el('calListMode').onclick=()=>{mode='list';render();};
+  el('calMonthMode').onclick=()=>{mode='calendar';render();};
+  el('calPrev').onclick=()=>move(-1);el('calNext').onclick=()=>move(1);
+  el('calToday').onclick=()=>{const d=new Date();month=new Date(d.getFullYear(),d.getMonth(),1);selected=dateKey(d);render();};
+  return {dateKey, refresh(error=false){failed=error;render();}};
+})();
+let announcementLoadRevision = 0;
+
 async function loadAnnouncements() {
+  const revision = ++announcementLoadRevision;
   const list = document.getElementById("announcementList");
   const { data: { user } } = await db.auth.getUser();
   const currentUserId = user?.id || null;
@@ -3546,17 +3627,19 @@ async function loadAnnouncements() {
 
     .order("event_date", { ascending: true });
 
+  if (revision !== announcementLoadRevision) return;
   if (error) {
     list.textContent = "告知の読み込みに失敗しました。";
+    announcementCalendar.refresh(true);
     console.error(error);
     return;
   }
 
-  list.replaceChildren();
-
   const { data: authors, error: authorsError } = await db
     .rpc("get_announcement_authors");
 
+  if (revision !== announcementLoadRevision) return;
+  list.replaceChildren();
   if (authorsError) {
     console.error("投稿者名の取得失敗:", authorsError);
   }
@@ -3570,6 +3653,7 @@ async function loadAnnouncements() {
 
   if (!data || data.length === 0) {
     list.textContent = "現在、告知はありません。";
+    announcementCalendar.refresh();
     return;
   }
 
@@ -3596,6 +3680,8 @@ const endedB = b.is_closed || timeB + 2 * 60 * 60 * 1000 <= now;
 data.forEach(item => {
     const card = document.createElement("article");
     card.className = "panel announcementCard";
+    card.dataset.calendarDate = announcementCalendar.dateKey(item.event_date);
+    card.dataset.calendarType = item.room_type || "";
 const eventTime = new Date(item.event_date).getTime();
 const recruitmentOpen = !item.is_closed && eventTime > Date.now();
 card.style.position = "relative";
@@ -4121,6 +4207,7 @@ editBtn.addEventListener("click", () => {
 
   document.getElementById("announcementForm").hidden = true;
   document.getElementById("announcementList").hidden = true;
+  document.getElementById("announcementBrowser").hidden = true;
 
   form.hidden = false;
   form.scrollIntoView({ behavior: "smooth" });
@@ -4203,6 +4290,7 @@ actions.append(rightActions);
 
     list.append(card);
   });
+  announcementCalendar.refresh();
 }
 
 loadAnnouncements();
@@ -4672,6 +4760,7 @@ function closeAnnouncementEdit() {
 
   document.getElementById("announcementForm").hidden = false;
   document.getElementById("announcementList").hidden = false;
+  document.getElementById("announcementBrowser").hidden = false;
 }
 
 document.getElementById("cancelAnnouncementEditBtn")
