@@ -1228,27 +1228,27 @@ a[x-apple-data-detectors] {
   -webkit-text-fill-color: transparent;
 }
 
-.achievement:not(.done) .tag:last-child {
+.achievement:not(.done) .tag.achievement-level {
   color: #858b98;
   border-color: #555b6c;
 }
 
-.achievement.rarity-bronze.done .tag:last-child {
+.achievement.rarity-bronze.done .tag.achievement-level {
   color: #cd7f32;
   border-color: #cd7f32;
 }
 
-.achievement.rarity-silver.done .tag:last-child {
+.achievement.rarity-silver.done .tag.achievement-level {
   color: #c0c0c0;
   border-color: #c0c0c0;
 }
 
-.achievement.rarity-gold.done .tag:last-child {
+.achievement.rarity-gold.done .tag.achievement-level {
   color: #ffd700;
   border-color: #ffd700;
 }
 
-.achievement.rarity-legend.done .tag:last-child {
+.achievement.rarity-legend.done .tag.achievement-level {
   color: #c57aff;
   border-color: #c57aff;
 }
@@ -1715,7 +1715,7 @@ footer{color:#a19cab;border-color:#45434e}
 .matchStatsPanel .msStreak h4:not(:first-child){margin-top:14px}
 .matchStatsPanel .msStreak .msFactionLine{color:#b0adbc!important}
 #matchCenter #matchOpen:not([disabled]){background:linear-gradient(145deg,#262733,#262733);border-color:#56515f;color:#ede9f1}
-#achievements #list .achievement:not(.done) .tag:last-child{color:#a19cab;border-color:#54515e;background:#11121a}
+#achievements #list .achievement:not(.done) .tag.achievement-level{color:#a19cab;border-color:#54515e;background:#11121a}
 #achievements #list .achievement:not(.done) h3{color:#a19cab}
 #profileStats .profileHeader img{max-width:100%;flex-shrink:0}
 #userAuth input,#userAuth select,#userAuth textarea{min-width:0;max-width:100%}
@@ -1763,18 +1763,18 @@ footer{color:#a19cab;border-color:#45434e}
 <style>
 /* Platinum: fifth rarity, distinct from silver */
 .achievement.rarity-platinum.done{border:1px solid #b5e8ff;background:linear-gradient(135deg,#2b414c,#1c272e);box-shadow:0 0 13px #91d9ff42;opacity:1}
-.achievement.rarity-platinum.done h3,.achievement.rarity-platinum.done .tag:last-child{color:#b5e8ff;border-color:#b5e8ff}
+.achievement.rarity-platinum.done h3,.achievement.rarity-platinum.done .tag.achievement-level{color:#b5e8ff;border-color:#b5e8ff}
 .achievement.rarity-platinum.done input{accent-color:#b5e8ff}
 .equippedTrophyTitle[data-rarity="プラチナ"]{--metal-hi:#f1fcff;--metal-mid:#92c8dc;--metal-lo:#38596c;--metal-text:#c9f0ff}
 #trophyEffect.platinum #trophyEffectIcon{--trophy-glow:#b5e8ff}
 #rarityProgressBars .rarityCombinedCard:last-child:nth-child(odd){grid-column:1/-1}
 </style>
 <style>
-#reverseArchive [hidden]{display:none!important} #reverseArchive{scroll-margin-top:12px;min-width:0} .archiveControls{display:flex;flex-wrap:wrap;gap:8px}.archiveControls input,.archiveControls select{flex:1 1 145px;width:100%;min-width:0} #reverseArchive button{font:inherit;color:#d2c9dd;background:#352a20;border:1px solid #56515f;border-radius:8px;padding:10px;cursor:pointer} .archiveCard{display:block;width:100%;text-align:left;margin:10px 0;padding:14px!important;background:linear-gradient(135deg,#1b1c26,#211c18)!important;overflow-wrap:anywhere}.archiveCard strong{display:block;font-size:17px;margin:6px 0;color:#ede9f1}.archiveCard small,.archiveMeta{color:#b0adbc;font-size:12px}.archiveCard p{color:#e3d6c4;margin:6px 0;font-size:14px;white-space:pre-wrap}.archiveBody{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;color:#ede9f1}.archiveImage{display:block;max-width:100%;max-height:440px;object-fit:contain;margin:16px auto;border-radius:8px}#archiveDetail h3{font-size:22px;color:#ede9f1;overflow-wrap:anywhere} #archiveDetail{overflow-wrap:anywhere}
+#reverseArchive [hidden]{display:none!important} #reverseArchive{scroll-margin-top:12px;min-width:0} .archiveControls{display:flex;flex-wrap:wrap;gap:8px}.archiveControls input,.archiveControls select{flex:1 1 145px;width:100%;min-width:0} #reverseArchive button{font:inherit;color:#d2c9dd;background:#252630;border:1px solid #56515f;border-radius:8px;padding:10px;cursor:pointer} .archiveCard{display:block;width:100%;text-align:left;margin:10px 0;padding:14px!important;background:#1b1c26!important;overflow-wrap:anywhere}.archiveCard strong{display:block;font-size:17px;margin:6px 0;color:#ede9f1}.archiveCard small,.archiveMeta{color:#b0adbc;font-size:12px}.archiveCard p{color:#d0cdd9;margin:6px 0;font-size:14px;white-space:pre-wrap}.archiveBody{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;color:#ede9f1}.archiveImage{display:block;max-width:100%;max-height:440px;object-fit:contain;margin:16px auto;border-radius:8px}#archiveDetail h3{font-size:22px;color:#ede9f1;overflow-wrap:anywhere} #archiveDetail{overflow-wrap:anywhere}
 
-#reverseArchive .archiveMarkdown{white-space:normal;min-width:0}#reverseArchive .archiveMarkdown p{margin:.55em 0;white-space:pre-wrap}#reverseArchive .archiveMarkdown h3,#reverseArchive .archiveMarkdown h4,#reverseArchive .archiveMarkdown h5,#reverseArchive .archiveMarkdown h6{color:#ede9f1;font-size:1.08em;margin:1.4em 0 .6em}#reverseArchive .archiveMarkdown strong{color:#f2d59c}#reverseArchive .archiveMarkdown hr{border:0;border-top:1px solid #56515f;margin:1.3em 0}#reverseArchive .archiveMarkdown blockquote{border-left:3px solid #a18450;padding:5px 12px;margin:12px 0;color:#d8c7ad}#reverseArchive .archiveMarkdown ul,#reverseArchive .archiveMarkdown ol{padding-left:1.6em}#reverseArchive .archiveTableScroll{max-width:100%;overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}#reverseArchive .archiveTableScroll table{width:100%;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.5;background:#241e19;color:#ede9f1}#reverseArchive .archiveTableScroll th,#reverseArchive .archiveTableScroll td{border:1px solid #725a38;padding:9px 7px;text-align:left;white-space:normal;overflow-wrap:normal;word-break:normal;min-width:3em}#reverseArchive .archiveTableScroll th{background:#292a36;color:#f1d49e;font-weight:700}#reverseArchive .archiveTableScroll tr:nth-child(even) td{background:#1b1c26}
+#reverseArchive .archiveMarkdown{white-space:normal;min-width:0}#reverseArchive .archiveMarkdown p{margin:.55em 0;white-space:pre-wrap}#reverseArchive .archiveMarkdown h3,#reverseArchive .archiveMarkdown h4,#reverseArchive .archiveMarkdown h5,#reverseArchive .archiveMarkdown h6{color:#ede9f1;font-size:1.08em;margin:1.4em 0 .6em}#reverseArchive .archiveMarkdown strong{color:#f2d59c}#reverseArchive .archiveMarkdown hr{border:0;border-top:1px solid #56515f;margin:1.3em 0}#reverseArchive .archiveMarkdown blockquote{border-left:3px solid #a18450;padding:5px 12px;margin:12px 0;color:#d8c7ad}#reverseArchive .archiveMarkdown ul,#reverseArchive .archiveMarkdown ol{padding-left:1.6em}#reverseArchive .archiveTableScroll{max-width:100%;overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}#reverseArchive .archiveTableScroll table{width:100%;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.5;background:#241e19;color:#ede9f1}#reverseArchive .archiveTableScroll th,#reverseArchive .archiveTableScroll td{border:1px solid #45434e;padding:9px 7px;text-align:left;white-space:normal;overflow-wrap:normal;word-break:normal;min-width:3em}#reverseArchive .archiveTableScroll th{background:#292a36;color:#f1d49e;font-weight:700}#reverseArchive .archiveTableScroll tr:nth-child(even) td{background:#1b1c26}
 </style>
-<style>#reverseTimeline [hidden]{display:none!important}#reverseTimeline{min-width:0;scroll-margin-top:12px}.tlCard,.tlReply,.tlMatchCard{border:1px solid #725a38;background:#2b231c;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.tlBody{white-space:pre-wrap;line-height:1.65}.tlAuthor,.tlActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tlAuthor img{width:40px;height:40px;border-radius:50%;object-fit:cover}.tlAuthor button{background:none!important;border:0!important;padding:3px!important;font-weight:bold;color:#ede9f1}.tlTitle{font-size:12px;color:#d2c9dd;border:1px solid currentColor;padding:2px 8px;border-radius:4px;text-align:center}.tlTitle[data-rarity="銅"]{color:#c98b60}.tlTitle[data-rarity="銀"]{color:#cbd2db}.tlTitle[data-rarity="プラチナ"]{color:#a8d9f0}.tlTitle[data-rarity="伝説"]{color:#edb6f9}.tlImage{display:block;max-width:100%;max-height:480px;object-fit:contain;border-radius:8px;margin:8px auto}.tlActions button,#reverseTimeline button{width:auto;max-width:100%;padding:8px 12px;margin:3px 0;color:#ede9f1;background:#352a20;border:1px solid #56515f;border-radius:8px}.tlThread{padding-left:10px;border-left:1px solid #725a38}#reverseTimeline textarea,#reverseTimeline select,#reverseTimeline input{width:100%;max-width:100%;box-sizing:border-box;margin:5px 0}#reverseTimeline textarea{resize:vertical}#tlForm{margin:12px 0}#tlCount{float:right}</style><style>
+<style>#reverseTimeline [hidden]{display:none!important}#reverseTimeline{min-width:0;scroll-margin-top:12px}.tlCard,.tlReply,.tlMatchCard{border:1px solid #45434e;background:#1b1c26;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.tlBody{white-space:pre-wrap;line-height:1.65}.tlAuthor,.tlActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tlAuthor img{width:40px;height:40px;border-radius:50%;object-fit:cover}.tlAuthor button{background:none!important;border:0!important;padding:3px!important;font-weight:bold;color:#ede9f1}.tlTitle{font-size:12px;color:#d2c9dd;border:1px solid currentColor;padding:2px 8px;border-radius:4px;text-align:center}.tlTitle[data-rarity="銅"]{color:#c98b60}.tlTitle[data-rarity="銀"]{color:#cbd2db}.tlTitle[data-rarity="プラチナ"]{color:#a8d9f0}.tlTitle[data-rarity="伝説"]{color:#edb6f9}.tlImage{display:block;max-width:100%;max-height:480px;object-fit:contain;border-radius:8px;margin:8px auto}.tlActions button,#reverseTimeline button{width:auto;max-width:100%;padding:8px 12px;margin:3px 0;color:#ede9f1;background:#252630;border:1px solid #56515f;border-radius:8px}.tlThread{padding-left:10px;border-left:1px solid #45434e}#reverseTimeline textarea,#reverseTimeline select,#reverseTimeline input{width:100%;max-width:100%;box-sizing:border-box;margin:5px 0}#reverseTimeline textarea{resize:vertical}#tlForm{margin:12px 0}#tlCount{float:right}#reverseTimeline #tlSubmit{background:#d0d2df!important;color:#191a22!important;border-color:#d0d2df!important} #reverseTimeline #tlLoadMatches,#reverseTimeline #tlRefresh,#reverseTimeline #tlMore{background:#252630!important;color:#ede9f1!important} #reverseTimeline input[type=file]::file-selector-button{background:#252630!important;color:#ede9f1!important;border:1px solid #56515f!important;border-radius:4px!important} #reverseTimeline input[type=file]::-webkit-file-upload-button{background:#252630!important;color:#ede9f1!important;border:1px solid #56515f!important;border-radius:4px!important}</style><style>
 #passwordRecoveryPanel[hidden],#recoveryForm[hidden]{display:none!important}
 #userAuth.recovering #authForm,#userAuth.recovering #signedIn,#userAuth.account-guiding #authForm,#userAuth.account-guiding #signedIn{display:none!important}
 #userAuth [hidden]{display:none!important}
@@ -1812,6 +1812,7 @@ footer{color:#a19cab;border-color:#45434e}
 </head>
 <body>
 <header>
+<img id="portalHeaderImage" src="./reverse-header.jpg" alt="逆村広場 — REVERSE VILLAGE PORTAL" width="1536" height="864" fetchpriority="high">
 
 <button id="notificationBtn" type="button"
         aria-label="通知" aria-expanded="false" hidden>
@@ -2024,84 +2025,27 @@ footer{color:#a19cab;border-color:#45434e}
 
 <p id="saveProfileMessage" role="status"></p>
 </div>
-<div id="profileStats" style="margin-top:20px;">
-
-<div class="profileHeader">
-  <img id="profileHeaderAvatar"
-       alt="プロフィール画像"
-       width="80"
-       height="80"
-       style="display:none; border-radius:50%; object-fit:cover;">
-
-  <div>
-    <div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div>
-    <h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3>
-    
-<button id="editProfileBtn" type="button">
-  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集
-</button>
-
-<button id="privacyToggleBtn" type="button"
+<div id="profileStats" class="playerCard">
+  <div class="pcTop"><span>PLAYER CARD</span><div class="pcActions"><button id="privacyToggleBtn" type="button"
   style="margin-left:6px;white-space:nowrap;">
 
   <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-7 6-7 12 0 18 7-6 7-12 0-18"/></svg> 公開設定を読み込み中...
-</button>
-
-<p id="privacyMessage"
+</button><button id="editProfileBtn" type="button">
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集
+</button></div></div>
+  <div class="pcMain"><div class="pcAvatar"><svg aria-hidden="true" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="17" r="7"/><path d="M11 39a13 13 0 0 1 26 0"/></svg><img id="profileHeaderAvatar"
+       alt="プロフィール画像"
+       width="80"
+       height="80"
+       style="display:none; border-radius:50%; object-fit:cover;"></div>
+  <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
+  <div class="pcProgress"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg><strong id="profileUnlocked">0</strong><span id="pcTotal">/ 0</span><progress id="pcProgressBar" max="100" value="0" aria-label="トロフィー獲得率"></progress><strong id="profileRate">0%</strong></div></div></div>
+  <p id="privacyMessage"
   style="font-size:12px;color:#b0adbc;">
 </p>
-
-
-    
-  </div>
-  
+  <details id="profileBioSection"><summary>自己紹介・詳細情報</summary><p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p></details>
 </div>
 
- 
-
- 
-<div id="profileBioSection" style="margin-top:16px;">
-  <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5zM8 8h8m-8 4h8m-8 4h5"/></svg> 自己紹介</h4>
-  <p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p>
-</div>
-
-  
-
-<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
- 
-<div style="grid-column:1 / -1;background:#1b1c26;border-radius:10px;padding:12px;text-align:center;">
-  <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> 好きなキャラクター</div>
-  <strong id="favoriteCharacterDisplay" style="color:#f1f2f6;">未設定</strong>
-</div>
- <div style="background:#1b1c26;border-radius:10px;padding:12px 6px;text-align:center;">
-    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 4 13C-2 5 8 1 12 7c4-6 14-2 8 6z"/></svg> 好きな役職</div>
-    <strong id="favoriteRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
-  </div>
-  <div style="background:#1b1c26;border-radius:10px;padding:12px 6px;text-align:center;">
-    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 4 13C-2 5 8 1 12 7c4-6 14-2 8 6zM12 7l-3 5 5 2-2 7"/></svg> 苦手な役職</div>
-    <strong id="dislikedRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
-  </div>
-</div>
-
-
-<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
-  <div style="text-align:center;padding:12px 6px;background:#1b1c26;border-radius:10px;">
-    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> 獲得トロフィー</div>
-    
-<strong id="profileUnlocked" style="display:block;font-size:26px;margin-top:6px;">0</strong>
-
-  </div>
-  <div style="text-align:center;padding:12px 6px;background:#1b1c26;border-radius:10px;">
-    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16v-5m5 5V6m5 10V9"/></svg> 獲得率</div>
-    <strong id="profileRate" style="display:block;font-size:26px;margin-top:6px;">0%</strong>
-  </div>
-</div>
-
-
-
-</div>
-
-    
 <p id="signedInEmail"></p>
 <button id="signoutBtn" type="button">ログアウト</button>
 <details id="accountDeleteSettings" style="margin-top:16px;border-top:1px solid #45434e;padding-top:12px">
@@ -2658,6 +2602,8 @@ if (name === "伝説") {
   
 document.getElementById("profileUnlocked").textContent = done;
 document.getElementById("profileRate").textContent = pct + "%";
+document.getElementById("pcTotal").textContent = "/ " + total;
+document.getElementById("pcProgressBar").value = pct;
 
 const progressClass =
   done === 0 ? "progress-white" :
@@ -2680,6 +2626,7 @@ const progressClass =
   el.classList.add(progressClass);
 });
 
+document.getElementById("pcProgressBar").dataset.tier = progressClass;
 document.getElementById("bar").style.width=pct+"%";
 document.getElementById("percent").textContent=`${pct}%`;
 list.replaceChildren();
@@ -2826,9 +2773,9 @@ if (a.rarity === "伝説" && legendLocked) {
 }
 
 const role=document.createElement("span");
-role.className="tag";role.textContent=a.role;
+role.className="tag achievement-role";role.textContent=a.role;
 const level=document.createElement("span");
-level.className = "tag";
+level.className = "tag achievement-level";
 if (!completed[a.id]) {
   level.textContent = "未獲得";
 } else {
@@ -2836,8 +2783,8 @@ if (!completed[a.id]) {
   level.append(document.createTextNode(" " + (a.rarity || "")));
 }
 content.append(title,desc);
-if (String(a.role ?? "").trim()) content.append(role);
 content.append(level);
+if (String(a.role ?? "").trim()) content.append(role);
 card.append(check,content);
 list.append(card);
 });
@@ -3112,6 +3059,10 @@ document.getElementById("signoutBtn").onclick = async()=>{
     ? "ログアウト失敗：" + error.message
     : "ログアウトしました。";
   await refreshUserAuth();
+  if (!error) {
+    document.activeElement?.blur();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
 };
 
 db.auth.onAuthStateChange(()=>{
@@ -5566,7 +5517,60 @@ html body .notificationItem.unread{border-left-color:#aeb2c2!important}
 html body #announcementBrowser .calDay{background:#1b1c26!important;border-color:#45434e!important;color:#ede9f1!important}
 html body #announcementBrowser .calDay[aria-pressed=true]{background:#343542!important;border-color:#d0d2df!important;box-shadow:inset 0 0 0 1px #d0d2df!important}
 html body #announcementBrowser .calDay[aria-current=date]{color:#ede9f1!important}
-html body #achievements #list .achievement .tag:not(:last-child){color:#d0d2df!important;border-color:#56515f!important;background:#1b1c26!important}
+html body #achievements #list .achievement .tag.achievement-role{color:#d0d2df!important;border-color:#56515f!important;background:#1b1c26!important}
+</style>
+<style id="silverCommunity">
+html body #reverseTimeline button,html body #reverseArchive button{background:#252630!important;color:#ede9f1!important;border-color:#56515f!important;border-radius:4px!important;box-shadow:none!important}
+html body #reverseTimeline #tlSubmit{background:#d0d2df!important;color:#191a22!important;border-color:#d0d2df!important}
+html body #reverseTimeline .tlAuthor button{background:transparent!important;border:0!important}
+html body #reverseTimeline .tlCard,html body #reverseTimeline .tlReply,html body #reverseTimeline .tlMatchCard{background:#1b1c26!important;border-color:#45434e!important;border-radius:4px!important}
+html body #reverseTimeline .tlThread{border-color:#45434e!important}
+html body #reverseTimeline input::file-selector-button{background:#252630;color:#ede9f1;border:1px solid #56515f;border-radius:4px;padding:6px 10px;margin-right:8px}
+html body #reverseTimeline input::-webkit-file-upload-button{background:#252630;color:#ede9f1;border:1px solid #56515f;border-radius:4px;padding:6px 10px;margin-right:8px}
+html body #reverseArchive button.archiveCard{background:#1b1c26!important;border-color:#45434e!important}
+html body #reverseArchive .archiveCard p{color:#d0cdd9!important}
+html body #reverseArchive .archiveMarkdown strong{color:#ede9f1!important}
+html body #reverseArchive .archiveMarkdown blockquote{color:#b0adbc!important;border-left-color:#777584!important}
+html body #reverseArchive .archiveTableScroll table{background:#161720!important;color:#ede9f1!important}
+html body #reverseArchive .archiveTableScroll th,html body #reverseArchive .archiveTableScroll td{border-color:#56515f!important}
+html body #reverseArchive .archiveTableScroll th{background:#292a36!important;color:#ede9f1!important}
+</style>
+<style id="publicHeaderAlways">
+html body > header {display:block!important;visibility:visible!important;opacity:1!important;width:100%;height:auto;min-height:0;aspect-ratio:auto;padding:0!important;background:#0c0d13!important;overflow:visible;}
+html body > header > #portalHeaderImage {display:block!important;visibility:visible!important;opacity:1!important;width:100%;height:auto;aspect-ratio:16 / 9;object-fit:contain;margin:0;}
+html body > header > #notificationBtn[hidden] {display:none!important;}
+</style>
+<style id="compactPlayerCard">
+html body #profileStats.playerCard {padding:12px!important;max-width:100%;margin:0!important;min-width:0;}
+html body #profileStats.playerCard > div {padding:0!important;margin:0!important;background:transparent!important;}
+#profileStats .pcTop{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:10px!important;color:#a19cab;font-size:11px;letter-spacing:.07em;}
+#profileStats .pcActions{display:flex;align-items:center;gap:5px;min-width:0;}
+html body #profileStats.playerCard .pcActions button{width:auto!important;min-height:28px!important;font-size:11px!important;padding:3px 5px!important;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important;white-space:nowrap!important;}
+#profileStats .pcMain{display:grid;grid-template-columns:clamp(44px,16vw,78px) minmax(0,1fr);align-items:center;gap:10px;}
+#profileStats .pcAvatar{position:relative;aspect-ratio:1;border:2px solid #858092;border-radius:50%;background:#252632;overflow:hidden;display:grid;place-items:center;color:#a19cab;}
+#profileStats .pcAvatar > svg{width:65%;height:65%;}
+html body #profileStats #profileHeaderAvatar{position:absolute;inset:0;width:100%!important;height:100%!important;margin:0!important;border:0!important;object-fit:cover;}
+#profileStats .pcInfo{min-width:0;}
+html body #profileStats #profileTitle{text-align:left!important;font-size:21px!important;line-height:1.25;margin:3px 0 6px!important;overflow-wrap:anywhere;}
+html body #profileStats #myTrophyTitle{margin:0!important;font-size:10px!important;line-height:1.3;padding:3px 9px;}
+#profileStats .pcFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;}
+#profileStats .pcField{min-width:0;display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere;}
+#profileStats .pcField span{font-size:clamp(9px,2.5vw,11px);color:#a19cab;line-height:1.3;}
+#profileStats .pcField strong{font-size:clamp(11px,3vw,14px);color:#e5e1ec!important;line-height:1.4;font-weight:600;}
+#profileStats .pcProgress{display:flex;align-items:center;gap:4px;margin-top:8px;min-width:0;font-size:12px;white-space:nowrap;}
+#profileStats .pcProgress .portalIcon{width:14px;height:14px;flex:none;}
+html body #profileStats .pcProgress strong{font-size:13px!important;margin:0!important;line-height:1.2;display:inline-block!important;}
+#profileStats #pcTotal{color:#a19cab;font-size:11px;}
+#profileStats #pcProgressBar{flex:1;min-width:12px;height:4px;appearance:none;-webkit-appearance:none;border:0;border-radius:4px;background:#30303b;color:#cd7f32;overflow:hidden;}
+#pcProgressBar::-webkit-progress-bar{background:#30303b;}#pcProgressBar::-webkit-progress-value{background:currentColor;}#pcProgressBar::-moz-progress-bar{background:currentColor;}
+#profileStats #pcProgressBar[data-tier=progress-white]{color:#eee;}#profileStats #pcProgressBar[data-tier=progress-silver]{color:#c0c0c0;}#profileStats #pcProgressBar[data-tier=progress-gold]{color:#ffd700;}#profileStats #pcProgressBar[data-tier=progress-rainbow]::-webkit-progress-value{background:linear-gradient(90deg,#ff8383,#ffde83,#85e8bb,#83bcff,#dba0ff);}
+html body #profileStats #profileBioSection{margin:10px 0 0!important;border-top:1px solid #45434f;padding-top:9px;}
+#profileStats #profileBioSection summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;font-size:12px;color:#a19cab;}
+#profileStats #profileBioSection summary::-webkit-details-marker{display:none;}
+#profileStats #profileBioSection summary::after{content:'⌄';}#profileStats #profileBioSection[open] summary::after{content:'⌃';}
+#profileStats #profileBio{margin:8px 0 0!important;font-size:13px;line-height:1.6;}
+#profileStats #privacyMessage{font-size:11px!important;margin:4px 0!important;}
+@media(max-width:370px){html body #profileStats.playerCard{padding:9px!important;}#profileStats .pcMain{gap:7px;grid-template-columns:44px minmax(0,1fr);}#profileStats .pcProgress{gap:3px;}}
 </style>
 </body>
 </html>
