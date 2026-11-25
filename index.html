@@ -1774,7 +1774,12 @@ footer{color:#b4a38c;border-color:#534230}
 
 #reverseArchive .archiveMarkdown{white-space:normal;min-width:0}#reverseArchive .archiveMarkdown p{margin:.55em 0;white-space:pre-wrap}#reverseArchive .archiveMarkdown h3,#reverseArchive .archiveMarkdown h4,#reverseArchive .archiveMarkdown h5,#reverseArchive .archiveMarkdown h6{color:#ebd0a0;font-size:1.08em;margin:1.4em 0 .6em}#reverseArchive .archiveMarkdown strong{color:#f2d59c}#reverseArchive .archiveMarkdown hr{border:0;border-top:1px solid #876940;margin:1.3em 0}#reverseArchive .archiveMarkdown blockquote{border-left:3px solid #a18450;padding:5px 12px;margin:12px 0;color:#d8c7ad}#reverseArchive .archiveMarkdown ul,#reverseArchive .archiveMarkdown ol{padding-left:1.6em}#reverseArchive .archiveTableScroll{max-width:100%;overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch}#reverseArchive .archiveTableScroll table{width:100%;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.5;background:#241e19;color:#f1e9db}#reverseArchive .archiveTableScroll th,#reverseArchive .archiveTableScroll td{border:1px solid #725a38;padding:9px 7px;text-align:left;white-space:normal;overflow-wrap:normal;word-break:normal;min-width:3em}#reverseArchive .archiveTableScroll th{background:#473624;color:#f1d49e;font-weight:700}#reverseArchive .archiveTableScroll tr:nth-child(even) td{background:#30271f}
 </style>
-<style>#reverseTimeline [hidden]{display:none!important}#reverseTimeline{min-width:0;scroll-margin-top:12px}.tlCard,.tlReply,.tlMatchCard{border:1px solid #725a38;background:#2b231c;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.tlBody{white-space:pre-wrap;line-height:1.65}.tlAuthor,.tlActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tlAuthor img{width:40px;height:40px;border-radius:50%;object-fit:cover}.tlAuthor button{background:none!important;border:0!important;padding:3px!important;font-weight:bold;color:#ead3a8}.tlTitle{font-size:12px;color:#e7c68a;border:1px solid currentColor;padding:2px 8px;border-radius:4px;text-align:center}.tlTitle[data-rarity="銅"]{color:#c98b60}.tlTitle[data-rarity="銀"]{color:#cbd2db}.tlTitle[data-rarity="プラチナ"]{color:#a8d9f0}.tlTitle[data-rarity="伝説"]{color:#edb6f9}.tlImage{display:block;max-width:100%;max-height:480px;object-fit:contain;border-radius:8px;margin:8px auto}.tlActions button,#reverseTimeline button{width:auto;max-width:100%;padding:8px 12px;margin:3px 0;color:#ead3a8;background:#352a20;border:1px solid #876940;border-radius:8px}.tlThread{padding-left:10px;border-left:1px solid #725a38}#reverseTimeline textarea,#reverseTimeline select,#reverseTimeline input{width:100%;max-width:100%;box-sizing:border-box;margin:5px 0}#reverseTimeline textarea{resize:vertical}#tlForm{margin:12px 0}#tlCount{float:right}</style></head>
+<style>#reverseTimeline [hidden]{display:none!important}#reverseTimeline{min-width:0;scroll-margin-top:12px}.tlCard,.tlReply,.tlMatchCard{border:1px solid #725a38;background:#2b231c;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.tlBody{white-space:pre-wrap;line-height:1.65}.tlAuthor,.tlActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tlAuthor img{width:40px;height:40px;border-radius:50%;object-fit:cover}.tlAuthor button{background:none!important;border:0!important;padding:3px!important;font-weight:bold;color:#ead3a8}.tlTitle{font-size:12px;color:#e7c68a;border:1px solid currentColor;padding:2px 8px;border-radius:4px;text-align:center}.tlTitle[data-rarity="銅"]{color:#c98b60}.tlTitle[data-rarity="銀"]{color:#cbd2db}.tlTitle[data-rarity="プラチナ"]{color:#a8d9f0}.tlTitle[data-rarity="伝説"]{color:#edb6f9}.tlImage{display:block;max-width:100%;max-height:480px;object-fit:contain;border-radius:8px;margin:8px auto}.tlActions button,#reverseTimeline button{width:auto;max-width:100%;padding:8px 12px;margin:3px 0;color:#ead3a8;background:#352a20;border:1px solid #876940;border-radius:8px}.tlThread{padding-left:10px;border-left:1px solid #725a38}#reverseTimeline textarea,#reverseTimeline select,#reverseTimeline input{width:100%;max-width:100%;box-sizing:border-box;margin:5px 0}#reverseTimeline textarea{resize:vertical}#tlForm{margin:12px 0}#tlCount{float:right}</style><style>
+#passwordRecoveryPanel[hidden],#recoveryForm[hidden]{display:none!important}
+#userAuth.recovering #authForm,#userAuth.recovering #signedIn{display:none!important}
+#forgotPasswordBtn:disabled{opacity:.55;cursor:wait}
+</style>
+</head>
 <body>
 <header>
 
@@ -1820,7 +1825,20 @@ footer{color:#b4a38c;border-color:#534230}
     <input id="userPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0">
     <button id="signupBtn" type="button">新規登録</button>
     <button id="signinBtn" type="button">ログイン</button>
+    <button id="forgotPasswordBtn" type="button" style="display:block;width:100%;margin-top:12px;background:transparent;color:#e5c99a;border:0;text-decoration:underline;cursor:pointer">パスワードをお忘れですか？</button>
   </div>
+  <section id="passwordRecoveryPanel" hidden style="padding:12px 0">
+    <h3>パスワード再設定</h3>
+    <p id="recoveryStatus" role="status">再設定リンクを確認中です。</p>
+    <form id="recoveryForm" hidden>
+      <label for="recoveryPassword">新しいパスワード（6文字以上）</label>
+      <input id="recoveryPassword" type="password" autocomplete="new-password" minlength="6" required style="width:100%;margin:8px 0">
+      <label for="recoveryConfirm">新しいパスワード（確認）</label>
+      <input id="recoveryConfirm" type="password" autocomplete="new-password" minlength="6" required style="width:100%;margin:8px 0">
+      <button id="recoverySave" type="submit">パスワードを変更する</button>
+    </form>
+    <button id="recoveryCancel" type="button" style="margin-top:12px">ログイン画面に戻る</button>
+  </section>
   <div id="signedIn" hidden>
     
 
@@ -2861,6 +2879,75 @@ document.getElementById(id).addEventListener("input",render));
 const SUPABASE_URL = "https://qwmraeabwlnkwsaqwqqg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Password recovery: register immediately after creating the auth client.
+(() => {
+  const el = id => document.getElementById(id);
+  const url = new URL(location.href);
+  const hash = new URLSearchParams(url.hash.slice(1));
+  const requested = url.searchParams.get('reset-password') === '1' || hash.get('type') === 'recovery';
+  let recoveryUser = null, finished = false;
+  function openRecovery(message, ready = false) {
+    if (finished) return;
+    el('userAuth').classList.add('recovering');
+    el('passwordRecoveryPanel').hidden = false;
+    el('recoveryForm').hidden = !ready;
+    el('recoveryStatus').textContent = message;
+  }
+  if (requested) openRecovery('再設定リンクを確認中です。');
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY' && session?.user) {
+      recoveryUser = session.user.id;
+      openRecovery('新しいパスワードを入力してください。', true);
+      el('passwordRecoveryPanel').scrollIntoView({block:'center'});
+    } else if (event === 'SIGNED_OUT' && recoveryUser) {
+      recoveryUser = null;
+      openRecovery('再設定セッションが終了しました。メールを再送してください。');
+    }
+  });
+  if (requested) setTimeout(() => {
+    if (!recoveryUser && !finished) openRecovery('リンクが無効または期限切れの可能性があります。ログイン画面から再送してください。');
+  }, 8000);
+  el('forgotPasswordBtn').onclick = async () => {
+    const button = el('forgotPasswordBtn'), input = el('userEmail'), message = el('authMessage');
+    if (!input.value.trim() || !input.checkValidity()) { message.textContent = '登録済みメールアドレスを入力してください。'; input.focus(); return; }
+    button.disabled = true; message.textContent = '送信中…';
+    try {
+      const {error} = await db.auth.resetPasswordForEmail(input.value.trim(), {redirectTo:'https://soyogi1117.github.io/reverse-achievements/?reset-password=1'});
+      if (error) throw error;
+      message.textContent = '登録済みのメールアドレスであれば、再設定メールが届きます。';
+    } catch (e) { message.textContent = '送信できませんでした：' + (e.message || String(e)); }
+    finally { button.disabled = false; }
+  };
+  function clearRecovery() {
+    finished = true; recoveryUser = null;
+    el('recoveryForm').reset(); el('passwordRecoveryPanel').hidden = true;
+    el('userAuth').classList.remove('recovering');
+    const clean = new URL(location.href); clean.searchParams.delete('reset-password');
+    if (/access_token|error_description|type=recovery/.test(clean.hash)) clean.hash = '';
+    history.replaceState(null,'',clean.href);
+  }
+  el('recoveryCancel').onclick = async () => {
+    if (recoveryUser) { const {error} = await db.auth.signOut({scope:'local'}); if (error) { el('recoveryStatus').textContent = error.message; return; } }
+    clearRecovery();
+  };
+  el('recoveryForm').onsubmit = async event => {
+    event.preventDefault();
+    const password = el('recoveryPassword').value, status = el('recoveryStatus'), button = el('recoverySave');
+    if (!recoveryUser || button.disabled) return;
+    if (password.length < 6 || password !== el('recoveryConfirm').value) { status.textContent = '6文字以上の同じパスワードを2回入力してください。'; return; }
+    button.disabled = true; status.textContent = '変更中…';
+    try {
+      const {data:{user},error:authError} = await db.auth.getUser();
+      if (authError || !user || user.id !== recoveryUser) throw new Error('再設定セッションが無効です。');
+      const {error} = await db.auth.updateUser({password}); if (error) throw error;
+      el('recoveryForm').reset(); el('recoveryForm').hidden = true;
+      const logout = await db.auth.signOut({scope:'global'});
+      if (logout.error) { status.textContent = 'パスワードは変更されましたが、ログアウトできませんでした。下のボタンから戻ってください。'; return; }
+      clearRecovery(); el('authMessage').textContent = 'パスワードを変更しました。新しいパスワードでログインしてください。';
+    } catch (e) { status.textContent = '変更失敗：' + (e.message || String(e)); }
+    finally { button.disabled = false; }
+  };
+})();
 async function loadAchievements() {
   const { data, error } = await db
     .from("achievements")
