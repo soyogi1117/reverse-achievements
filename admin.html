@@ -77,6 +77,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 </section>
 
 <section id="admin" hidden>
+<details id="tlAdmin"><summary>逆村タイムラインの通報管理</summary><button id="tlAdminRefresh" type="button">通報一覧を更新</button><p id="tlAdminStatus" role="status"></p><div id="tlAdminRows"></div></details>
 <details id="archiveAdmin" style="margin:24px 0">
 <summary style="font-size:20px;font-weight:bold;cursor:pointer">逆村資料館の管理</summary>
 <form id="archiveForm">
@@ -731,6 +732,8 @@ function previewTrophy(rarity) {
  el('archiveReset').onclick=()=>{if(!busy)reset();};el('archiveReload').onclick=load;el('archiveAdmin').addEventListener('toggle',()=>{if(el('archiveAdmin').open)load();});
  new MutationObserver(()=>{if(el('admin').hidden){++seq;reset();el('archiveRows').replaceChildren();el('archiveAdmin').open=false;status('');}}).observe(el('admin'),{attributes:true,attributeFilter:['hidden']});
 })();
+</script>
+<script>(()=>{const el=id=>document.getElementById(id), box=el('tlAdminRows'), status=el('tlAdminStatus');const n=(tag,t)=>{const x=document.createElement(tag);x.textContent=t;return x;};const get=async q=>{const {data,error}=await q;if(error)throw error;return data;};function b(t,fn){const x=n('button',t);x.type='button';x.className='secondary';x.onclick=async()=>{x.disabled=true;try{await fn();await load();}catch(e){status.textContent=e.message;}finally{x.disabled=false;}};return x;}async function load(){box.replaceChildren();status.textContent='読み込み中…';try{const reports=await get(db.from('timeline_reports').select('*').eq('status','pending').order('created_at',{ascending:false}).limit(100));if(el('admin').hidden)return;status.textContent=reports.length+'件の未対応通報（最大100件）';for(const r of reports){const p=await get(db.from('timeline_posts').select('id,content,user_id').eq('id',r.post_id).maybeSingle());const card=n('div','');card.style.cssText='border:1px solid #876940;border-radius:8px;padding:12px;margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap';card.append(n('strong','投稿 #'+r.post_id),n('p',p?.content||'（本文なし／削除済み）'),n('p','通報理由：'+r.reason),b('対応済み',()=>get(db.from('timeline_reports').update({status:'resolved'}).eq('id',r.id).select('id').single())),b('却下',()=>get(db.from('timeline_reports').update({status:'dismissed'}).eq('id',r.id).select('id').single())),b('投稿を削除',async()=>{if(confirm('投稿と関連する返信・いいね・通報を削除しますか？'))await get(db.from('timeline_posts').delete().eq('id',r.post_id).select('id').single());}));box.append(card);}}catch(e){status.textContent='取得失敗：'+e.message;}}el('tlAdminRefresh').onclick=load;el('tlAdmin').ontoggle=()=>{if(el('tlAdmin').open)void load();};new MutationObserver(()=>{if(el('admin').hidden){box.replaceChildren();status.textContent='';el('tlAdmin').open=false;}}).observe(el('admin'),{attributes:true,attributeFilter:['hidden']});})();
 </script>
 </body>
 </html>
