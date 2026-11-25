@@ -2503,7 +2503,8 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   </svg>
 </div>
 
-    <h2 id="trophyEffectTitle"></h2>
+    <div id="trophyEffectRarity"></div>
+    <h2 id="trophyEffectTitle">TROPHY UNLOCKED!</h2>
     <p id="trophyEffectName"></p>
   </div>
 </div>
@@ -2817,8 +2818,8 @@ trophyIcon.style.filter = "";
 
 
 
-  document.getElementById("trophyEffectTitle").textContent =
-    isLegend ? "LEGENDARY ACHIEVEMENT" : achievement.rarity === "プラチナ" ? "PLATINUM TROPHY" : "TROPHY UNLOCKED!";
+  document.getElementById("trophyEffectTitle").textContent = "TROPHY UNLOCKED!";
+  document.getElementById("trophyEffectRarity").textContent = ({"銅":"BRONZE","銀":"SILVER","金":"GOLD","プラチナ":"PLATINUM","伝説":"LEGENDARY"})[achievement.rarity] || "";
 
   document.getElementById("trophyEffectName").textContent =
     achievement.name;
@@ -5584,5 +5585,16 @@ grant.onclick=async()=>{if(busy||!match.value||!player.value||!trophy.value)retu
 db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT'||event==='INITIAL_SESSION')setTimeout(check,0);});check();
 })();
 </script>
+
+<style>
+#trophyEffect #trophyEffectRarity, #trophyEffect #trophyEffectTitle {font-family:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif !important; text-align:center; line-height:1.4;}
+#trophyEffect #trophyEffectRarity {font-size:12px !important; font-weight:500; letter-spacing:.32em; margin:8px 0 3px;}
+#trophyEffect #trophyEffectTitle {font-size:clamp(19px,5.4vw,26px) !important; font-weight:700; letter-spacing:.025em; margin:0 0 12px;}
+#trophyEffect.bronze #trophyEffectRarity {color:#cd7f32 !important;}
+#trophyEffect.silver #trophyEffectRarity {color:#c0c0c0 !important;}
+#trophyEffect.gold #trophyEffectRarity {color:#ffd700 !important;}
+#trophyEffect.platinum #trophyEffectRarity {color:#afe2f5 !important;}
+#trophyEffect.legendary #trophyEffectRarity, #trophyEffect.legendary #trophyEffectTitle {background:linear-gradient(90deg,#ff5252,#ffad42,#ffed70,#65e69a,#62dfff,#7995ff,#d68aff) !important; background-clip:text !important; -webkit-background-clip:text !important; color:transparent !important; -webkit-text-fill-color:transparent !important; filter:drop-shadow(0 0 6px #bc8cff70);}
+</style>
 </body>
 </html>

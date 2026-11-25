@@ -63,6 +63,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 @media(max-width:480px){body{padding:12px}#login,#admin>section,#achievementForm{padding:12px}}
 
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap">
 </head>
 <body>
 <main>
@@ -631,7 +632,8 @@ checkAdmin();
   flex-direction:column;text-align:center;
   color:white;padding:20px;">
 
-  <h2 id="adminTrophyTitle">TROPHY UNLOCKED!</h2>
+  <div id="adminTrophyRarity"></div>
+    <h2 id="adminTrophyTitle">TROPHY UNLOCKED!</h2>
 
   <img id="adminTrophyImage" alt="トロフィー"
     style="width:160px;height:160px;object-fit:contain;">
@@ -673,9 +675,11 @@ function previewTrophy(rarity) {
   img.src = images[rarity];
   img.alt = rarity + "トロフィー";
 
-  title.textContent = rarity === "伝説"
-    ? "LEGENDARY ACHIEVEMENT"
-    : rarity === "プラチナ" ? "PLATINUM TROPHY" : "TROPHY UNLOCKED!";
+  title.textContent = "TROPHY UNLOCKED!";
+  const rarityLabel = document.getElementById("adminTrophyRarity");
+  rarityLabel.textContent = ({"銅":"BRONZE","銀":"SILVER","金":"GOLD","プラチナ":"PLATINUM","伝説":"LEGENDARY"})[rarity] || "";
+  rarityLabel.style.color = colors[rarity];
+  effect.classList.toggle("legendary", rarity === "伝説");
 
   title.style.color = colors[rarity];
   img.style.setProperty("--glow", colors[rarity]);
@@ -735,5 +739,12 @@ function previewTrophy(rarity) {
 </script>
 <script>(()=>{const el=id=>document.getElementById(id), box=el('tlAdminRows'), status=el('tlAdminStatus');const n=(tag,t)=>{const x=document.createElement(tag);x.textContent=t;return x;};const get=async q=>{const {data,error}=await q;if(error)throw error;return data;};function b(t,fn){const x=n('button',t);x.type='button';x.className='secondary';x.onclick=async()=>{x.disabled=true;try{await fn();await load();}catch(e){status.textContent=e.message;}finally{x.disabled=false;}};return x;}async function load(){box.replaceChildren();status.textContent='読み込み中…';try{const reports=await get(db.from('timeline_reports').select('*').eq('status','pending').order('created_at',{ascending:false}).limit(100));if(el('admin').hidden)return;status.textContent=reports.length+'件の未対応通報（最大100件）';for(const r of reports){const p=await get(db.from('timeline_posts').select('id,content,user_id').eq('id',r.post_id).maybeSingle());const card=n('div','');card.style.cssText='border:1px solid #876940;border-radius:8px;padding:12px;margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap';card.append(n('strong','投稿 #'+r.post_id),n('p',p?.content||'（本文なし／削除済み）'),n('p','通報理由：'+r.reason),b('対応済み',()=>get(db.from('timeline_reports').update({status:'resolved'}).eq('id',r.id).select('id').single())),b('却下',()=>get(db.from('timeline_reports').update({status:'dismissed'}).eq('id',r.id).select('id').single())),b('投稿を削除',async()=>{if(confirm('投稿と関連する返信・いいね・通報を削除しますか？'))await get(db.from('timeline_posts').delete().eq('id',r.post_id).select('id').single());}));box.append(card);}}catch(e){status.textContent='取得失敗：'+e.message;}}el('tlAdminRefresh').onclick=load;el('tlAdmin').ontoggle=()=>{if(el('tlAdmin').open)void load();};new MutationObserver(()=>{if(el('admin').hidden){box.replaceChildren();status.textContent='';el('tlAdmin').open=false;}}).observe(el('admin'),{attributes:true,attributeFilter:['hidden']});})();
 </script>
+
+<style>
+#adminTrophyEffect #adminTrophyRarity, #adminTrophyEffect #adminTrophyTitle {font-family:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif !important; text-align:center; line-height:1.4;}
+#adminTrophyEffect #adminTrophyRarity {font-size:12px !important; font-weight:500; letter-spacing:.32em; margin:8px 0 3px;}
+#adminTrophyEffect #adminTrophyTitle {font-size:clamp(19px,5.4vw,26px) !important; font-weight:700; letter-spacing:.025em; margin:0 0 12px;}
+#adminTrophyEffect.legendary #adminTrophyRarity, #adminTrophyEffect.legendary #adminTrophyTitle {background:linear-gradient(90deg,#ff5252,#ffad42,#ffed70,#65e69a,#62dfff,#7995ff,#d68aff) !important; background-clip:text !important; -webkit-background-clip:text !important; color:transparent !important; -webkit-text-fill-color:transparent !important; filter:drop-shadow(0 0 6px #bc8cff70);}
+</style>
 </body>
 </html>
