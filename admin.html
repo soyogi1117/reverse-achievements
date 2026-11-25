@@ -84,8 +84,8 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 <label for="mtSearch">プレイヤー名</label><input id="mtSearch" type="search" maxlength="100" placeholder="名前で検索（鍵垢も対象）"><button id="mtFind" type="button">検索</button>
 <div id="mtPlayers"></div><h3 id="mtSelected"></h3>
 <div id="mtControls" hidden>
-<label for="mtFilter">トロフィーの絞り込み</label><input id="mtFilter" type="search" placeholder="名前・レアリティ"><select id="mtState"><option value="all">すべて</option><option value="missing">未獲得</option><option value="owned">獲得済み</option></select>
-<div id="mtRows"></div><p id="mtCount"></p>
+<label for="mtFilter">トロフィーの絞り込み</label><input id="mtFilter" type="search" placeholder="獲得条件・名前・レアリティ"><select id="mtState"><option value="all">すべて</option><option value="missing">未獲得</option><option value="owned">獲得済み</option></select>
+<label for="mtOrder">並び順</label><select id="mtOrder"><option value="condition">獲得条件順</option><option value="standard">既定のトロフィー順</option></select><div id="mtRows"></div><p id="mtCount"></p>
 <label for="mtReason">操作理由（必須）</label><textarea id="mtReason" maxlength="500" rows="2"></textarea>
 <button id="mtGrant" type="button">選択したトロフィーを付与</button><button id="mtRevoke" class="danger" type="button">選択したトロフィーを剥奪</button><button id="mtReset" class="secondary" type="button">選択した強制設定を解除</button>
 </div><p id="mtStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
@@ -769,13 +769,28 @@ function previewTrophy(rarity) {
  const active=g=>g===generation&&!el('admin').hidden;
  const status=t=>{el('mtStatus').textContent=t;};
  function controls(){const chosen=rows.filter(r=>selected.has(r.achievement_id));el('mtGrant').disabled=busy||!chosen.length||chosen.some(r=>!r.is_published);el('mtRevoke').disabled=busy||!chosen.length;el('mtReset').disabled=busy||!chosen.length||chosen.some(r=>!r.override_state);el('mtFind').disabled=busy;el('mtHistoryBtn').disabled=busy;el('mtCount').textContent=selected.size+'件選択中';}
- function render(){const box=el('mtRows');box.replaceChildren();const q=el('mtFilter').value.trim().toLowerCase(), state=el('mtState').value;for(const r of rows){if(q&&!(`${r.name} ${r.rarity}`).toLowerCase().includes(q))continue;if(state==='owned'&&!r.owned||state==='missing'&&r.owned)continue;const label=n('label','');label.className='check';const c=document.createElement('input');c.type='checkbox';c.checked=selected.has(r.achievement_id);c.disabled=busy;c.onchange=()=>{if(c.checked)selected.add(r.achievement_id);else selected.delete(r.achievement_id);controls();};label.append(c,n('span',`${r.name} ［${r.rarity}］ ${r.owned?'獲得済み':'未獲得'}${r.auto_awarded||r.is_auto?' / 自動条件':''}${r.is_published?'':' / 非公開'}${r.override_state==='grant'?' / 強制付与':r.override_state==='revoke'?' / 強制剥奪':''}`));box.append(label);}controls();}
+ function render(){
+  const box=el('mtRows');box.replaceChildren();
+  const q=el('mtFilter').value.trim().toLowerCase(), state=el('mtState').value;
+  const ordered=[...rows];
+  if(el('mtOrder').value==='condition')ordered.sort((a,b)=>(a.description||'').localeCompare(b.description||'','ja',{numeric:true})||a.name.localeCompare(b.name,'ja'));
+  for(const r of ordered){
+   if(q&&!(`${r.description||''} ${r.name} ${r.rarity}`).toLowerCase().includes(q))continue;
+   if(state==='owned'&&!r.owned||state==='missing'&&r.owned)continue;
+   const label=n('label','');label.className='check';label.style.cssText='align-items:flex-start;padding:10px 0;border-bottom:1px solid #514637';
+   const c=document.createElement('input');c.type='checkbox';c.checked=selected.has(r.achievement_id);c.disabled=busy;c.onchange=()=>{if(c.checked)selected.add(r.achievement_id);else selected.delete(r.achievement_id);controls();};
+   const info=n('span','');info.style.cssText='min-width:0;overflow-wrap:anywhere;flex:1';
+   const condition=n('strong',r.description||'条件未設定');condition.style.cssText='display:block;color:#f2eff0;white-space:pre-wrap';
+   const meta=n('small',`${r.name} ［${r.rarity}］ ${r.owned?'獲得済み':'未獲得'}${r.auto_awarded||r.is_auto?' / 自動条件':''}${r.is_published?'':' / 非公開'}${r.override_state==='grant'?' / 強制付与':r.override_state==='revoke'?' / 強制剥奪':''}`);meta.style.cssText='display:block;color:#c9bdab;margin-top:4px';
+   info.append(condition,meta);label.append(c,info);box.append(label);
+  }controls();
+ }
  async function run(fn){if(busy||el('admin').hidden)return;const g=generation;busy=true;controls();try{await fn(g);}catch(e){if(active(g))status('エラー：'+e.message);}finally{busy=false;controls();render();}}
- async function load(g){const data=await get(db.rpc('admin_manual_trophy_list_v2',{p_user:target.id}));if(!active(g))return;rows=data||[];selected.clear();render();}
+ async function load(g){const [data,defs]=await Promise.all([get(db.rpc('admin_manual_trophy_list_v2',{p_user:target.id})),get(db.from('achievements').select('id,description'))]);if(!active(g))return;const descriptions=new Map((defs||[]).map(d=>[String(d.id),d.description]));rows=(data||[]).map(r=>({...r,description:descriptions.get(String(r.achievement_id))||''}));selected.clear();render();}
  async function history(g){const data=await get(db.rpc('admin_manual_trophy_history'));if(!active(g))return;const box=el('mtHistory');box.replaceChildren();for(const r of data||[]){const card=n('div','');card.className='item';card.append(n('strong',r.action==='grant'?'付与':r.action==='reset'?'強制設定解除':'剥奪'),n('p',`${r.player_name} / ${r.achievement_name}\n操作：${r.actor_name}\n理由：${r.reason}\n${new Date(r.created_at).toLocaleString('ja-JP')}`));box.append(card);}if(!box.children.length)box.textContent='履歴なし';}
  el('mtFind').onclick=()=>run(async g=>{target=null;rows=[];selected.clear();el('mtControls').hidden=true;el('mtSelected').textContent='';el('mtPlayers').replaceChildren();const data=await get(db.rpc('admin_manual_trophy_search',{p_query:el('mtSearch').value.trim()}));if(!active(g))return;for(const p of data||[]){const b=n('button',`${p.username||'名前未設定'}${p.is_private?' 🔒':''} / ${p.id}`);b.type='button';b.className='secondary';b.style.overflowWrap='anywhere';b.onclick=()=>run(async g=>{target=p;el('mtSelected').textContent=p.username||p.id;el('mtControls').hidden=false;rows=[];selected.clear();await load(g);status('対象を選択しました');});el('mtPlayers').append(b);}status(data?.length?`${data.length}件（最大50件）`:'該当なし');});
  el('mtSearch').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el('mtFind').click();}};
- el('mtFilter').oninput=render;el('mtState').onchange=render;
+ el('mtFilter').oninput=render;el('mtState').onchange=render;el('mtOrder').onchange=render;
  async function change(action){if(!target||!selected.size)return;const ids=[...selected], reason=el('mtReason').value.trim();if(!reason){status('操作理由を入力してください');return;}if(!confirm(`${target.username}：${ids.length}件を${action==='grant'?'付与':action==='reset'?'強制設定解除':'剥奪'}しますか？`))return;await run(async g=>{const count=await get(db.rpc('admin_manual_trophy_change',{p_user:target.id,p_ids:ids,p_action:action,p_reason:reason}));if(!active(g))return;status(`${count}件を処理しました`);el('mtReason').value='';await load(g);await history(g);});}
  el('mtGrant').onclick=()=>change('grant');el('mtRevoke').onclick=()=>change('revoke');el('mtReset').onclick=()=>change('reset');el('mtHistoryBtn').onclick=()=>run(history);root.ontoggle=()=>{if(root.open)void run(history);};
  new MutationObserver(()=>{if(el('admin').hidden){generation++;target=null;rows=[];selected.clear();root.open=false;el('mtControls').hidden=true;for(const id of ['mtPlayers','mtRows','mtHistory','mtSelected','mtStatus'])el(id).replaceChildren();el('mtReason').value='';el('mtSearch').value='';}}).observe(el('admin'),{attributes:true,attributeFilter:['hidden']});controls();
