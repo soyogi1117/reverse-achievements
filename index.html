@@ -1641,6 +1641,22 @@ button:not([disabled]){min-height:40px;padding:9px 12px;cursor:pointer}
 .achievement.rarity-gold.done{background:linear-gradient(135deg,#45351d,#241e18)}
 footer{color:#b4a38c;border-color:#534230}
 
+
+/* Unified trophy collection */
+#achievements .trophyOverviewGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#achievements .trophyOverviewGrid>div{background:#30271f;border:1px solid #665039;border-radius:10px;text-align:center;padding:12px 5px;min-width:0}
+#achievements .trophyOverviewGrid small{display:block;color:#c8b9a4;font-size:12px}
+#achievements .trophyOverviewGrid strong{display:block;color:#e7c68a;font-size:clamp(20px,5vw,28px);margin-top:4px;overflow-wrap:anywhere}
+#achievements #rarityStats{display:block;margin-top:18px!important}
+#achievements #rarityStats>div:first-of-type>div{background:#30271f!important;border:1px solid #665039;min-width:0}
+#achievements #rarityProgressBars>div{background:#30271f!important}
+#achievements .trophyListHeading{border-top:1px solid #665039;padding-top:18px;margin:20px 0 12px;color:#ebd0a0}
+#achievements .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#achievements .controls #search{grid-column:1/-1;width:100%}
+#achievements .controls select{width:100%;min-width:0}
+#achievements #list .achievement:last-child{margin-bottom:0}
+#achievements #rarityStats h4{margin:0 0 8px}
+
 </style>
 
 </head>
@@ -1914,35 +1930,7 @@ footer{color:#b4a38c;border-color:#534230}
 </div>
 
 
-<div id="rarityStats" style="margin-top:16px;">
-  <h4>🏅 レアリティ別獲得状況</h4>
-  
-<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
-  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
-    <div style="font-size:12px;">🥉 銅</div>
-    <strong id="bronzeCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
-  </div>
-  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
-    <div style="font-size:12px;">🥈 銀</div>
-    <strong id="silverCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
-  </div>
-  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
-    <div style="font-size:12px;">🥇 金</div>
-    <strong id="goldCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
-  </div>
-  <div id="legendStatsRow" hidden style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
-    <div style="font-size:12px;">🌈 伝説</div>
-    <strong id="legendCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
-  </div>
-</div>
 
-
-
-<div id="rarityProgress" style="margin-top:20px;">
-  <h4>📊 レアリティ別達成率</h4>
-  <div id="rarityProgressBars"></div>
-</div>
-</div>
 </div>
 
     
@@ -1975,7 +1963,7 @@ footer{color:#b4a38c;border-color:#534230}
 
   <a href="#achievements" class="homeMenuItem">
     <span>🏆</span>
-    <strong>トロフィー一覧</strong>
+    <strong>トロフィー</strong>
     <small>トロフィーの獲得状況を確認</small>
   </a>
   <a href="#matchCenter" class="homeMenuItem" style="grid-column:1 / -1;">
@@ -2270,11 +2258,42 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   </div>
 </section>
 <section id="achievements" class="panel">
-<strong>トロフィー獲得状況</strong>
-<h2 id="count">0 / 0 獲得</h2>
+<h2>🏆 トロフィー</h2>
+<div class="trophyOverview">
+<div class="trophyOverviewGrid"><div><small>獲得数</small><strong id="count">0 / 0</strong></div><div><small>達成率</small><strong id="percent">0%</strong></div></div>
 <div class="progress"><div id="bar"></div></div>
-<div id="percent" class="muted">獲得率 0%</div>
-</section>
+<div id="rarityStats" style="margin-top:16px;">
+  <h4>🏅 レアリティ別獲得状況</h4>
+  
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥉 銅</div>
+    <strong id="bronzeCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥈 銀</div>
+    <strong id="silverCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🥇 金</div>
+    <strong id="goldCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+  <div id="legendStatsRow" hidden style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
+    <div style="font-size:12px;">🌈 伝説</div>
+    <strong id="legendCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
+  </div>
+</div>
+
+
+
+<div id="rarityProgress" style="margin-top:20px;">
+  <h4>📊 レアリティ別達成率</h4>
+  <div id="rarityProgressBars"></div>
+</div>
+</div>
+</div>
+<h3 class="trophyListHeading">トロフィーリスト</h3>
+
 <div class="controls">
 <input id="search" placeholder="トロフィーを検索">
 <select id="rarity">
@@ -2297,6 +2316,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 
 </div>
 <div id="list"></div>
+</section>
 </main>
 <footer>猫逆トロフィー | 獲得は自己申告制</footer>
   
@@ -2343,7 +2363,7 @@ const rarity=document.getElementById("rarity").value;
 const status=document.getElementById("status").value;
 const total=achievements.length;
 const done=achievements.filter(a=>completed[a.id]).length;
-document.getElementById("count").textContent=`${done} / ${total} 達成`;
+document.getElementById("count").textContent=`${done} / ${total}`;
 
 const pct =
   total === 0 || done === 0 ? 0 :
@@ -2369,8 +2389,7 @@ document.getElementById("silverCount").textContent = rarityCounts["銀"];
 document.getElementById("goldCount").textContent = rarityCounts["金"];
 document.getElementById("legendCount").textContent = rarityCounts["伝説"];
 
-document.getElementById("legendStatsRow").hidden =
-  rarityCounts["伝説"] === 0;
+document.getElementById("legendStatsRow").hidden = false;
 
 const raritySettings = [
   { name: "銅", icon: "🥉", color: "#cd7f32" },
@@ -2386,9 +2405,7 @@ progressContainer.replaceChildren();
 
 raritySettings.forEach(({ name, icon, color }) => {
   
-  if (name === "伝説" && rarityCounts["伝説"] === 0) {
-    return;
-  }
+
 
   const total = achievements.filter(
     a => a.rarity === name
@@ -2455,7 +2472,7 @@ const progressClass =
 });
 
 document.getElementById("bar").style.width=pct+"%";
-document.getElementById("percent").textContent=`獲得率 ${pct}%`;
+document.getElementById("percent").textContent=`${pct}%`;
 list.replaceChildren();
 const filtered=achievements.filter(a=>
 
