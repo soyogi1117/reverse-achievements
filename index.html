@@ -2050,8 +2050,8 @@ window.addEventListener('focus',refreshHostBadges);document.addEventListener('vi
        width="80"
        height="80"
        style="display:none; border-radius:50%; object-fit:cover;"></div>
-  <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><div class="pcNameRow"><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div></div><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
-  <div class="pcProgress"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg><strong id="profileUnlocked">0</strong><span id="pcTotal">/ 0</span><progress id="pcProgressBar" max="100" value="0" aria-label="トロフィー獲得率"></progress><strong id="profileRate">0%</strong></div></div></div>
+  <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><div class="pcNameRow"><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3></div></div></div><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
+  <div class="pcProgress"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg><strong id="profileUnlocked">0</strong><span id="pcTotal">/ 0</span><progress id="pcProgressBar" max="100" value="0" aria-label="トロフィー獲得率"></progress><strong id="profileRate">0%</strong></div>
   <div id="myFollowPanel" class="followPanel" hidden><div class="followRow"><button type="button" id="myFollowing">フォロー中 —</button><button type="button" id="myFollowers">フォロワー —</button></div></div>
   <p id="privacyMessage" role="status" style="font-size:12px;color:#b0adbc;"></p>
   <details id="profileBioSection"><summary>自己紹介・詳細情報</summary><p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p></details>
@@ -5776,5 +5776,29 @@ html body #reverseTimeline .tlPostMenuItems button{display:block;width:100%;min-
 </style>
 <style>
 #followScreen{position:fixed;inset:0;margin:0;width:100%;max-width:none;height:100%;max-height:none;background:#0c0d13;color:#ede9f1;border:0;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);overflow:auto;box-sizing:border-box}#followScreen::backdrop{background:#0c0d13}#followScreen [hidden]{display:none!important}#followScreen .fsHead{display:flex;align-items:center;gap:16px;padding:14px 0;font-size:18px}#followScreen .fsTabs{display:flex;border-bottom:1px solid #45434e;position:sticky;top:0;background:#0c0d13;z-index:1}html body #followScreen button{background:transparent!important;border:0!important;box-shadow:none!important;color:#ede9f1!important;min-height:44px;padding:8px!important;font-size:14px;margin:0!important}#followScreen .fsTabs button{flex:1}html body #followScreen .fsTabs button[aria-selected=true]{border-bottom:2px solid #d0d2df!important;font-weight:bold}#followScreen .fsRow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #35343e}html body #followScreen .fsProfile{display:flex;align-items:center;gap:12px;flex:1;text-align:left;min-width:0;overflow-wrap:anywhere}#followScreen .fsAvatar{width:42px;height:42px;flex:none;border-radius:50%;object-fit:cover;background:#262733;display:grid;place-items:center;color:#b0adbc}html body #followScreen .fsAction{border:1px solid #56515f!important;border-radius:24px!important;flex:none;padding:8px 12px!important;min-height:36px}#followScreen .fsAction[aria-pressed=true]{color:#b0adbc!important}body:has(#followScreen[open]){overflow:hidden}
-</style></body>
+</style><style>
+html body #followScreen .fsRow{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 0;min-width:0;width:100%;}
+html body #followScreen .fsProfile{width:100%!important;max-width:100%!important;min-width:0!important;display:flex!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:10px;padding:4px!important;white-space:normal!important;}
+html body #followScreen .fsProfile > span:last-child{flex:1;min-width:0;word-break:normal;overflow-wrap:anywhere;line-height:1.4;text-align:left;}
+html body #followScreen .fsAction{width:auto!important;max-width:100%!important;min-width:0!important;justify-self:end;white-space:nowrap!important;flex:none!important;padding:6px 10px!important;font-size:12px!important;line-height:1.3;}
+html body #followScreen .fsHead button{width:auto!important;flex:none!important;}html body #followScreen .fsTabs button{width:auto!important;min-width:0!important;flex:1!important;}
+</style>
+<style id="readablePlayerCard">
+html body #profileStats.playerCard{padding:14px!important;min-width:0;}
+html body #profileStats.playerCard > .pcTop{margin-bottom:14px!important;gap:6px;flex-wrap:wrap;}
+html body #profileStats.playerCard > .pcMain{grid-template-columns:64px minmax(0,1fr);gap:12px;margin-bottom:14px!important;align-items:center;}
+html body #profileStats .pcNameRow{display:block;margin:0;}
+html body #profileStats .pcNameRow #profileTitle{font-size:23px!important;line-height:1.4;overflow-wrap:anywhere;}
+html body #profileStats.playerCard > .pcFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 14px!important;}
+html body #profileStats .pcFields .pcField{background:#20212b!important;border-radius:7px;padding:9px 5px;text-align:center;align-items:center;gap:5px;}
+html body #profileStats .pcFields .pcField span{font-size:11px;line-height:1.4;}
+html body #profileStats .pcFields .pcField strong{font-size:13px;line-height:1.4;overflow-wrap:anywhere;}
+html body #profileStats.playerCard > .pcProgress{margin:0 0 10px!important;gap:7px;padding:4px 0!important;}
+html body #profileStats #pcProgressBar{height:6px;}
+html body #profileStats #myFollowPanel .followRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+html body #profileStats #myFollowPanel .followRow button{width:100%!important;min-width:0!important;padding:9px 2px!important;font-size:12px!important;white-space:normal!important;min-height:40px;margin:0!important;}
+html body #profileStats #profileBioSection summary{min-height:38px;font-size:13px;}
+@media(max-width:340px){html body #profileStats.playerCard{padding:10px!important;}html body #profileStats .pcFields .pcField{padding:7px 3px;}html body #profileStats .pcFields .pcField span{font-size:10px;}}
+</style>
+</body>
 </html>
