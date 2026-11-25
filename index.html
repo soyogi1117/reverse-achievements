@@ -1657,6 +1657,12 @@ footer{color:#b4a38c;border-color:#534230}
 #achievements #list .achievement:last-child{margin-bottom:0}
 #achievements #rarityStats h4{margin:0 0 8px}
 
+
+/* Unified gold line icons */
+.portalIcon{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.19em;color:#e7c68a;flex:none;pointer-events:none}
+.homeMenuItem .portalIcon{width:36px;height:36px;display:block;filter:drop-shadow(0 2px 4px #0008)}
+.homeMenuItem span{display:flex;align-items:center;justify-content:center;min-height:40px}
+#notificationBtn .portalIcon{width:24px;height:24px;vertical-align:middle}
 </style>
 
 </head>
@@ -1665,7 +1671,7 @@ footer{color:#b4a38c;border-color:#534230}
 
 <button id="notificationBtn" type="button"
         aria-label="通知" aria-expanded="false" hidden>
-  🔔
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8m-9 12a3 3 0 0 0 6 0"/></svg>
   <span id="notificationBadge" hidden>0</span>
 </button>
 <h1>逆村広場</h1>
@@ -1675,7 +1681,7 @@ footer{color:#b4a38c;border-color:#534230}
 
 <section id="notificationPanel" hidden>
   <div id="notificationHeader">
-    <h2>🔔 通知</h2>
+    <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8m-9 12a3 3 0 0 0 6 0"/></svg> 通知</h2>
     <button id="closeNotificationBtn" type="button">
       ✕
     </button>
@@ -1683,7 +1689,7 @@ footer{color:#b4a38c;border-color:#534230}
 
   
 <button id="pushNotificationBtn" type="button">
-  🔔 プッシュ通知を有効にする
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8m-9 12a3 3 0 0 0 6 0"/></svg> プッシュ通知を有効にする
 </button>
 
 <p id="pushNotificationStatus" class="muted">
@@ -1699,7 +1705,7 @@ footer{color:#b4a38c;border-color:#534230}
 </section>
 <section id="userAuth" style="max-width:500px;margin:24px auto;padding:20px;background:#1c2232;border-radius:12px;color:#f1f2f6">
 
-  <h2>🏆 ユーザーアカウント</h2>
+  <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> ユーザーアカウント</h2>
   <div id="authForm">
     <input id="userEmail" type="email" placeholder="メールアドレス" autocomplete="email" style="width:100%;padding:12px;margin:6px 0">
     <input id="userPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0">
@@ -1712,7 +1718,7 @@ footer{color:#b4a38c;border-color:#534230}
 
   
 <div id="profileEditPanel">
- <h3 id="profileEditHeading" style="display:none;">✏️ プロフィール編集</h3> <div style="margin: 15px 0;">
+ <h3 id="profileEditHeading" style="display:none;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> プロフィール編集</h3> <div style="margin: 15px 0;">
   <img id="profileAvatar"
        alt="プロフィール画像"
        width="100"
@@ -1815,7 +1821,7 @@ footer{color:#b4a38c;border-color:#534230}
 </select>
 </div>
 <div id="roleEditor" style="margin-top:12px;">
-  <h4>🎭 好きな役職・苦手な役職を編集</h4>
+  <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4q9 4 18 0v9q-2 7-9 8-7-1-9-8V4zm4 6h2m6 0h2m-8 5q3 3 6 0"/></svg> 好きな役職・苦手な役職を編集</h4>
 
   
 <div>
@@ -1867,10 +1873,10 @@ footer{color:#b4a38c;border-color:#534230}
 
   <div>
     <div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div>
-    <h3 id="profileTitle">🏆 マイプロフィール</h3>
+    <h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3>
     
 <button id="editProfileBtn" type="button">
-  ✏️ 編集
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集
 </button>
 
 <button id="privacyToggleBtn" type="button"
@@ -1893,7 +1899,7 @@ footer{color:#b4a38c;border-color:#534230}
 
  
 <div id="profileBioSection" style="margin-top:16px;">
-  <h4>📝 自己紹介</h4>
+  <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5zM8 8h8m-8 4h8m-8 4h5"/></svg> 自己紹介</h4>
   <p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p>
 </div>
 
@@ -1918,13 +1924,13 @@ footer{color:#b4a38c;border-color:#534230}
 
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
   <div style="text-align:center;padding:12px 6px;background:#263249;border-radius:10px;">
-    <div style="font-size:12px;">🏆 獲得トロフィー</div>
+    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> 獲得トロフィー</div>
     
 <strong id="profileUnlocked" style="display:block;font-size:26px;margin-top:6px;">0</strong>
 
   </div>
   <div style="text-align:center;padding:12px 6px;background:#263249;border-radius:10px;">
-    <div style="font-size:12px;">📊 獲得率</div>
+    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16v-5m5 5V6m5 10V9"/></svg> 獲得率</div>
     <strong id="profileRate" style="display:block;font-size:26px;margin-top:6px;">0%</strong>
   </div>
 </div>
@@ -1950,28 +1956,28 @@ footer{color:#b4a38c;border-color:#534230}
 <nav class="homeMenu" aria-label="メインメニュー">
   <a href="#playerSearch" class="homeMenuItem"
      style="grid-column:1 / -1;">
-    <span>🔎</span>
+    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></span>
     <strong>プレイヤー検索</strong>
     <small>他のプレイヤーを探す</small>
   </a>
 
   <a href="#roomAnnouncements" class="homeMenuItem">
-    <span>📢</span>
+    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg></span>
     <strong>部屋告知</strong>
     <small>募集・開催情報をチェック</small>
   </a>
 
   <a href="#achievements" class="homeMenuItem">
-    <span>🏆</span>
+    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg></span>
     <strong>トロフィー</strong>
     <small>トロフィーの獲得状況を確認</small>
   </a>
   <a href="#matchCenter" class="homeMenuItem" style="grid-column:1 / -1;">
-    <span>⚔️</span><strong>戦績</strong><small>対戦記録</small>
+    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg></span><strong>戦績</strong><small>対戦記録</small>
   </a>
 </nav>
 <section id="matchCenter" class="panel">
-<h2>⚔️ 戦績</h2><p id="matchAccess" class="muted" role="status">権限を確認中...</p>
+<h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg> 戦績</h2><p id="matchAccess" class="muted" role="status">権限を確認中...</p>
 <div id="myMatchStats" class="matchStatsPanel" hidden></div>
 <button id="matchOpen" type="button" hidden>＋ 対戦結果を登録</button>
 <form id="matchForm" hidden>
@@ -2009,7 +2015,7 @@ footer{color:#b4a38c;border-color:#534230}
 
 
 <section id="playerSearch" class="panel">
-  <h2>🔎 プレイヤー検索</h2>
+  <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg> プレイヤー検索</h2>
   <p class="muted">
     プレイヤー名を1文字以上入力して検索できます。
   </p>
@@ -2023,7 +2029,7 @@ footer{color:#b4a38c;border-color:#534230}
       style="flex:1;min-width:0;"
     >
     <button id="playerSearchBtn" type="button">
-      🔎 検索
+      <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg> 検索
     </button>
   </div>
 
@@ -2044,7 +2050,7 @@ footer{color:#b4a38c;border-color:#534230}
        height="100"
        style="display:none;border-radius:50%;object-fit:cover;">
 
-  <h3>📝 自己紹介</h3>
+  <h3><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5zM8 8h8m-8 4h8m-8 4h5"/></svg> 自己紹介</h3>
   <p id="publicProfileBio"
      style="white-space:pre-wrap;overflow-wrap:anywhere;">
     読み込み中...
@@ -2078,13 +2084,13 @@ footer{color:#b4a38c;border-color:#534230}
      style="display:flex;gap:12px;margin-top:20px;">
 
   <div style="flex:1;min-width:0;background:#263148;padding:16px 8px;border-radius:12px;text-align:center;">
-    <p>🏆 獲得トロフィー</p>
+    <p><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> 獲得トロフィー</p>
     <strong id="publicProfileUnlocked"
             style="font-size:28px;color:#e4bd68;">—</strong>
   </div>
 
   <div style="flex:1;min-width:0;background:#263148;padding:16px 8px;border-radius:12px;text-align:center;">
-    <p>📊 獲得率</p>
+    <p><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16v-5m5 5V6m5 10V9"/></svg> 獲得率</p>
     <strong id="publicProfileRate"
             style="font-size:28px;color:#e4bd68;">—</strong>
   </div>
@@ -2093,14 +2099,14 @@ footer{color:#b4a38c;border-color:#534230}
 <div id="publicMatchStats" class="matchStatsPanel" hidden></div>
 </section>
 <section id="roomAnnouncements" class="panel">
-  <h2>📢 部屋告知</h2>
+  <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg> 部屋告知</h2>
   <p class="muted">
     逆村の開催予定や参加者募集をチェック！
   </p>
 
  
 <div id="announcementForm" hidden>
-  <h3>✏️ 部屋告知を投稿</h3>
+  <h3><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 部屋告知を投稿</h3>
 
   
 
@@ -2116,7 +2122,7 @@ footer{color:#b4a38c;border-color:#534230}
 </select>
 <label for="announcementTitle"
        style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
-  🎭 部屋主のキャラクター
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4q9 4 18 0v9q-2 7-9 8-7-1-9-8V4zm4 6h2m6 0h2m-8 5q3 3 6 0"/></svg> 部屋主のキャラクター
 </label>
 
 <select id="announcementVersion">
@@ -2231,14 +2237,14 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 
 
   <button id="postAnnouncementBtn" type="button">
-    📢 告知を投稿
+    <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg> 告知を投稿
   </button>
 
   <p id="announcementMessage" role="status"></p>
 </div>
 
 <div id="announcementEditForm" hidden>
-  <h3>✏️ 部屋告知を編集</h3>
+  <h3><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 部屋告知を編集</h3>
 
   <div id="announcementEditFields"></div>
 
@@ -2258,12 +2264,12 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   </div>
 </section>
 <section id="achievements" class="panel">
-<h2>🏆 トロフィー</h2>
+<h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> トロフィー</h2>
 <div class="trophyOverview">
 <div class="trophyOverviewGrid"><div><small>獲得数</small><strong id="count">0 / 0</strong></div><div><small>達成率</small><strong id="percent">0%</strong></div></div>
 <div class="progress"><div id="bar"></div></div>
 <div id="rarityStats" style="margin-top:16px;">
-  <h4>🏅 レアリティ別獲得状況</h4>
+  <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="m8 10-4-7h5l3 5 3-5h5l-4 7"/></svg> レアリティ別獲得状況</h4>
   
 <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
   <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
@@ -2287,7 +2293,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 
 
 <div id="rarityProgress" style="margin-top:20px;">
-  <h4>📊 レアリティ別達成率</h4>
+  <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16v-5m5 5V6m5 10V9"/></svg> レアリティ別達成率</h4>
   <div id="rarityProgressBars"></div>
 </div>
 </div>
