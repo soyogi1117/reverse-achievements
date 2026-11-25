@@ -2431,7 +2431,20 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 </div>
 </div>
 </div>
-<h3 class="trophyListHeading">トロフィーリスト</h3>
+<p class="muted" style="font-size:13px">トロフィーは部屋主の認証、または登録戦績に基づく自動判定で獲得します。</p>
+<details id="trophyCert" hidden>
+<summary class="trophyListHeading">部屋主・管理者用｜トロフィー認証</summary>
+<div class="certFields">
+<label for="certMatch">登録済み対戦</label><select id="certMatch"><option value="">対戦を選択</option></select>
+<button type="button" id="certRefresh">対戦一覧を更新</button>
+<label for="certPlayer">認証する参加者</label><select id="certPlayer" disabled><option value="">参加者を選択</option></select>
+<label for="certAchievement">トロフィー</label><select id="certAchievement" disabled><option value="">トロフィーを選択</option></select>
+<p id="certDescription" class="muted"></p>
+<button type="button" id="certGrant" disabled>獲得を認証する</button>
+<p id="certStatus" role="status" class="muted"></p>
+</div></details>
+<details id="trophyListFold">
+<summary class="trophyListHeading"><span>トロフィーリスト</span><span class="trophyFoldArrow" aria-hidden="true">⌄</span></summary>
 
 <div class="controls">
 <input id="search" placeholder="トロフィーを検索">
@@ -2455,6 +2468,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 
 </div>
 <div id="list"></div>
+</details>
 </section>
 <div class="portalSectionDivider" aria-hidden="true"><span>◆ TIMELINE ◆</span></div>
 <section id="reverseTimeline" class="panel"><h2>逆村タイムライン</h2><p class="muted">REVERSE VILLAGE TIMELINE</p><form id="tlForm" hidden><textarea id="tlText" rows="3" maxlength="280" placeholder="今日の逆村はどうでしたか？" aria-label="投稿本文"></textarea><small id="tlCount" class="muted">0 / 280</small><label for="tlFile">画像（任意・5MBまで）</label><input id="tlFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button id="tlLoadMatches" type="button">自分の試合実績を読み込む</button><select id="tlMatch" aria-label="添付する試合"><option value="">試合実績を添付しない</option></select><button id="tlSubmit" type="submit">投稿する</button></form><button id="tlRefresh" type="button">更新</button><p id="tlStatus" role="status" class="muted"></p><div id="tlList"></div><button id="tlMore" hidden type="button">もっと見る</button></section>
@@ -2703,56 +2717,8 @@ const legendLocked =
 
 check.checked = !!completed[a.id];
 
-check.disabled =
-  !!completed[a.id] || legendLocked;
-
-
-check.setAttribute("aria-label",a.name+"を獲得");
-
-check.addEventListener("change", async () => {
-  const wasChecked = !check.checked;
-
-  check.disabled = true;
-
-  const { data: { user } } = await db.auth.getUser();
-
-  if (!user) {
-    alert("トロフィーを獲得するにはログインしてください。");
-    check.checked = wasChecked;
-    check.disabled = false;
-    return;
-  }
-
-  const result = check.checked
-    ? await db.from("user_achievements").upsert({
-        user_id: user.id,
-        achievement_id: a.id
-      })
-    : await db.from("user_achievements")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("achievement_id", a.id);
-
-  if (result.error) {
-    alert("保存失敗：" + result.error.message);
-    check.checked = wasChecked;
-    check.disabled = false;
-    return;
-  }
-
-  
-
-
-if (check.checked) {
-  completed[a.id] = true;
-  showTrophyEffect(a);
-} else {
-  delete completed[a.id];
-}
-
-render();
-
-});
+check.disabled = true;
+check.setAttribute("aria-label",completed[a.id] ? "獲得済み" : "未獲得（部屋主認証制）");
 
 const content=document.createElement("div");
 
@@ -5591,5 +5557,32 @@ html body #profileStats .pcNameRow #profileTitle{font-size:clamp(15px,4.8vw,21px
 #profileStats .pcNameRow .pcField{align-items:flex-start;}
 #profileStats .pcFields{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:6px;}
 </style>
+<style id="trophyListFoldStyle">
+#achievements #trophyListFold > summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;padding:14px 12px;margin:18px 0 0;border:1px solid #56515f;border-radius:4px;background:#252630;color:#ede9f1;font-weight:600;}
+#achievements #trophyListFold > summary::-webkit-details-marker{display:none}
+#achievements #trophyListFold > summary .trophyFoldArrow{display:inline-block;transition:transform .15s;}
+#achievements #trophyListFold[open] > summary .trophyFoldArrow{transform:rotate(180deg)}
+#achievements #trophyListFold[open] > summary{margin-bottom:12px}
+</style>
+<style>
+#trophyCert[hidden]{display:none!important}#trophyCert{margin:16px 0;border:1px solid #56515f;border-radius:5px;padding:12px}#trophyCert summary{cursor:pointer;color:#d0d2df}#trophyCert .certFields{display:grid;gap:10px;margin-top:14px}#trophyCert select,#trophyCert button{width:100%;min-width:0}#trophyCert p{margin:0;overflow-wrap:anywhere}#certGrant:not(:disabled){background:#d0d2df!important;color:#191a22!important}#trophyCert button:disabled{opacity:.45}
+</style>
+<script>
+(()=>{
+const e=id=>document.getElementById(id), panel=e('trophyCert'), match=e('certMatch'), player=e('certPlayer'), trophy=e('certAchievement'), grant=e('certGrant'), status=e('certStatus'), desc=e('certDescription');
+let seq=0, options=[], busy=false, owner=null;
+function fill(el,placeholder,rows,val,label){el.replaceChildren(new Option(placeholder,''),...rows.map(r=>new Option(label(r),String(val(r)))));el.disabled=!rows.length;}
+function resetTrophy(){options=[];fill(trophy,'トロフィーを選択',[],()=>'',()=> '');desc.textContent='';grant.disabled=true;}
+function resetPlayers(){fill(player,'参加者を選択',[],()=>'',()=> '');resetTrophy();}
+async function check(){const n=++seq;panel.hidden=true;panel.open=false;resetPlayers();try{const {data:{user}}=await db.auth.getUser();if(n!==seq)return;owner=user?.id||null;if(!user)return;const [h,a]=await Promise.all([db.from('room_hosts').select('user_id').eq('user_id',user.id).maybeSingle(),db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle()]);if(n!==seq)return;panel.hidden=!(h.data||a.data);if(!panel.hidden)await loadMatches();}catch(err){console.error('認証権限',err);}}
+async function loadMatches(){const n=++seq;resetPlayers();fill(match,'対戦を選択',[],()=>'',()=> '');status.textContent='読み込み中…';try{const {data,error}=await db.rpc('trophy_cert_matches');if(n!==seq)return;if(error)throw error;fill(match,'対戦を選択',data||[],r=>r.match_id,r=>new Date(r.played_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})+'｜'+r.room_type);status.textContent=data?.length?'登録済みの対戦を選んでください。':'認証できる登録済み対戦はありません。';}catch(err){if(n===seq)status.textContent='取得失敗：'+err.message;}}
+match.onchange=async()=>{const n=++seq;resetPlayers();if(!match.value)return;status.textContent='参加者を取得中…';try{const {data,error}=await db.rpc('trophy_cert_players',{p_match:match.value});if(n!==seq)return;if(error)throw error;fill(player,'参加者を選択',data||[],r=>r.player_id,r=>r.username+'（'+r.player_role+'）');status.textContent=data?.length?'参加者を選んでください。':'認証できる参加者はいません。';}catch(err){if(n===seq)status.textContent='取得失敗：'+err.message;}};
+player.onchange=async()=>{const n=++seq;resetTrophy();if(!player.value)return;status.textContent='トロフィーを取得中…';try{const {data,error}=await db.rpc('trophy_cert_options',{p_match:match.value,p_player:player.value});if(n!==seq)return;if(error)throw error;options=data||[];fill(trophy,'トロフィーを選択',options,r=>r.achievement_id,r=>r.name+'（'+r.rarity+'）');status.textContent=options.length?'条件を満たしたトロフィーを選択してください。':'認証可能なトロフィーはありません。';}catch(err){if(n===seq)status.textContent='取得失敗：'+err.message;}};
+trophy.onchange=()=>{const a=options.find(r=>String(r.achievement_id)===trophy.value);desc.textContent=a?.description||'';grant.disabled=!a||busy;};
+e('certRefresh').onclick=()=>{if(!busy)loadMatches();};
+grant.onclick=async()=>{if(busy||!match.value||!player.value||!trophy.value)return;const a=options.find(r=>String(r.achievement_id)===trophy.value);if(!a||!confirm(player.selectedOptions[0].textContent+' に「'+a.name+'」を認証しますか？\n獲得条件を満たしたことを確認してください。'))return;busy=true;const n=seq, m=match.value,p=player.value,t=trophy.value;grant.disabled=true;match.disabled=player.disabled=trophy.disabled=true;try{const {data,error}=await db.rpc('trophy_cert_grant',{p_match:m,p_player:p,p_achievement:t});if(n!==seq)return;if(error)throw error;await player.onchange();status.textContent=data?'トロフィーを認証しました。':'既に獲得済みです。';}catch(err){if(n===seq)status.textContent='認証失敗：'+err.message;}finally{busy=false;if(owner&&!panel.hidden){match.disabled=match.options.length<2;player.disabled=player.options.length<2;trophy.disabled=trophy.options.length<2;grant.disabled=!trophy.value;}}};
+db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_IN'||event==='SIGNED_OUT'||event==='INITIAL_SESSION')setTimeout(check,0);});check();
+})();
+</script>
 </body>
 </html>
