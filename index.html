@@ -1806,6 +1806,9 @@ footer{color:#a19cab;border-color:#45434e}
 #userAuth #forgotPasswordBtn {box-shadow:none!important;border:0!important;background:transparent!important;border-radius:0!important;}
 #userAuth #forgotPasswordBtn:focus-visible {outline:2px solid #e4d7b9;outline-offset:3px;}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap">
 </head>
 <body>
 <header>
@@ -5501,7 +5504,7 @@ $('tlText').oninput=()=>{$('tlCount').textContent=$('tlText').value.length+' / 2
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){++seq;uid=null;form.reset();form.hidden=true;list.replaceChildren();status.textContent='ログインすると投稿・閲覧できます。';}if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event))setTimeout(load,0);});void load();})();
 </script>
 
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap">
+
 <style id="gothicFinal">
 :root{--portal-bg:#0c0d13;--portal-card:#161720;--portal-gold:#b6a587;--portal-line:#45434e;--portal-muted:#b0adbc;--heading-font:"Noto Serif JP","Hiragino Mincho ProN",serif;--body-font:var(--heading-font);--number-font:var(--heading-font)}
 body{background:#0c0d13!important;color:#ede9f1;font-family:var(--body-font);line-height:1.65}
@@ -5530,7 +5533,17 @@ footer{color:#a19cab;border-color:#45434e}
 </style>
 
 <style id="allMincho">
-body, body *, button, input, select, textarea {font-family:var(--heading-font)!important;}
+/* All visible page text, including generated elements and form controls. */
+html, body, html body *, html body *::before, html body *::after,
+html body input::placeholder, html body textarea::placeholder,
+html body input::file-selector-button, html body input::-webkit-date-and-time-value,
+html body input::-webkit-datetime-edit {
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "MS PMincho", serif !important;
+  font-synthesis: weight style;
+}
+html body input, html body select, html body textarea, html body button, html body option, html body summary {
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "MS PMincho", serif !important;
+}
 </style>
 </body>
 </html>
