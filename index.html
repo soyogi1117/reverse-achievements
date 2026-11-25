@@ -1776,7 +1776,11 @@ footer{color:#b4a38c;border-color:#534230}
 </style>
 <style>#reverseTimeline [hidden]{display:none!important}#reverseTimeline{min-width:0;scroll-margin-top:12px}.tlCard,.tlReply,.tlMatchCard{border:1px solid #725a38;background:#2b231c;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}.tlBody{white-space:pre-wrap;line-height:1.65}.tlAuthor,.tlActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tlAuthor img{width:40px;height:40px;border-radius:50%;object-fit:cover}.tlAuthor button{background:none!important;border:0!important;padding:3px!important;font-weight:bold;color:#ead3a8}.tlTitle{font-size:12px;color:#e7c68a;border:1px solid currentColor;padding:2px 8px;border-radius:4px;text-align:center}.tlTitle[data-rarity="銅"]{color:#c98b60}.tlTitle[data-rarity="銀"]{color:#cbd2db}.tlTitle[data-rarity="プラチナ"]{color:#a8d9f0}.tlTitle[data-rarity="伝説"]{color:#edb6f9}.tlImage{display:block;max-width:100%;max-height:480px;object-fit:contain;border-radius:8px;margin:8px auto}.tlActions button,#reverseTimeline button{width:auto;max-width:100%;padding:8px 12px;margin:3px 0;color:#ead3a8;background:#352a20;border:1px solid #876940;border-radius:8px}.tlThread{padding-left:10px;border-left:1px solid #725a38}#reverseTimeline textarea,#reverseTimeline select,#reverseTimeline input{width:100%;max-width:100%;box-sizing:border-box;margin:5px 0}#reverseTimeline textarea{resize:vertical}#tlForm{margin:12px 0}#tlCount{float:right}</style><style>
 #passwordRecoveryPanel[hidden],#recoveryForm[hidden]{display:none!important}
-#userAuth.recovering #authForm,#userAuth.recovering #signedIn{display:none!important}
+#userAuth.recovering #authForm,#userAuth.recovering #signedIn,#userAuth.account-guiding #authForm,#userAuth.account-guiding #signedIn{display:none!important}
+#userAuth [hidden]{display:none!important}
+.accountGuide{padding:16px;border:1px solid #79613f;border-radius:12px;background:#202129;margin:12px 0;color:#f1f2f6;line-height:1.65}
+.accountGuide h3{color:#e5c99a;margin:0 0 12px}.accountGuide button,#recoverySave,#recoveryCancel{width:100%;margin:8px 0;padding:12px}.accountGuide ol{padding-left:22px}.accountGuide [role=status]:empty{display:none}.accountGuide label{display:block;margin-top:10px}
+#accountDeleteSettings{color:#f1f2f6}#accountDeleteSettings summary{padding:12px;border:1px solid #79613f;border-radius:8px}#accountDeleteSettings input{box-sizing:border-box}#recoveryStatus,#accountDeleteStatus{line-height:1.65}#accountDeleteStatus:not(:empty){padding:10px;border:1px solid #79613f;border-radius:8px}
 #forgotPasswordBtn:disabled{opacity:.55;cursor:wait}
 </style>
 </head>
@@ -1827,11 +1831,16 @@ footer{color:#b4a38c;border-color:#534230}
     <button id="signinBtn" type="button">ログイン</button>
     <button id="forgotPasswordBtn" type="button" style="display:block;width:100%;margin-top:12px;background:transparent;color:#e5c99a;border:0;text-decoration:underline;cursor:pointer">パスワードをお忘れですか？</button>
   </div>
+  <section id="accountGuide" class="accountGuide" hidden aria-labelledby="accountGuideTitle">
+    <h3 id="accountGuideTitle"></h3><div id="accountGuideBody"></div>
+    <form id="forgotEmailForm" hidden><label for="forgotEmail">登録済みメールアドレス</label><input id="forgotEmail" type="email" autocomplete="email" required style="width:100%;margin:8px 0"><button id="forgotSend" type="submit">再設定メールを送信</button></form>
+    <p id="accountGuideStatus" role="status"></p><button id="accountGuideBack" type="button">ログイン画面に戻る</button>
+  </section>
   <section id="passwordRecoveryPanel" hidden style="padding:12px 0">
-    <h3>パスワード再設定</h3>
+    <h3>パスワード再設定｜新しいパスワードを設定</h3>
     <p id="recoveryStatus" role="status">再設定リンクを確認中です。</p>
     <form id="recoveryForm" hidden>
-      <label for="recoveryPassword">新しいパスワード（6文字以上）</label>
+      <p>新しいパスワードを2回入力し、「パスワードを変更する」を押してください。</p><label for="recoveryPassword">新しいパスワード（6文字以上）</label>
       <input id="recoveryPassword" type="password" autocomplete="new-password" minlength="6" required style="width:100%;margin:8px 0">
       <label for="recoveryConfirm">新しいパスワード（確認）</label>
       <input id="recoveryConfirm" type="password" autocomplete="new-password" minlength="6" required style="width:100%;margin:8px 0">
@@ -2071,13 +2080,13 @@ footer{color:#b4a38c;border-color:#534230}
 <button id="signoutBtn" type="button">ログアウト</button>
 <details id="accountDeleteSettings" style="margin-top:16px;border-top:1px solid #514637;padding-top:12px">
 <summary style="cursor:pointer;color:#e5c99a">アカウント設定</summary>
-<p style="font-size:13px;color:#f0a6a6">削除するとプロフィール、獲得実績、個人の戦績、投稿、通知などを復元できません。共有対戦記録は残ります。</p>
+<h3 style="color:#f0a6a6">アカウントを削除する</h3><div class="accountGuide"><strong style="color:#f0a6a6">重要：削除は取り消せません</strong><p>プロフィール、獲得実績、個人の戦績、投稿、通知などが削除されます。共有対戦記録は残ります。</p><p>削除する場合は、現在のパスワードと「削除」の2文字を入力してください。続いて最終確認が表示されます。</p></div>
 <form id="accountDeleteForm">
 <label for="accountDeletePassword">現在のパスワード</label>
 <input id="accountDeletePassword" type="password" autocomplete="current-password" required style="display:block;width:100%;margin:8px 0">
 <label for="accountDeleteConfirm">確認のため「削除」と入力</label>
 <input id="accountDeleteConfirm" type="text" autocomplete="off" required style="display:block;width:100%;margin:8px 0">
-<button id="accountDeleteButton" type="submit" style="background:#843b48;color:white;border:1px solid #a95b63;width:100%;padding:12px;border-radius:8px">アカウントを完全に削除</button>
+<button id="accountDeleteButton" type="submit" style="background:#843b48;color:white;border:1px solid #a95b63;width:100%;padding:12px;border-radius:8px">削除の最終確認へ</button>
 <p id="accountDeleteStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
 </form></details>
 
@@ -2898,14 +2907,14 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   event.preventDefault();if(busy)return;
   const status=el('accountDeleteStatus'), button=el('accountDeleteButton');
   if(el('accountDeleteConfirm').value.trim()!=='削除'){status.textContent='「削除」と入力してください。';return;}
-  if(!confirm('アカウントを完全に削除します。元に戻せません。続行しますか？'))return;
-  busy=true;button.disabled=true;status.textContent='削除処理中…';
+  if(!confirm('【最終確認】\nアカウントを完全に削除します。\n獲得実績などは復元できません。\n削除する場合は OK、やめる場合はキャンセルを押してください。'))return;
+  busy=true;button.disabled=true;status.textContent='アカウントを削除しています。画面を閉じずにお待ちください。';
   try{
    const {data:{session},error}=await db.auth.getSession();if(error||!session)throw new Error('ログインしてください。');
    const response=await fetch(SUPABASE_URL+'/functions/v1/delete-account',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({password:el('accountDeletePassword').value,confirmation:'DELETE'})});
    const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error||result.message||'削除できませんでした。');
-   el('accountDeleteForm').reset();await db.auth.signOut({scope:'local'});alert('アカウントを削除しました。');location.replace(location.pathname);
-  }catch(e){status.textContent='削除失敗：'+e.message;}
+   el('accountDeleteForm').reset();await db.auth.signOut({scope:'local'});location.replace(location.pathname+'?account-deleted=1');
+  }catch(e){status.textContent='削除を完了できませんでした。\n'+e.message+'\nパスワードを確認して再試行してください。解決しない場合は管理者へお問い合わせください。';}
   finally{el('accountDeletePassword').value='';busy=false;button.disabled=false;}
  });
 })();
@@ -2938,16 +2947,33 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   if (requested) setTimeout(() => {
     if (!recoveryUser && !finished) openRecovery('リンクが無効または期限切れの可能性があります。ログイン画面から再送してください。');
   }, 8000);
-  el('forgotPasswordBtn').onclick = async () => {
-    const button = el('forgotPasswordBtn'), input = el('userEmail'), message = el('authMessage');
-    if (!input.value.trim() || !input.checkValidity()) { message.textContent = '登録済みメールアドレスを入力してください。'; input.focus(); return; }
-    button.disabled = true; message.textContent = '送信中…';
-    try {
-      const {error} = await db.auth.resetPasswordForEmail(input.value.trim(), {redirectTo:'https://soyogi1117.github.io/reverse-achievements/?reset-password=1'});
-      if (error) throw error;
-      message.textContent = '登録済みのメールアドレスであれば、再設定メールが届きます。';
-    } catch (e) { message.textContent = '送信できませんでした：' + (e.message || String(e)); }
-    finally { button.disabled = false; }
+  function guide(title, paragraphs, email = false, steps = []) {
+    el('userAuth').classList.add('account-guiding');
+    el('accountGuide').hidden=false;
+    el('accountGuideTitle').textContent=title;
+    const body=el('accountGuideBody');body.replaceChildren();
+    for(const line of paragraphs){const p=document.createElement('p');p.textContent=line;body.append(p);}
+    if(steps.length){const list=document.createElement('ol');for(const line of steps){const li=document.createElement('li');li.textContent=line;list.append(li);}body.append(list);}
+    el('forgotEmailForm').hidden=!email;el('accountGuideStatus').textContent='';
+    el('accountGuide').scrollIntoView({block:'center'});
+  }
+  el('accountGuideBack').onclick=()=>{el('accountGuide').hidden=true;el('userAuth').classList.remove('account-guiding');el('forgotEmailForm').reset();el('userEmail').focus();};
+  if(url.searchParams.get('account-deleted')==='1'){
+    guide('アカウント削除が完了しました',['アカウントは削除されました。以前のアカウントではログインできません。','逆村広場を再び利用する場合は、新規登録してください。']);
+    url.searchParams.delete('account-deleted');history.replaceState(null,'',url.href);
+  }
+  el('forgotPasswordBtn').onclick=()=>{
+    guide('パスワード再設定｜メール送信',['登録時に使用したメールアドレスを入力してください。再設定用リンクをお送りします。'],true);
+    el('forgotEmail').value=el('userEmail').value;el('forgotEmail').focus();
+  };
+  el('forgotEmailForm').onsubmit=async event=>{
+    event.preventDefault();const button=el('forgotSend'),input=el('forgotEmail'),message=el('accountGuideStatus');
+    button.disabled=true;el('accountGuideBack').disabled=true;message.textContent='再設定メールを送信しています…';
+    try{
+      const {error}=await db.auth.resetPasswordForEmail(input.value.trim(),{redirectTo:'https://soyogi1117.github.io/reverse-achievements/?reset-password=1'});if(error)throw error;
+      guide('メールをご確認ください',['入力されたアドレスが登録済みの場合、再設定メールが届きます。'],false,['受信トレイを開く（届かない場合は迷惑メールも確認）','メール内の再設定リンクを開く','新しいパスワードを設定する']);
+    }catch(e){message.textContent='メールを送信できませんでした。時間をおいて再試行してください。';console.error('Recovery email:',e.message);}
+    finally{button.disabled=false;el('accountGuideBack').disabled=false;}
   };
   function clearRecovery() {
     finished = true; recoveryUser = null;
@@ -2974,8 +3000,8 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       el('recoveryForm').reset(); el('recoveryForm').hidden = true;
       const logout = await db.auth.signOut({scope:'global'});
       if (logout.error) { status.textContent = 'パスワードは変更されましたが、ログアウトできませんでした。下のボタンから戻ってください。'; return; }
-      clearRecovery(); el('authMessage').textContent = 'パスワードを変更しました。新しいパスワードでログインしてください。';
-    } catch (e) { status.textContent = '変更失敗：' + (e.message || String(e)); }
+      clearRecovery(); guide('パスワードの変更が完了しました',['新しいパスワードが保存されました。','下のボタンでログイン画面へ戻り、登録済みメールアドレスと新しいパスワードでログインしてください。']);
+    } catch (e) { status.textContent = '変更できませんでした。以前と異なるパスワードを入力して再試行してください。リンクが無効な場合はメールを再送してください。';console.error('Password recovery:',e.message); }
     finally { button.disabled = false; }
   };
 })();
