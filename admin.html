@@ -46,6 +46,22 @@ label.check input{width:auto}
 .actions button{flex:1}
 #message{color:#eee;white-space:pre-wrap}
 [hidden]{display:none!important}
+
+/* Portal visual refresh */
+body{background:radial-gradient(ellipse at 50% 0%,#302a29,transparent 420px),#101116;color:#e5c99a;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;line-height:1.55;padding:18px}
+main{max-width:760px;margin:22px auto 50px}
+h1{font-family:Georgia,"Hiragino Mincho ProN",serif;letter-spacing:.08em;border-bottom:1px solid #79613f;padding-bottom:14px;color:#f0d6a1}
+h2{font-size:20px;border-bottom:1px solid #514637;padding-bottom:8px;color:#e5c99a}
+#login,#admin>section,#achievementForm{background:linear-gradient(145deg,#24232b,#191b22);border:1px solid #514637;border-radius:12px;padding:16px;margin:18px 0;box-shadow:0 6px 20px #0003}
+#admin>section h2,#login h2{margin-top:0}
+input,textarea,select{background:#181a21;border-color:#655b50;color:#f2eff0}
+button{background:linear-gradient(135deg,#e8c98b,#b18b4f);color:#201b16;border:1px solid #e4c38a;box-shadow:inset 0 1px #ffffff25}
+button.secondary{background:linear-gradient(135deg,#39342f,#272a33);color:#e8dac2;border-color:#655740}
+button.danger{background:#843b48;color:white;border-color:#a95b63}
+.item{background:linear-gradient(145deg,#26252c,#1b1d25);border-color:#514637;border-radius:10px}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid #e5c990;outline-offset:2px}
+@media(max-width:480px){body{padding:12px}#login,#admin>section,#achievementForm{padding:12px}}
+
 </style>
 </head>
 <body>
@@ -80,6 +96,7 @@ label.check input{width:auto}
   <button type="button" onclick="previewTrophy('銅')">🥉 銅</button>
   <button type="button" onclick="previewTrophy('銀')">🥈 銀</button>
   <button type="button" onclick="previewTrophy('金')">🥇 金</button>
+  <button type="button" onclick="previewTrophy('プラチナ')">プラチナ</button>
   <button type="button" onclick="previewTrophy('伝説')">🌈 伝説</button>
 </div>
 
@@ -104,6 +121,7 @@ label.check input{width:auto}
       <option value="銀">銀</option>
       <option value="金">金</option>
       <option value="プラチナ">プラチナ</option>
+      <option value="伝説">伝説</option>
     </select>
 
     <label for="role">対応役職（任意）</label>
@@ -617,6 +635,7 @@ function previewTrophy(rarity) {
     "銅": "DD12C370-5B0B-48A9-B4B8-D82A58A75C5F.png",
     "銀": "FE5334A6-05ED-4D18-9268-C4A80665A74F.png",
     "金": "C302C0C0-2636-4FCE-A1BB-A3A7B398CD7D.png",
+    "プラチナ": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22p%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23f5fcff%22%2F%3E%3Cstop%20offset%3D%22.3%22%20stop-color%3D%22%23a4d8ec%22%2F%3E%3Cstop%20offset%3D%22.52%22%20stop-color%3D%22%23577d91%22%2F%3E%3Cstop%20offset%3D%22.72%22%20stop-color%3D%22%23e8faff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2375acc6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22url%28%23p%29%22%20stroke%3D%22%23d9f5ff%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M43%2028H22v18c0%2022%2014%2033%2033%2034l-5-12C36%2064%2031%2057%2031%2044v-7h12zm74%200h21v18c0%2022-14%2033-33%2034l5-12c14-4%2019-11%2019-24v-7h-12z%22%2F%3E%3Cpath%20d%3D%22M43%2018h74v35c0%2025-13%2039-31%2044v18h19l8%2015H47l8-15h19V97C56%2092%2043%2078%2043%2053z%22%2F%3E%3Cpath%20d%3D%22M45%20130h70l8%2013H37z%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22m80%2035%207%2014%2016%202-12%2011%203%2016-14-8-14%208%203-16-12-11%2016-2z%22%20fill%3D%22%23e8faff%22%20stroke%3D%22%236695ac%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fsvg%3E",
     "伝説": "7592707B-2DA2-4B5F-9131-D481572EE8F2.png"
   };
 
@@ -624,6 +643,7 @@ function previewTrophy(rarity) {
     "銅": "#cd7f32",
     "銀": "#dce6f5",
     "金": "#ffd700",
+    "プラチナ": "#b5e8ff",
     "伝説": "#b46aff"
   };
 
@@ -638,7 +658,7 @@ function previewTrophy(rarity) {
 
   title.textContent = rarity === "伝説"
     ? "LEGENDARY ACHIEVEMENT"
-    : "TROPHY UNLOCKED!";
+    : rarity === "プラチナ" ? "PLATINUM TROPHY" : "TROPHY UNLOCKED!";
 
   title.style.color = colors[rarity];
   img.style.setProperty("--glow", colors[rarity]);

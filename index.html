@@ -1721,6 +1721,17 @@ footer{color:#b4a38c;border-color:#534230}
 #userAuth input,#userAuth select,#userAuth textarea{min-width:0;max-width:100%}
 </style>
 
+<style>
+/* Platinum: fifth rarity, distinct from silver */
+.achievement.rarity-platinum.done{border:1px solid #b5e8ff;background:linear-gradient(135deg,#2b414c,#1c272e);box-shadow:0 0 13px #91d9ff42;opacity:1}
+.achievement.rarity-platinum.done h3,.achievement.rarity-platinum.done .tag:last-child{color:#b5e8ff;border-color:#b5e8ff}
+.achievement.rarity-platinum.done input{accent-color:#b5e8ff}
+.equippedTrophyTitle[data-rarity="プラチナ"]{--metal-hi:#f1fcff;--metal-mid:#92c8dc;--metal-lo:#38596c;--metal-text:#c9f0ff}
+#trophyEffect.platinum #trophyEffectContent{border-color:#b5e8ff;box-shadow:0 0 48px #91d9ff88;background:linear-gradient(145deg,#283b46,#171d25)}
+#trophyEffect.platinum #trophyEffectTitle{color:#b5e8ff}
+#trophyEffect.platinum #trophyEffectIcon{--trophy-glow:#b5e8ff}
+#rarityProgressBars .rarityCombinedCard:last-child:nth-child(odd){grid-column:1/-1}
+</style>
 </head>
 <body>
 <header>
@@ -2361,7 +2372,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 <select id="rarity">
 <option value="">全レア度</option>
 <option>銅</option><option>銀</option>
-<option>金</option><option>伝説</option>
+<option>金</option><option>プラチナ</option><option>伝説</option>
 </select>
 <select id="status">
 <option value="">すべて</option>
@@ -2437,6 +2448,7 @@ const rarityCounts = {
   "銅": 0,
   "銀": 0,
   "金": 0,
+  "プラチナ": 0,
   "伝説": 0
 };
 
@@ -2457,6 +2469,7 @@ const raritySettings = [
   { name: "銅", icon: "🥉", color: "#cd7f32" },
   { name: "銀", icon: "🥈", color: "#c0c0c0" },
   { name: "金", icon: "🥇", color: "#ffd700" },
+  { name: "プラチナ", icon: "", color: "#b5e8ff" },
   { name: "伝説", icon: "🌈", color: "#a569ff" }
 ];
 
@@ -2563,7 +2576,8 @@ const rarityOrder = {
   "銅": 1,
   "銀": 2,
   "金": 3,
-  "伝説": 4
+  "プラチナ": 4,
+  "伝説": 5
 };
 
 filtered.sort((a, b) => {
@@ -2595,6 +2609,7 @@ const rarityClass = {
   "銅": "rarity-bronze",
   "銀": "rarity-silver",
   "金": "rarity-gold",
+  "プラチナ": "rarity-platinum",
   "伝説": "rarity-legend"
 };
 
@@ -2718,13 +2733,14 @@ function showTrophyEffect(achievement) {
 
   
 effect.classList.remove(
-  "bronze", "silver", "gold", "legendary"
+  "bronze", "silver", "gold", "platinum", "legendary"
 );
 
 const effectClasses = {
   "銅": "bronze",
   "銀": "silver",
   "金": "gold",
+  "プラチナ": "platinum",
   "伝説": "legendary"
 };
 
@@ -2742,6 +2758,7 @@ const trophyImages = {
   "銅": "DD12C370-5B0B-48A9-B4B8-D82A58A75C5F.png",
   "銀": "FE5334A6-05ED-4D18-9268-C4A80665A74F.png",
   "金": "C302C0C0-2636-4FCE-A1BB-A3A7B398CD7D.png",
+  "プラチナ": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22p%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23f5fcff%22%2F%3E%3Cstop%20offset%3D%22.3%22%20stop-color%3D%22%23a4d8ec%22%2F%3E%3Cstop%20offset%3D%22.52%22%20stop-color%3D%22%23577d91%22%2F%3E%3Cstop%20offset%3D%22.72%22%20stop-color%3D%22%23e8faff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2375acc6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22url%28%23p%29%22%20stroke%3D%22%23d9f5ff%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M43%2028H22v18c0%2022%2014%2033%2033%2034l-5-12C36%2064%2031%2057%2031%2044v-7h12zm74%200h21v18c0%2022-14%2033-33%2034l5-12c14-4%2019-11%2019-24v-7h-12z%22%2F%3E%3Cpath%20d%3D%22M43%2018h74v35c0%2025-13%2039-31%2044v18h19l8%2015H47l8-15h19V97C56%2092%2043%2078%2043%2053z%22%2F%3E%3Cpath%20d%3D%22M45%20130h70l8%2013H37z%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22m80%2035%207%2014%2016%202-12%2011%203%2016-14-8-14%208%203-16-12-11%2016-2z%22%20fill%3D%22%23e8faff%22%20stroke%3D%22%236695ac%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fsvg%3E",
   "伝説": "7592707B-2DA2-4B5F-9131-D481572EE8F2.png"
 };
 
@@ -2762,7 +2779,7 @@ trophyIcon.style.filter = "";
 
 
   document.getElementById("trophyEffectTitle").textContent =
-    isLegend ? "LEGENDARY ACHIEVEMENT" : "TROPHY UNLOCKED!";
+    isLegend ? "LEGENDARY ACHIEVEMENT" : achievement.rarity === "プラチナ" ? "PLATINUM TROPHY" : "TROPHY UNLOCKED!";
 
   document.getElementById("trophyEffectName").textContent =
     achievement.name;
