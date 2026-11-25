@@ -2380,14 +2380,6 @@ const rarityOrder = {
 
 filtered.sort((a, b) => {
   
-  // 未獲得の伝説トロフィーは必ず最後に表示
-  const hiddenA = a.rarity === "伝説" && !completed[a.id];
-  const hiddenB = b.rarity === "伝説" && !completed[b.id];
-
-  if (hiddenA !== hiddenB) {
-    return hiddenA ? 1 : -1;
-  }
-
   if (sort === "todo") {
     return Number(!!completed[a.id]) - Number(!!completed[b.id]);
   }
@@ -2616,6 +2608,7 @@ async function loadAchievements() {
     .from("achievements")
     .select("*")
     .eq("is_published", true)
+    .order("sort_order", {ascending:true,nullsFirst:false})
     .order("id");
   if (error) {
   console.error("Supabaseエラー:", error);
@@ -4802,7 +4795,7 @@ async function loadTrophyTitle() {
     const [profile, owned, catalog] = await Promise.all([
       db.from("profiles").select("equipped_achievement_id").eq("id",user.id).maybeSingle(),
       db.from("user_achievements").select("achievement_id").eq("user_id",user.id),
-      db.from("achievements").select("id,name,rarity").eq("is_published",true).order("id")
+      db.from("achievements").select("id,name,rarity").eq("is_published",true).order("sort_order",{ascending:true,nullsFirst:false}).order("id")
     ]);
     if (request !== titleLoadRequest) return;
     for (const result of [profile,owned,catalog]) if (result.error) throw result.error;
