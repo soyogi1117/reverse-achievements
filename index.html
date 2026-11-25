@@ -2069,6 +2069,17 @@ footer{color:#b4a38c;border-color:#534230}
     
 <p id="signedInEmail"></p>
 <button id="signoutBtn" type="button">ログアウト</button>
+<details id="accountDeleteSettings" style="margin-top:16px;border-top:1px solid #514637;padding-top:12px">
+<summary style="cursor:pointer;color:#e5c99a">アカウント設定</summary>
+<p style="font-size:13px;color:#f0a6a6">削除するとプロフィール、獲得実績、個人の戦績、投稿、通知などを復元できません。共有対戦記録は残ります。</p>
+<form id="accountDeleteForm">
+<label for="accountDeletePassword">現在のパスワード</label>
+<input id="accountDeletePassword" type="password" autocomplete="current-password" required style="display:block;width:100%;margin:8px 0">
+<label for="accountDeleteConfirm">確認のため「削除」と入力</label>
+<input id="accountDeleteConfirm" type="text" autocomplete="off" required style="display:block;width:100%;margin:8px 0">
+<button id="accountDeleteButton" type="submit" style="background:#843b48;color:white;border:1px solid #a95b63;width:100%;padding:12px;border-radius:8px">アカウントを完全に削除</button>
+<p id="accountDeleteStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
+</form></details>
 
 
 
@@ -2879,6 +2890,26 @@ document.getElementById(id).addEventListener("input",render));
 const SUPABASE_URL = "https://qwmraeabwlnkwsaqwqqg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+(() => {
+ const el=id=>document.getElementById(id);
+ let busy=false;
+ db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){el('accountDeleteForm').reset();el('accountDeleteSettings').open=false;el('accountDeleteStatus').textContent='';}});
+ el('accountDeleteForm').addEventListener('submit',async event=>{
+  event.preventDefault();if(busy)return;
+  const status=el('accountDeleteStatus'), button=el('accountDeleteButton');
+  if(el('accountDeleteConfirm').value.trim()!=='削除'){status.textContent='「削除」と入力してください。';return;}
+  if(!confirm('アカウントを完全に削除します。元に戻せません。続行しますか？'))return;
+  busy=true;button.disabled=true;status.textContent='削除処理中…';
+  try{
+   const {data:{session},error}=await db.auth.getSession();if(error||!session)throw new Error('ログインしてください。');
+   const response=await fetch(SUPABASE_URL+'/functions/v1/delete-account',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({password:el('accountDeletePassword').value,confirmation:'DELETE'})});
+   const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.error||result.message||'削除できませんでした。');
+   el('accountDeleteForm').reset();await db.auth.signOut({scope:'local'});alert('アカウントを削除しました。');location.replace(location.pathname);
+  }catch(e){status.textContent='削除失敗：'+e.message;}
+  finally{el('accountDeletePassword').value='';busy=false;button.disabled=false;}
+ });
+})();
+
 // Password recovery: register immediately after creating the auth client.
 (() => {
   const el = id => document.getElementById(id);
