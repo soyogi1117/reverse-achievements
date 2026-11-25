@@ -1916,7 +1916,7 @@ footer{color:#a19cab;border-color:#45434e}
 <label for="profileUsername" style="display:block;margin-bottom:8px;color:#fff;">
   ユーザー名
 </label>
-<input id="profileUsername" type="text" maxlength="20" placeholder="ユーザー名（20文字以内）">
+<input id="profileUsername" type="text" maxlength="6" placeholder="ユーザー名（6文字以内）">
   <button id="saveUsernameBtn" type="button">ユーザー名を保存</button>
   <p id="profileMessage" role="status"></p>
 </div><div id="bioEditor" style="margin-top:20px;">
@@ -2038,7 +2038,7 @@ footer{color:#a19cab;border-color:#45434e}
        width="80"
        height="80"
        style="display:none; border-radius:50%; object-fit:cover;"></div>
-  <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
+  <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><div class="pcNameRow"><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div></div><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
   <div class="pcProgress"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg><strong id="profileUnlocked">0</strong><span id="pcTotal">/ 0</span><progress id="pcProgressBar" max="100" value="0" aria-label="トロフィー獲得率"></progress><strong id="profileRate">0%</strong></div></div></div>
   <p id="privacyMessage" role="status" style="font-size:12px;color:#b0adbc;"></p>
   <details id="profileBioSection"><summary>自己紹介・詳細情報</summary><p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p></details>
@@ -3247,8 +3247,8 @@ document.getElementById("saveUsernameBtn").onclick = async () => {
   const message = document.getElementById("profileMessage");
   const button = document.getElementById("saveUsernameBtn");
 
-  if (username.length < 1 || username.length > 20) {
-    message.textContent = "ユーザー名は1〜20文字で入力してください。";
+  if (username.length < 1 || username.length > 6) {
+    message.textContent = "ユーザー名は1〜6文字で入力してください。";
     return;
   }
 
@@ -3518,8 +3518,8 @@ saveProfileBtn.addEventListener("click", async () => {
   const favorite = document.getElementById("favoriteRoleSelect").value;
   const disliked = document.getElementById("dislikedRoleSelect").value;
 
-  if (!username || username.length > 20) {
-    saveProfileMessage.textContent = "ユーザー名は1〜20文字で入力してください。";
+  if (!username || username.length > 6) {
+    saveProfileMessage.textContent = "ユーザー名は1〜6文字で入力してください。";
     return;
   }
 
@@ -5584,6 +5584,12 @@ html body main > .portalSectionDivider::before,html body main > .portalSectionDi
 html body main > .portalSectionDivider > span {white-space:nowrap;}
 html body main > .portalSectionDivider:first-child {margin-top:8px;}
 @media(max-width:370px){html body main > .portalSectionDivider{font-size:11px;gap:7px;margin-block:24px 14px;}}
+</style>
+<style id="playerCardNameLayout">
+#profileStats .pcNameRow{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:6px;align-items:center;margin:3px 0 7px;}
+html body #profileStats .pcNameRow #profileTitle{font-size:clamp(15px,4.8vw,21px)!important;line-height:1.3;margin:0!important;min-width:0;overflow-wrap:anywhere;}
+#profileStats .pcNameRow .pcField{align-items:flex-start;}
+#profileStats .pcFields{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:6px;}
 </style>
 </body>
 </html>
