@@ -2045,6 +2045,7 @@ footer{color:#a19cab;border-color:#45434e}
        style="display:none; border-radius:50%; object-fit:cover;"></div>
   <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><div class="pcNameRow"><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div></div><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
   <div class="pcProgress"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg><strong id="profileUnlocked">0</strong><span id="pcTotal">/ 0</span><progress id="pcProgressBar" max="100" value="0" aria-label="トロフィー獲得率"></progress><strong id="profileRate">0%</strong></div></div></div>
+  <div id="myFollowPanel" class="followPanel" hidden><div class="followRow"><button type="button" id="myFollowing">フォロー中 —</button><button type="button" id="myFollowers">フォロワー —</button></div><div id="myFollowList" hidden></div></div>
   <p id="privacyMessage" role="status" style="font-size:12px;color:#b0adbc;"></p>
   <details id="profileBioSection"><summary>自己紹介・詳細情報</summary><p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p></details>
 </div>
@@ -2142,6 +2143,7 @@ footer{color:#a19cab;border-color:#45434e}
        height="100"
        style="display:none;border-radius:50%;object-fit:cover;">
 
+  <div id="publicFollowPanel" class="followPanel" hidden><div class="followRow"><span id="publicFollowCounts"></span><button id="publicFollowButton" type="button" hidden>フォローする</button></div><p id="publicFollowStatus" role="status"></p></div>
   <h3><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5zM8 8h8m-8 4h8m-8 4h5"/></svg> 自己紹介</h3>
   <p id="publicProfileBio"
      style="white-space:pre-wrap;overflow-wrap:anywhere;">
@@ -3920,6 +3922,7 @@ author.style.cssText = `
   text-align: left;
 `;
 author.addEventListener("click", async () => {
+  window.followUI?.show(item.user_id);
   const matchStatsRequest = clearPublicMatchStats();
   document.getElementById("backToAnnouncements").textContent = "← 部屋告知に戻る";
   const profileSection = document.getElementById("publicProfile");
@@ -4427,6 +4430,7 @@ setInterval(() => {
 
 <script>
 async function openPlayerProfile(userId) {
+  window.followUI?.show(userId);
   const section = document.getElementById("publicProfile");
   const name = document.getElementById("publicProfileName");
   const bio = document.getElementById("publicProfileBio");
@@ -5643,5 +5647,25 @@ html body #reverseTimeline #tlStatus{font-size:13px;margin:14px 0 4px!important}
 #reverseArchive .archiveShelfArrow{flex:none;color:#a19cab}
 #reverseArchive .archiveShelfList p{font-size:14px;padding:8px 2px}
 </style>
+<style id="follow-style">
+html body .followPanel[hidden],html body .followPanel [hidden]{display:none!important}
+html body .followPanel{margin:8px 0!important;padding:6px 0!important;background:transparent!important;border:0!important;box-shadow:none!important;min-height:0!important;font-size:12px;color:#b0adbc}
+html body .followRow{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+html body .followPanel button{width:auto!important;min-height:32px!important;padding:5px 10px!important;margin:0!important;font-size:12px!important;border-radius:4px!important;white-space:normal}
+html body #myFollowPanel .followRow button{background:transparent!important;border:0!important;box-shadow:none!important;color:#d0d2df!important}
+html body #myFollowList button{display:block;width:100%!important;text-align:left;margin:4px 0!important}
+html body #publicFollowButton:not(.following){background:#d0d2df!important;color:#161720!important}
+html body #publicFollowStatus:empty{display:none!important}
+html body #publicFollowStatus{font-size:12px;margin:4px 0}
+</style>
+<script>
+(()=>{const el=id=>document.getElementById(id);const mine=el('myFollowPanel'), pub=el('publicFollowPanel'), btn=el('publicFollowButton'), list=el('myFollowList');let target=null,owner=null,seq=0,mySeq=0,listSeq=0,mode=null,following=false,busy=false;
+async function refreshMine(){const n=++mySeq;try{const {data:{user}}=await db.auth.getUser();if(n!==mySeq)return;owner=user?.id||null;if(!owner){mine.hidden=true;return;}const {data,error}=await db.rpc('follow_status',{p_target:owner});if(n!==mySeq)return;if(error)throw error;if(!data){mine.hidden=true;return;}el('myFollowing').textContent='フォロー中 '+data.following_count;el('myFollowers').textContent='フォロワー '+data.follower_count;mine.hidden=false;}catch(e){mine.hidden=true;console.error('follow status',e);}}
+async function show(id){const n=++seq;target=id;pub.hidden=true;btn.hidden=true;el('publicFollowStatus').textContent='';el('publicFollowCounts').textContent='';try{const {data:{user}}=await db.auth.getUser();if(n!==seq||!user||user.id===id)return;const {data,error}=await db.rpc('follow_status',{p_target:id});if(n!==seq)return;if(error)throw error;if(!data)return;following=!!data.following;el('publicFollowCounts').textContent=data.follower_count==null?'':`フォロー中 ${data.following_count}　フォロワー ${data.follower_count}`;btn.hidden=!(data.can_follow||following);btn.textContent=following?'フォロー解除':'＋ フォローする';btn.classList.toggle('following',following);btn.disabled=busy;pub.hidden=btn.hidden&&data.follower_count==null;}catch(e){console.error('follow status',e);}}
+btn.addEventListener('click',async()=>{if(busy||!target)return;const id=target,wanted=!following;busy=true;btn.disabled=true;try{const {error}=await db.rpc('follow_set',{p_target:id,p_follow:wanted});if(error)throw error;await refreshMine();if(mode!==null&&!list.hidden)await loadList(mode);if(target===id)await show(id);}catch(e){if(target===id)el('publicFollowStatus').textContent='操作できませんでした：'+e.message;}finally{busy=false;btn.disabled=false;}});
+async function loadList(which){const n=++listSeq;mode=which;list.hidden=false;list.textContent='読み込み中…';try{const {data,error}=await db.rpc('follow_my_list',{p_followers:which});if(n!==listSeq)return;if(error)throw error;list.replaceChildren();if(!data?.length){list.textContent='まだいません。';return;}for(const p of data){const b=document.createElement('button');b.type='button';b.textContent=(p.username||'名前未設定')+(p.is_private?'（非公開）':'');b.addEventListener('click',()=>{el('publicProfile').dataset.returnTo='playerSearch';el('backToAnnouncements').textContent='← プレイヤー検索に戻る';openPlayerProfile(p.player_id);});list.append(b);}}catch(e){if(n===listSeq)list.textContent='取得できませんでした。';}}
+function toggle(which){if(!list.hidden&&mode===which){++listSeq;list.hidden=true;mode=null;}else void loadList(which);}
+el('myFollowing').addEventListener('click',()=>toggle(false));el('myFollowers').addEventListener('click',()=>toggle(true));window.followUI={show};db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','INITIAL_SESSION'].includes(event)){++seq;++listSeq;pub.hidden=true;list.hidden=true;mode=null;setTimeout(refreshMine,0);}});void refreshMine();})();
+</script>
 </body>
 </html>
