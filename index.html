@@ -4842,7 +4842,7 @@ void loadTrophyTitle();
  let owner=null, revision=0, searchRevision=0, allowed=false, saving=false;
  const players=new Map();
  const sides=['市民陣営','人狼陣営','その他'];
- const roles=[...new Set([...nekoRoles,'罠師','医者','狼少年','強欲な人狼','窮地の人狼','ギャンブル狂','指導者','聖騎士','マッチ売り','末裔','一匹狼','黒い占い師','道化師','天邪鬼'])];
+ const roles=[...nekoRoles];
  function option(value,label=value){const o=document.createElement('option');o.value=value;o.textContent=label;return o;}
  function reset(){form.reset();players.clear();roster.replaceChildren();el('matchResults').replaceChildren();el('matchSearchStatus').textContent='';const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el('matchDate').value=d.toISOString().slice(0,16);}
  async function check(){
@@ -4952,7 +4952,7 @@ void refreshMyMatchStats();
  let owner=null, allowed=false, revision=0, loadSeq=0, selected=null, busy=false;
  let editSeq=0, searchSeq=0, auditSeq=0, rosterReady=false, originalDate='';
  const roster=new Map(), audit=el('matchAuditView');
- const roleNames=[...new Set([...nekoRoles,'罠師','医者','狼少年','強欲な人狼','窮地の人狼','ギャンブル狂','指導者','聖騎士','マッチ売り','末裔','一匹狼','黒い占い師','道化師','天邪鬼'])];
+ const roleNames=[...nekoRoles];
  function addPlayer(p){const id=p.user_id||p.id;if(!id||roster.has(id))return;
  const card=node('div');card.className='matchPlayerCard';const header=node('div');header.className='matchPlayerHeader';header.append(node('strong',p.username||id),button('削除',()=>{if(busy)return;roster.delete(id);card.remove();el('managePlayerResults').replaceChildren();}));
  const role=node('input');role.required=true;role.maxLength=80;role.value=p.role||'';role.setAttribute('list','manageRoleOptions');role.placeholder='役職名';
