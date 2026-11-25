@@ -2040,9 +2040,7 @@ footer{color:#a19cab;border-color:#45434e}
        style="display:none; border-radius:50%; object-fit:cover;"></div>
   <div class="pcInfo"><div id="myTrophyTitle" class="equippedTrophyTitle" hidden></div><h3 id="profileTitle"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> マイプロフィール</h3><div class="pcFields"><div class="pcField"><span>好きなキャラ</span><strong id="favoriteCharacterDisplay">未設定</strong></div><div class="pcField"><span>好きな役職</span><strong id="favoriteRoleDisplay">未設定</strong></div><div class="pcField"><span>苦手な役職</span><strong id="dislikedRoleDisplay">未設定</strong></div></div>
   <div class="pcProgress"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg><strong id="profileUnlocked">0</strong><span id="pcTotal">/ 0</span><progress id="pcProgressBar" max="100" value="0" aria-label="トロフィー獲得率"></progress><strong id="profileRate">0%</strong></div></div></div>
-  <p id="privacyMessage"
-  style="font-size:12px;color:#b0adbc;">
-</p>
+  <p id="privacyMessage" role="status" style="font-size:12px;color:#b0adbc;"></p>
   <details id="profileBioSection"><summary>自己紹介・詳細情報</summary><p id="profileBio" style="white-space:pre-wrap;overflow-wrap:anywhere;">自己紹介はまだありません。</p></details>
 </div>
 
@@ -2070,6 +2068,7 @@ footer{color:#a19cab;border-color:#45434e}
 <main>
 
 
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ MAIN MENU ◆</span></div>
 <nav class="homeMenu" aria-label="メインメニュー">
   <a href="#playerSearch" class="homeMenuItem">
     <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></span>
@@ -2101,6 +2100,7 @@ footer{color:#a19cab;border-color:#45434e}
 
 
 
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ PLAYERS ◆</span></div>
 <section id="playerSearch" class="panel">
   <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg> プレイヤー検索</h2>
   <p class="muted">
@@ -2185,6 +2185,7 @@ footer{color:#a19cab;border-color:#45434e}
 </div>
 <div id="publicMatchStats" class="matchStatsPanel" hidden></div>
 </section>
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ ROOMS ◆</span></div>
 <section id="roomAnnouncements" class="panel">
   <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg> 部屋告知</h2>
   <p class="muted">
@@ -2361,6 +2362,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
     <p class="muted">現在、告知はありません。</p>
   </div>
 </section>
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ BATTLE RECORDS ◆</span></div>
 <section id="matchCenter" class="panel">
 <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg> 戦績</h2><p id="matchAccess" class="muted" role="status">権限を確認中...</p>
 <div id="myMatchStats" class="matchStatsPanel" hidden></div>
@@ -2393,6 +2395,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 <div style="display:flex;gap:8px"><button id="manageMatchCancel" type="button" style="flex:1">キャンセル</button><button type="submit" style="flex:2">変更を保存</button></div>
 </form></div>
 </section>
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ ACHIEVEMENTS ◆</span></div>
 <section id="achievements" class="panel">
 <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> トロフィー</h2>
 <div class="trophyOverview">
@@ -2453,7 +2456,9 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 </div>
 <div id="list"></div>
 </section>
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ TIMELINE ◆</span></div>
 <section id="reverseTimeline" class="panel"><h2>逆村タイムライン</h2><p class="muted">REVERSE VILLAGE TIMELINE</p><form id="tlForm" hidden><textarea id="tlText" rows="3" maxlength="280" placeholder="今日の逆村はどうでしたか？" aria-label="投稿本文"></textarea><small id="tlCount" class="muted">0 / 280</small><label for="tlFile">画像（任意・5MBまで）</label><input id="tlFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button id="tlLoadMatches" type="button">自分の試合実績を読み込む</button><select id="tlMatch" aria-label="添付する試合"><option value="">試合実績を添付しない</option></select><button id="tlSubmit" type="submit">投稿する</button></form><button id="tlRefresh" type="button">更新</button><p id="tlStatus" role="status" class="muted"></p><div id="tlList"></div><button id="tlMore" hidden type="button">もっと見る</button></section>
+<div class="portalSectionDivider" aria-hidden="true"><span>◆ ARCHIVES ◆</span></div>
 <section id="reverseArchive" class="panel"><h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3zM12 6v15M6 8h3m-3 4h3m6-4h3m-3 4h3"/></svg> 逆村資料館</h2><p class="muted">REVERSE VILLAGE ARCHIVES</p><div class="archiveControls"><input id="archiveSearch" type="search" placeholder="資料を検索" aria-label="資料を検索"><select id="archiveFilter" aria-label="カテゴリー"><option value="">すべてのカテゴリー</option><option>逆村入門</option><option>配役・ルール集</option><option>役職図鑑</option><option>戦術・指南書</option><option>逆村の歴史</option></select><button id="archiveRefresh" type="button">更新</button></div><p id="archiveStatus" class="muted" role="status">読み込み中…</p><div id="archiveList"></div><article id="archiveDetail" hidden></article></section>
 </main>
 <footer>逆村広場 | REVERSE VILLAGE PORTAL</footer>
@@ -5569,8 +5574,16 @@ html body #profileStats #profileBioSection{margin:10px 0 0!important;border-top:
 #profileStats #profileBioSection summary::-webkit-details-marker{display:none;}
 #profileStats #profileBioSection summary::after{content:'⌄';}#profileStats #profileBioSection[open] summary::after{content:'⌃';}
 #profileStats #profileBio{margin:8px 0 0!important;font-size:13px;line-height:1.6;}
-#profileStats #privacyMessage{font-size:11px!important;margin:4px 0!important;}
+html body #profileStats.playerCard > #privacyMessage{display:block;width:auto;min-height:0;height:auto;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;font-size:11px!important;margin:4px 0!important;text-align:left;}
+html body #profileStats.playerCard > #privacyMessage:empty{display:none!important;margin:0!important;}
 @media(max-width:370px){html body #profileStats.playerCard{padding:9px!important;}#profileStats .pcMain{gap:7px;grid-template-columns:44px minmax(0,1fr);}#profileStats .pcProgress{gap:3px;}}
+</style>
+<style id="portalSectionDividers">
+html body main > .portalSectionDivider {display:flex;align-items:center;justify-content:center;gap:10px;margin:30px 0 16px;color:#b6afc2;font-size:12px;font-weight:500;letter-spacing:.065em;line-height:1.5;text-align:center;}
+html body main > .portalSectionDivider::before,html body main > .portalSectionDivider::after {content:"";height:1px;background:#56515f;flex:1;min-width:12px;}
+html body main > .portalSectionDivider > span {white-space:nowrap;}
+html body main > .portalSectionDivider:first-child {margin-top:8px;}
+@media(max-width:370px){html body main > .portalSectionDivider{font-size:11px;gap:7px;margin-block:24px 14px;}}
 </style>
 </body>
 </html>
