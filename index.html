@@ -1702,6 +1702,23 @@ footer{color:#b4a38c;border-color:#534230}
 #announcementVersion,#edit_announcementVersion{width:36%!important;font-size:14px!important;padding-inline:7px!important}
 #announcementTitle,#edit_announcementTitle{width:60%!important;margin-left:2%!important}
 
+
+/* Final responsive and dynamic icon refinements */
+#userAuth,#profileStats,#profileEditPanel,.panel,main,.profileHeader,.profileHeader>div{min-width:0;box-sizing:border-box}
+#profileStats .profileHeader>div{flex:0 1 auto;max-width:100%;width:100%}
+#profileStats .profileHeader{width:100%;min-width:0}
+#profileStats .profileHeader #editProfileBtn,#profileStats .profileHeader #privacyToggleBtn{max-width:calc(50% - 5px);min-width:0;white-space:normal!important;overflow-wrap:anywhere;box-sizing:border-box;margin:0 2px!important;padding:7px 8px}
+#profileStats #privacyMessage{max-width:100%;overflow-wrap:anywhere;margin:8px 0 0;color:#c8b9a4!important}
+#profileStats #profileBioSection{margin-top:12px!important}
+#signedIn.editing #profileEditPanel #roleEditor label,#trophyTitleStatus,#profileEditPanel .muted{color:#c8b9a4!important}
+.matchStatsPanel .msRecent span:not(.win):not(.loss){background:#40352b;color:#c8b9a4}
+.matchStatsPanel .msStreak h4:not(:first-child){margin-top:14px}
+.matchStatsPanel .msStreak .msFactionLine{color:#bfb3a3!important}
+#matchCenter #matchOpen:not([disabled]){background:linear-gradient(145deg,#433425,#2c241e);border-color:#80623d;color:#f0d9ae}
+#achievements #list .achievement:not(.done) .tag:last-child{color:#b7aa98;border-color:#685a4a;background:#211d1a}
+#achievements #list .achievement:not(.done) h3{color:#b7aa98}
+#profileStats .profileHeader img{max-width:100%;flex-shrink:0}
+#userAuth input,#userAuth select,#userAuth textarea{min-width:0;max-width:100%}
 </style>
 
 </head>
@@ -2653,10 +2670,7 @@ const content=document.createElement("div");
 
 const title=document.createElement("h3");
 
-title.textContent =
-  !completed[a.id]
-    ? "🔒 ？？？？？？"
-    : a.name;
+if (!completed[a.id]) { title.innerHTML = ' <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> ？？？？？？'; } else { title.textContent = a.name; }
 
 
 const desc = document.createElement("p");
@@ -2670,8 +2684,7 @@ if (a.rarity === "伝説" && legendLocked) {
     item => completed[item.id]
   ).length;
 
-  desc.textContent =
-    `🔒 解放条件：通常トロフィーをすべて獲得（${unlockedCount}/${normalAchievements.length}）`;
+  desc.innerHTML = `<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> 解放条件：通常トロフィーをすべて獲得（${unlockedCount}/${normalAchievements.length}）`;
 } else {
   desc.textContent = a.description;
 }
@@ -3275,9 +3288,9 @@ privacyToggleBtn.addEventListener("click", async () => {
 
     if (updateError) throw updateError;
 
-    privacyMessage.textContent = nextPrivate
-      ? "🔒 非公開に設定しました"
-      : "🌐 公開に設定しました";
+    privacyMessage.innerHTML = nextPrivate
+      ? '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> 非公開に設定しました'
+      : '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-7 6-7 12 0 18 7-6 7-12 0-18"/></svg> 公開に設定しました';
 
     await loadPrivacySetting();
   } catch (error) {
@@ -3389,7 +3402,7 @@ if (Object.prototype.hasOwnProperty.call(profileData, "equipped_achievement_id")
     
 
 signedIn.classList.remove("editing");
-editProfileBtn.textContent = "✏️ 編集";
+editProfileBtn.innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集';
 
 
   } catch (error) {
@@ -3402,9 +3415,9 @@ editProfileBtn.textContent = "✏️ 編集";
 editProfileBtn.addEventListener("click", () => {
   const editing = signedIn.classList.toggle("editing");
 
-  editProfileBtn.textContent = editing
-    ? "✕ 閉じる"
-    : "✏️ 編集";
+  editProfileBtn.innerHTML = editing
+    ? '✕ 閉じる'
+    : '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集';
 });
 
 document.getElementById("postAnnouncementBtn")
@@ -3765,7 +3778,7 @@ const { data, error } = publicError || !publicData
         data: {
           username: publicData.username,
           avatar_url: publicData.avatar_url,
-          bio: "🔒 このプロフィールは非公開です。"
+          bio: "このプロフィールは非公開です。"
         },
         error: null
       }
@@ -3791,7 +3804,7 @@ profileName.textContent =
   "👤 " +
   (data.username || "名前未設定") +
   "のプロフィール" +
-  (publicData.is_private ? " 🔒" : "");
+  (publicData.is_private ? "（非公開）" : "");
 
 
   profileBio.textContent =
@@ -4034,7 +4047,7 @@ actions.style.cssText = `
 
       const editBtn = document.createElement("button");
       editBtn.type = "button";
-      editBtn.textContent = "✏️ 編集";
+      editBtn.innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集';
       
 editBtn.addEventListener("click", () => {
   const form = document.getElementById("announcementEditForm");
@@ -4118,7 +4131,7 @@ editBtn.addEventListener("click", () => {
 
         const closeBtn = document.createElement("button");
         closeBtn.type = "button";
-        closeBtn.textContent = "🔒 募集を終了する";
+        closeBtn.innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> 募集を終了する';
 
         closeBtn.addEventListener("click", async () => {
           if (!confirm("この部屋の募集を終了しますか？")) return;
@@ -4214,7 +4227,7 @@ roleStats.style.display = "none";
 
   name.textContent =
     "👤 " + (profile.username || "名前未設定") +
-    "のプロフィール" + (profile.is_private ? " 🔒" : "");
+    "のプロフィール" + (profile.is_private ? "（非公開）" : "");
 
   if (profile.avatar_url) {
     avatar.src = profile.avatar_url;
@@ -4222,7 +4235,7 @@ roleStats.style.display = "none";
   }
 
   if (!canView) {
-    bio.textContent = "🔒 このプロフィールは非公開です。";
+    bio.textContent = "このプロフィールは非公開です。";
     return;
   }
 
@@ -4358,7 +4371,7 @@ item.style.cssText =
 
       const name = document.createElement("strong");
       name.textContent =
-        player.username + (player.is_private ? " 🔒" : "");
+        player.username + (player.is_private ? "（非公開）" : "");
 
       
 item.addEventListener("click", () => {
@@ -4502,7 +4515,7 @@ loadRoles();
 
 document.getElementById("closeProfileBtn").addEventListener("click", () => {
   document.getElementById("signedIn").classList.remove("editing");
-  document.getElementById("editProfileBtn").textContent = "✏️ 編集";
+  document.getElementById("editProfileBtn").innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集';
 });
 </script>
 
@@ -5037,7 +5050,7 @@ void loadTrophyTitle();
    if(players.has(p.id))return;
    const card=document.createElement('div');card.className='matchPlayerCard';
    const header=document.createElement('div');header.className='matchPlayerHeader';
-   const name=document.createElement('strong');name.textContent=p.username+(p.is_private?' 🔒':'');
+   const name=document.createElement('strong');name.textContent=p.username+(p.is_private?'（非公開）':'');
    const remove=document.createElement('button');remove.type='button';remove.textContent='削除';remove.onclick=()=>{if(saving)return;players.delete(p.id);card.remove();};header.append(name,remove);
    const role=document.createElement('select');role.required=true;role.append(option('','役職を選択'),...roles.map(r=>option(r)),option('__custom','その他（手入力）'));
    const custom=document.createElement('input');custom.placeholder='役職名';custom.maxLength=80;custom.hidden=true;role.onchange=()=>{custom.hidden=role.value!=='__custom';custom.required=!custom.hidden;};
@@ -5050,7 +5063,7 @@ void loadTrophyTitle();
    const q=el('matchSearch').value.trim(), seq=++searchRevision, target=el('matchResults'), msg=el('matchSearchStatus');target.replaceChildren();
    if(!q){msg.textContent='プレイヤー名を入力してください。';return;}msg.textContent='検索中...';
    try{const {data,error}=await db.rpc('search_players',{search_name:q});if(seq!==searchRevision)return;if(error)throw error;msg.textContent=(data||[]).length?'参加者をタップして追加してください。':'該当者なし';
-   for(const p of data||[]){if(!p.id)continue;const b=document.createElement('button');b.type='button';b.textContent=p.username+(p.is_private?' 🔒':'')+(players.has(p.id)?'（追加済み）':' ＋');b.disabled=players.has(p.id);b.onclick=()=>{if(!allowed||saving)return;add(p);b.disabled=true;b.textContent=p.username+'（追加済み）';};target.append(b);}}
+   for(const p of data||[]){if(!p.id)continue;const b=document.createElement('button');b.type='button';b.textContent=p.username+(p.is_private?'（非公開）':'')+(players.has(p.id)?'（追加済み）':' ＋');b.disabled=players.has(p.id);b.onclick=()=>{if(!allowed||saving)return;add(p);b.disabled=true;b.textContent=p.username+'（追加済み）';};target.append(b);}}
    catch(e){if(seq===searchRevision)msg.textContent='検索失敗：'+e.message;}
  };
  form.onsubmit=async e=>{
