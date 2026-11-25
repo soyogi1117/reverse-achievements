@@ -2104,7 +2104,10 @@ window.addEventListener('focus',refreshHostBadges);document.addEventListener('vi
 <a href="#reverseTimeline" class="homeMenuItem"><span><svg class="portalIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55"><path d="M4 4h16v12H9l-5 4zM8 8h8m-8 4h5"/></svg></span><strong>逆村タイムライン</strong><div class="menuEnglish" aria-hidden="true">TIMELINE</div><small>試合の感想をつぶやく</small></a>
   <a href="#reverseArchive" class="homeMenuItem"><span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3zM12 6v15M6 8h3m-3 4h3m6-4h3m-3 4h3"/></svg></span><strong>逆村資料館</strong><div class="menuEnglish" aria-hidden="true">ARCHIVES</div><small>配役・ルール・戦術を学ぶ</small></a>
   <a href="#beginnerGuide" class="homeMenuItem"><span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 4 3c-1 .5-1 1-1 2m0 3h.01"/></svg></span><strong>逆村広場の使い方</strong><div class="menuEnglish" aria-hidden="true">GUIDE</div><small>初めての方はこちら</small></a>
+<a href="#gachaCenter" class="homeMenuItem"><span><svg class="portalIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55"><path d="M4 8h16v12H4zM3 4h18v4H3zM12 4v16"/></svg></span><strong>称号ガチャ</strong><small>毎日無料で称号を獲得</small></a>
 </nav>
+<section id="gachaCenter" class="panel"><h2>称号ガチャ</h2><p class="muted">1日1回無料・重複なし（日本時間0時更新）</p><p id="gcStatus" role="status">ログインしてください。</p><button id="gcDraw" type="button" disabled>ガチャを引く</button><button id="gcRefresh" type="button">更新</button><div class="progress"><div id="gcProgress"></div></div><p id="gcCount"></p><details id="gcCollection"><summary>称号図鑑・装備</summary><div class="gcControls"><input id="gcSearch" type="search" placeholder="称号を検索"><select id="gcFilter"><option value="all">すべて</option><option value="owned">獲得済み</option><option value="missing">未獲得</option></select></div><label>枠の色 <input id="gcColor" type="color" value="#ffffff"></label><div id="gcPreview" class="equippedTrophyTitle" data-rarity="gacha">プレビュー</div><button id="gcUnequip" type="button" disabled>ガチャ称号を外す</button><div id="gcRows"></div><button id="gcMore" type="button" hidden>さらに表示</button></details></section>
+<dialog id="gcResult"><h2>称号獲得！</h2><div id="gcResultTitle" class="equippedTrophyTitle" data-rarity="gacha"></div><button id="gcResultEquip" type="button">装備する</button><button id="gcClose" type="button">閉じる</button><p id="gcResultStatus" role="status"></p></dialog>
 <div class="portalSectionDivider" aria-hidden="true"><span>◆ GUIDE ◆</span></div>
 <section id="beginnerGuide" class="panel">
 <h2>逆村広場の使い方</h2><p class="muted">初めての方へ。各項目をタップしてご確認ください。</p>
@@ -3605,7 +3608,9 @@ if (avatarUrl) {
 
 const titleSelect = document.getElementById("trophyTitleSelect");
 if (!titleSelect.disabled && titleEditorUser === user.id && titleSelect.value !== titleOriginalValue) {
-  profileData.equipped_achievement_id = titleSelect.value || null;
+  const value=titleSelect.value;
+  profileData.equipped_gacha_title_id=value.startsWith('g:')?value.slice(2):null;
+  profileData.equipped_achievement_id=value.startsWith('g:')?null:value||null;
 }
 const { error } = await db.from("profiles").upsert(profileData);
 
@@ -3636,7 +3641,8 @@ if (avatarUrl) {
 saveProfileMessage.textContent = "変更を保存しました！";
 if (Object.prototype.hasOwnProperty.call(profileData, "equipped_achievement_id")) {
   titleOriginalValue = titleSelect.value;
-  displayTrophyTitle(document.getElementById("myTrophyTitle"), titleOwned.find(a => String(a.id) === titleSelect.value));
+  await loadTrophyTitle();
+  window.dispatchEvent(new Event("timeline-preferences-changed"));
 }
     
 
@@ -5076,10 +5082,13 @@ let titleOriginalValue = "";
 let titleOwned = [];
 let titleLoadRequest = 0;
 let publicTitleRequest = 0;
+function validGachaColor(c){return /^#[0-9a-f]{6}$/i.test(c||'')?c:'#FFFFFF';}
+async function fetchGachaTitle(id){const {data,error}=await db.rpc('get_gacha_title',{p_target:id});if(error)throw error;return data?.[0]?{...data[0],rarity:'gacha'}:null;}
 function displayTrophyTitle(element, trophy) {
   element.hidden = !trophy;
   element.textContent = trophy ? trophy.name : "";
   element.dataset.rarity = trophy?.rarity || "";
+  element.style.setProperty('--gacha-color', validGachaColor(trophy?.border_color));
 }
 async function loadTrophyTitle() {
   const request = ++titleLoadRequest;
@@ -5097,19 +5106,24 @@ async function loadTrophyTitle() {
       status.textContent = "ログインしてください。";
       return;
     }
-    const [profile, owned, catalog] = await Promise.all([
-      db.from("profiles").select("equipped_achievement_id").eq("id",user.id).maybeSingle(),
+    const [profile, owned, catalog, gacha] = await Promise.all([
+      db.from("profiles").select("equipped_achievement_id,equipped_gacha_title_id,gacha_border_color").eq("id",user.id).maybeSingle(),
       db.from("user_achievements").select("achievement_id").eq("user_id",user.id),
-      db.from("achievements").select("id,name,rarity").eq("is_published",true).order("sort_order",{ascending:true,nullsFirst:false}).order("id")
+      db.from("achievements").select("id,name,rarity").eq("is_published",true).order("sort_order",{ascending:true,nullsFirst:false}).order("id"),
+      db.rpc("gacha_collection")
     ]);
     if (request !== titleLoadRequest) return;
-    for (const result of [profile,owned,catalog]) if (result.error) throw result.error;
+    for (const result of [profile,owned,catalog,gacha]) if (result.error) throw result.error;
     const ids = new Set((owned.data || []).map(a => String(a.achievement_id)));
     titleOwned = (catalog.data || []).filter(a => ids.has(String(a.id)));
     const current = String(profile.data?.equipped_achievement_id ?? "");
     for (const a of titleOwned) select.add(new Option(a.name + "（" + a.rarity + "）", String(a.id)));
-    const equipped = titleOwned.find(a => String(a.id) === current);
-    select.value = equipped ? current : "";
+    const gachaOwned=(gacha.data||[]).filter(a=>a.owned).map(a=>({...a,id:'g:'+a.id,rarity:'gacha',border_color:profile.data?.gacha_border_color}));
+    for(const a of gachaOwned) select.add(new Option(a.name+'（ガチャ）',a.id));
+    titleOwned.push(...gachaOwned);
+    const selectedId=profile.data?.equipped_gacha_title_id?'g:'+profile.data.equipped_gacha_title_id:current;
+    const equipped = titleOwned.find(a => String(a.id) === selectedId);
+    select.value = equipped ? selectedId : "";
     titleOriginalValue = select.value;
     titleEditorUser = user.id;
     select.disabled = false;
@@ -5123,6 +5137,9 @@ async function loadTrophyTitle() {
 }
 async function loadPublicTrophyTitle(userId, request) {
   try {
+    const gacha=await fetchGachaTitle(userId);
+    if(request!==publicTitleRequest)return;
+    if(gacha){displayTrophyTitle(document.getElementById("publicTrophyTitle"),gacha);return;}
     const result = await db.from("profiles").select("equipped_achievement_id").eq("id",userId).maybeSingle();
     if (result.error) throw result.error;
     const id = result.data?.equipped_achievement_id;
@@ -5321,7 +5338,7 @@ function meta(a){let d=new Date(a.updated_at);return [a.category,a.author_name?'
 const $=id=>document.getElementById(id), root=$('reverseTimeline'), list=$('tlList'), status=$('tlStatus'), form=$('tlForm');let uid=null, seq=0, busy=false, limit=20, admin=false, view="all", fingerprint="", refreshing=false;
 const n=(tag,t,cls)=>{const e=document.createElement(tag);if(t!=null)e.textContent=t;if(cls)e.className=cls;return e;};const btn=(t,fn)=>{const b=n('button',t);b.type='button';b.onclick=async()=>{if(b.disabled)return;b.disabled=true;try{await fn();}catch(e){alert(e.message||String(e));}finally{b.disabled=false;}};return b;};
 const get=async q=>{const {data,error}=await q;if(error)throw error;return data;};const date=t=>new Date(t).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});const bucket=db.storage.from('timeline-images');
-async function profile(id){try{const p=(await get(db.rpc('get_player_profile',{p_target:id})))?.[0];if(!p)return {};let trophy=null;if(p.can_view===true){try{const x=await get(db.from('profiles').select('equipped_achievement_id').eq('id',id).maybeSingle());if(x?.equipped_achievement_id)trophy=await get(db.from('achievements').select('name,rarity').eq('id',x.equipped_achievement_id).eq('is_published',true).maybeSingle());}catch{}}return {...p,avatar_url:p.can_view?await privateAvatarUrl(p.avatar_url,id):null,trophy};}catch{return {};}}
+async function profile(id){try{const p=(await get(db.rpc('get_player_profile',{p_target:id})))?.[0];if(!p)return {};let trophy=null;if(p.can_view===true){try{const x=await get(db.from('profiles').select('equipped_achievement_id').eq('id',id).maybeSingle());trophy=await fetchGachaTitle(id);if(!trophy&&x?.equipped_achievement_id)trophy=await get(db.from('achievements').select('name,rarity').eq('id',x.equipped_achievement_id).eq('is_published',true).maybeSingle());}catch{}}return {...p,avatar_url:p.can_view?await privateAvatarUrl(p.avatar_url,id):null,trophy};}catch{return {};}}
 let timelineProfileReturn=null;
 function openTimelineProfile(id){
   const section=$('publicProfile');
@@ -5338,7 +5355,7 @@ $('backToAnnouncements').addEventListener('click',e=>{
   $('roomAnnouncements').hidden=previous?.roomsHidden??false;
   requestAnimationFrame(()=>{if(previous)window.scrollTo({top:previous.y,behavior:'instant'});else root.scrollIntoView({block:'start'});});
 },true);
-function author(id,p){const row=n('div',null,'tlAuthor');if(p.avatar_url&&p.can_view===true){try{const u=new URL(p.avatar_url);if(u.protocol==='https:'){const im=n('img');im.src=u.href;im.alt='';im.referrerPolicy='no-referrer';const avatarLink=btn('',()=>openTimelineProfile(id));avatarLink.className='tlProfileAvatarLink';avatarLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');avatarLink.append(im);row.append(avatarLink);}}catch{}}const info=n('div',null,'tlProfileInfo');if(p.trophy){const t=n('div',p.trophy.name,'tlTitle');t.dataset.rarity=p.trophy.rarity;info.append(t);}const nameLink=btn((p.username||'ユーザー')+(p.is_private?' 🔒':''),()=>openTimelineProfile(id));nameLink.className='tlProfileNameLink';nameLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');info.append(nameLink);info.append(playerBadge(id));row.append(info);if(uid&&id!==uid){const menu=btn('⋯',()=>window.timelinePrefs.openUser(id,p.username||'ユーザー'));menu.setAttribute('aria-label','ユーザー設定');row.append(menu);}return row;}
+function author(id,p){const row=n('div',null,'tlAuthor');if(p.avatar_url&&p.can_view===true){try{const u=new URL(p.avatar_url);if(u.protocol==='https:'){const im=n('img');im.src=u.href;im.alt='';im.referrerPolicy='no-referrer';const avatarLink=btn('',()=>openTimelineProfile(id));avatarLink.className='tlProfileAvatarLink';avatarLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');avatarLink.append(im);row.append(avatarLink);}}catch{}}const info=n('div',null,'tlProfileInfo');if(p.trophy){const t=n('div',p.trophy.name,'tlTitle');t.dataset.rarity=p.trophy.rarity;if(p.trophy.rarity==='gacha'){t.className='equippedTrophyTitle';t.style.setProperty('--gacha-color',validGachaColor(p.trophy.border_color));}info.append(t);}const nameLink=btn((p.username||'ユーザー')+(p.is_private?' 🔒':''),()=>openTimelineProfile(id));nameLink.className='tlProfileNameLink';nameLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');info.append(nameLink);info.append(playerBadge(id));row.append(info);if(uid&&id!==uid){const menu=btn('⋯',()=>window.timelinePrefs.openUser(id,p.username||'ユーザー'));menu.setAttribute('aria-label','ユーザー設定');row.append(menu);}return row;}
 const mentionSelections=new WeakMap();
 function savedMentions(input){return (mentionSelections.get(input)||[]).filter(m=>input.value.includes(m.token)).map(({token,player_id,username})=>({token,player_id,username}));}
 function mentionBody(content,mentions){const body=n('p',null,'tlBody');const rows=Array.isArray(mentions)?mentions:[];const parts=String(content||'').split(/(@\[[^\]\n]+\])/gu);for(const part of parts){const m=rows.find(x=>x.token===part&&typeof x.player_id==='string');if(m){const link=btn('@'+m.username,()=>openTimelineProfile(m.player_id));link.className='tlMention';body.append(link);}else body.append(document.createTextNode(part));}return body;}
@@ -5744,5 +5761,15 @@ html body .tlAuthor .tlProfileAvatarLink{display:inline-flex!important;align-ite
 html body .tlAuthor .tlProfileAvatarLink img{display:block;width:40px!important;height:40px!important;border-radius:50%;object-fit:cover;}
 html body .tlAuthor .tlProfileNameLink{cursor:pointer;display:inline-block!important;width:auto!important;max-width:100%;min-width:0!important;padding:3px 2px!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow-wrap:anywhere;text-align:left;}
 html body .tlAuthor .tlProfileNameLink:active{opacity:.65;}
-</style></body>
+</style><style>
+.equippedTrophyTitle[data-rarity="gacha"]{--metal-mid:var(--gacha-color,#fff);--metal-rim:var(--gacha-color,#fff);--metal-text:#fff;color:#fff!important}
+#gachaCenter [hidden]{display:none!important}#gachaCenter button,#gcResult button{padding:10px 14px;margin:5px 4px 5px 0;border:1px solid #56515f;border-radius:5px;background:#252630;color:#fff;font:inherit}#gachaCenter button:disabled{opacity:.45}#gcProgress{height:100%;background:#b6a6d1;width:0}#gcCollection summary{cursor:pointer;padding:12px 0}.gcControls{display:flex;gap:8px;flex-wrap:wrap}.gcControls input,.gcControls select{flex:1 1 120px}#gcRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin-top:12px}.gcRow{padding:9px;border:1px solid #45434e;border-radius:5px;min-width:0;overflow-wrap:anywhere}.gcRow button{font-size:12px!important}#gcResult{background:#1b1c26;color:#fff;border:1px solid #aaa;border-radius:10px;width:min(90%,400px);text-align:center;padding:24px}#gcResult::backdrop{background:#000b}#gcResultTitle,#gcPreview{margin:12px auto}#gcResult[open] #gcResultTitle{animation:trophyAppear .6s ease} @media(prefers-reduced-motion:reduce){#gcResult[open] #gcResultTitle{animation:none}}
+</style><script>
+(()=>{const e=id=>document.getElementById(id);let rows=[],uid=null,seq=0,busy=false,shown=60,latest=null,equipped=null;const get=async q=>{const {data,error}=await q;if(error)throw error;return data};const msg=t=>e('gcStatus').textContent=t;function render(){const q=e('gcSearch').value.trim().toLowerCase(),f=e('gcFilter').value;const filtered=rows.filter(r=>r.name.toLowerCase().includes(q)&&(f==='all'||(f==='owned'?r.owned:!r.owned)));e('gcRows').replaceChildren();for(const r of filtered.slice(0,shown)){const card=document.createElement('div');card.className='gcRow';const name=document.createElement('div');name.textContent=r.name;card.append(name);const state=document.createElement('small');state.textContent=r.owned?(String(equipped)===String(r.id)?'装備中':'獲得済み'):(r.available?'未獲得':'排出期間外');card.append(state);if(r.owned){const b=document.createElement('button');b.type='button';b.textContent='装備';b.disabled=busy;b.onclick=()=>equip(r.id);card.append(document.createElement('br'),b);}e('gcRows').append(card);}e('gcMore').hidden=filtered.length<=shown;e('gcUnequip').disabled=busy||!equipped;}
+async function refresh(){const token=++seq;try{const session=await get(db.auth.getSession());const user=session?.session?.user; if(token!==seq)return;uid=user?.id||null;if(!uid){rows=[];equipped=null;latest=null;e('gcDraw').disabled=true;e('gcCount').textContent='';e('gcProgress').style.width='0%';if(e('gcResult').open)e('gcResult').close();msg('ログインしてください。');render();return;}const [status,collection,p]=await Promise.all([get(db.rpc('gacha_status')),get(db.rpc('gacha_collection')),get(db.from('profiles').select('equipped_gacha_title_id,gacha_border_color').eq('id',uid).maybeSingle())]);if(token!==seq)return;rows=collection||[];equipped=p?.equipped_gacha_title_id||null;e('gcColor').value=validGachaColor(p?.gacha_border_color);preview();e('gcDraw').disabled=busy||status.used_today||!status.available_count;msg(status.used_today?'本日は抽選済みです。':status.available_count?'本日の無料ガチャを利用できます。':'現在獲得できる称号はありません。');const pct=status.total_count?100*status.owned_count/status.total_count:0;e('gcCount').textContent=`${status.owned_count} / ${status.total_count} 種類（${pct.toFixed(1)}%）`;e('gcProgress').style.width=pct+'%';render();}catch(err){if(token===seq){e('gcDraw').disabled=true;msg('取得失敗：'+err.message);}}}
+function preview(){e('gcPreview').style.setProperty('--gacha-color',validGachaColor(e('gcColor').value));e('gcPreview').textContent=rows.find(r=>String(r.id)===String(equipped))?.name||'プレビュー';}
+async function equip(id){if(busy||!uid)return;busy=true;render();try{await get(db.rpc('gacha_equip',{p_title_id:id,p_color:e('gcColor').value}));await loadTrophyTitle();window.dispatchEvent(new Event('timeline-preferences-changed'));if(e('gcResult').open)e('gcResult').close();}catch(err){msg('装備失敗：'+err.message);e('gcResultStatus').textContent=err.message;}finally{busy=false;await refresh();}}
+e('gcDraw').onclick=async()=>{if(busy||!uid)return;busy=true;e('gcDraw').disabled=true;try{latest=await get(db.rpc('gacha_draw'));e('gcResultTitle').textContent=latest.name;e('gcResultTitle').style.setProperty('--gacha-color',validGachaColor(e('gcColor').value));e('gcResultStatus').textContent='';e('gcResult').showModal();}catch(err){alert(err.message);}finally{busy=false;await refresh();}};
+e('gcResultEquip').onclick=()=>{if(latest)equip(latest.id)};e('gcClose').onclick=()=>e('gcResult').close();e('gcUnequip').onclick=()=>equip(null);e('gcRefresh').onclick=refresh;e('gcColor').oninput=preview;e('gcColor').onchange=()=>{if(equipped)equip(equipped);};for(const id of ['gcSearch','gcFilter'])e(id).addEventListener('input',()=>{shown=60;render()});e('gcMore').onclick=()=>{shown+=60;render()};db.auth.onAuthStateChange(event=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event))setTimeout(refresh,0)});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)refresh()});window.addEventListener('hashchange',()=>{if(location.hash==='#gachaCenter'&&!busy)refresh()});refresh();})();
+</script></body>
 </html>
