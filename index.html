@@ -5774,5 +5774,8 @@ e('gcDraw').onclick=()=>draw(1);e('gcDraw10').onclick=()=>draw(10);
 async function history(){const who=uid;const target=e('gcHistoryRows');target.textContent='読み込み中…';try{if(!who)throw Error('ログインしてください');const items=await get(db.from('gacha_ticket_logs').select('amount,reason,created_at').eq('user_id',who).order('id',{ascending:false}).limit(100));if(uid!==who)return;target.replaceChildren();for(const r of items){const line=document.createElement('p');line.textContent=`${r.amount>0?'+':''}${r.amount}枚　${r.reason}　${new Date(r.created_at).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})}`;target.append(line);}if(!items.length)target.textContent='履歴はありません。';}catch(err){if(uid===who)target.textContent=err.message;}}
 e('gcHistoryReload').onclick=history;e('gcHistory').addEventListener('toggle',()=>{if(e('gcHistory').open)history()});
 e('gcResultEquip').onclick=()=>{if(latest)equip(latest.id)};e('gcClose').onclick=()=>e('gcResult').close();e('gcUnequip').onclick=()=>equip(null);e('gcRefresh').onclick=refresh;e('gcColor').oninput=preview;e('gcColor').onchange=()=>{if(equipped)equip(equipped);};for(const id of ['gcSearch','gcFilter'])e(id).addEventListener('input',()=>{shown=60;render()});e('gcMore').onclick=()=>{shown+=60;render()};db.auth.onAuthStateChange(event=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event))setTimeout(refresh,0)});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)refresh()});window.addEventListener('hashchange',()=>{if(location.hash==='#gachaCenter'&&!busy)refresh()});refresh();setInterval(()=>{if(!document.hidden&&!busy)refresh()},60000);})();
-</script></body>
+</script><style id="gacha-menu-layout-final">
+html body nav.homeMenu > a.homeMenuItem[href="#gachaCenter"] { grid-column: 1 / -1 !important; order: -1 !important; width: 100%; }
+</style>
+</body>
 </html>
