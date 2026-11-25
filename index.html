@@ -1612,6 +1612,35 @@ body > header p {
   border-radius: 12px;
   box-shadow: 0 2px 12px #0008;
 }
+
+/* Header palette: warm obsidian, antique gold and ivory */
+body{background:radial-gradient(ellipse at 50% 0%,#35291e 0%,transparent 520px),#110f10;color:#f1e9db}
+body > header::before{display:none}
+.panel,#userAuth,#notificationPanel,#profileStats,#profileEditPanel{background:linear-gradient(145deg,#29231e,#1c1919)!important;border-color:#665039!important}
+.homeMenuItem{background:linear-gradient(145deg,#382b20,#211c1a);border-color:#876940}
+.homeMenuItem strong,.panel h2,#userAuth h2,#notificationHeader h2{color:#ebd0a0}
+.homeMenuItem small,.muted,header p,.profileSubtitle{color:#bfb3a3}
+#profileStats > p,#rarityStats > p,.matchStatsTile,.matchPlayerCard,#manageMatchesList .manageCard,#matchAuditView details,.notificationItem,.matchStatsPanel .msDetails[open],.matchStatsPanel details:not(.msDetails){background:linear-gradient(145deg,#302820,#241f1c)!important;border-color:#65513c}
+#profileStats h4,#rarityStats h4,#publicProfile h3,#publicTrophyStats p,#matchCenter label,#announcementForm label,#announcementEditForm label,#signedIn.editing #profileEditPanel label:not([for="avatarInput"]){color:#c8b9a4!important}
+input:not([type=checkbox]):not([type=radio]),select,textarea,#profileEditPanel input[type="text"],#profileEditPanel textarea,#profileEditPanel select,#announcementForm input,#announcementForm select,#announcementEditForm input,#announcementEditForm select,#matchCenter label>input,#matchCenter label>select,#matchCenter textarea{background:#211d1a!important;border:1px solid #6d573e!important;color:#f1e9db!important}
+button:not([disabled]),label[for="avatarInput"],#profileEditActions #closeProfileBtn,#profileEditPanel #saveProfileBtn,#postAnnouncementBtn,#saveAnnouncementEditBtn,#cancelAnnouncementEditBtn,#readAllNotificationsBtn,#pushNotificationBtn,.participantBtn,.matchStatsPanel .msDetails summary{background:linear-gradient(145deg,#433425,#2c241e);border:1px solid #80623d;color:#f0d9ae;border-radius:9px}
+button:not([disabled]){min-height:40px;padding:9px 12px;cursor:pointer}
+#notificationBtn{background:#17120ed9;border-color:#b89a60;padding:0;min-height:44px}
+#closeNotificationBtn{background:transparent;border:0}
+#notificationBadge{background:#ae3434;color:white}
+#signinBtn,#profileEditPanel #saveProfileBtn,#postAnnouncementBtn,#saveAnnouncementEditBtn,#matchCenter #matchSave,#manageMatchEdit button[type=submit]{background:linear-gradient(145deg,#e7c68a,#b38b4b);border-color:#e1bb79;color:#21180f;font-weight:700}
+#userAuth [style*="background:#263249"],#userAuth [style*="background:#263148"],#publicProfile [style*="background:#263249"],#publicProfile [style*="background:#263148"],#playerResults [style*="background:#263148"]{background:#30271f!important}
+#userAuth label[for="avatarInput"]{background:#382b20!important;color:#e6d1af!important}
+#profileHeaderAvatar,#publicProfileAvatar{border-color:#987748}
+.notificationItem.unread{background:#382c20!important;border-left:4px solid #d4ad69}
+.matchStatsPanel .msFaction,.matchStatsPanel .msRow{border-color:#66513a}
+.matchStatsPanel .msBar,.progress{background:#43382e}
+.achievement:not(.done):not(.rarity-legend){background:#201c1a;border-color:#554a40}
+.achievement.rarity-bronze.done{background:linear-gradient(135deg,#39271e,#211b18)}
+.achievement.rarity-silver.done{background:linear-gradient(135deg,#343438,#211f20)}
+.achievement.rarity-gold.done{background:linear-gradient(135deg,#45351d,#241e18)}
+footer{color:#b4a38c;border-color:#534230}
+
 </style>
 
 </head>
