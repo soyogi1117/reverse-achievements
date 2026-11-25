@@ -2595,7 +2595,15 @@ raritySettings.forEach(({ name, icon, color }) => {
   rateLabel.textContent = `${rate}%`;
   const top = document.createElement("div");
   top.className = "rarityCardTop";
-  label.style.color = color;
+  if (name === "伝説") {
+    label.style.setProperty("background", "linear-gradient(90deg,#ff8383,#ffde83,#85e8bb,#83bcff,#dba0ff)", "important");
+    label.style.setProperty("-webkit-background-clip", "text", "important");
+    label.style.setProperty("background-clip", "text", "important");
+    label.style.setProperty("color", "transparent", "important");
+    label.style.setProperty("-webkit-text-fill-color", "transparent", "important");
+  } else {
+    label.style.color = color;
+  }
   top.append(label, rateLabel);
   const track = document.createElement("div");
   track.className = "rarityCardTrack";
