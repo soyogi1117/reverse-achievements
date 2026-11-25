@@ -128,9 +128,14 @@ label.check input{width:auto}
 <p>実績を保存してから選択してください。無効化すると新規自動付与を停止します。</p>
 <form id="autoRuleForm">
 <label for="autoAchievement">対象トロフィー</label><select id="autoAchievement" required></select>
-<label for="autoMetric">獲得条件</label><select id="autoMetric"><option value="total_matches">通算対戦数（廃村除外）</option><option value="total_wins">通算勝利数</option><option value="win_streak">最高連勝数</option><option value="role_matches">役職別対戦数</option><option value="role_wins">役職別勝利数</option><option value="faction_matches">陣営別対戦数</option><option value="faction_wins">陣営別勝利数</option><option value="room_matches">部屋別対戦数</option><option value="room_wins">部屋別勝利数</option></select>
+<label for="autoMetric">獲得条件</label><select id="autoMetric"><option value="total_matches">通算対戦数（廃村除外）</option><option value="total_wins">通算勝利数</option><option value="win_streak">最高連勝数</option><option value="role_matches">役職別対戦数</option><option value="role_wins">役職別勝利数</option><option value="faction_matches">陣営別対戦数</option><option value="faction_wins">陣営別勝利数</option><option value="room_matches">部屋別対戦数</option><option value="room_wins">部屋別勝利数</option><option value="all_role_wins">指定した全役職で勝利</option></select>
 <div id="autoTargetWrap" hidden><label id="autoTargetLabel" for="autoTarget">対象</label><input id="autoTarget" type="text" disabled autocomplete="off"><select id="autoFaction" hidden disabled><option value="市民陣営">市民陣営</option><option value="人狼陣営">人狼陣営</option><option value="その他">その他</option></select><p style="font-size:13px;color:#b5bdcb">戦績に登録した名称と一致させてください。</p></div>
-<label for="autoThreshold">達成必要数</label><input id="autoThreshold" type="number" min="1" max="2147483647" step="1" value="1" required>
+<div id="autoRolesWrap" hidden>
+<label>対象役職</label><div class="actions"><button type="button" class="secondary" id="autoRolesAll">全選択</button><button type="button" class="secondary" id="autoRolesClear">全解除</button></div>
+<div id="autoRolesList" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px"></div>
+<label for="autoCustomRole">その他の役職（戦績と同じ名称）</label><input id="autoCustomRole" autocomplete="off" placeholder="役職名"><button type="button" class="secondary" id="autoAddRole">役職を追加</button>
+<p id="autoRolesCount" aria-live="polite"></p></div>
+<label id="autoThresholdLabel" for="autoThreshold">達成必要数</label><input id="autoThreshold" type="number" min="1" max="2147483647" step="1" value="1" required>
 <label class="check"><input id="autoEnabled" type="checkbox">自動獲得を有効にする</label>
 <p id="autoConditionPreview" style="color:#ddd;overflow-wrap:anywhere" aria-live="polite"></p>
 <button id="autoSave" type="submit" disabled>獲得条件を保存</button>
@@ -445,6 +450,23 @@ $("hostSearch").addEventListener("keydown", e => { if(e.key === "Enter") loadRoo
 
 let autoRules = new Map();
 let autoBusy = false;
+const autoBaseRoles = ["独裁者","魔女","暗殺者","賢者","猫又","わら人形","罠師","医者","聖騎士","指導者","マッチ売り","末裔","サイコ","狂信者","狂人","黒猫","妖術師","ささやく狂人","人狼","賢狼","狼少年","強欲な人狼","窮地の人狼","ギャンブル狂","一匹狼","黒い占い師","道化師","天邪鬼"];
+let autoRoleOptions = [...autoBaseRoles], autoSelectedRoles = new Set();
+function renderAutoRoles(){
+  const list=$("autoRolesList"); list.replaceChildren();
+  for(const role of autoRoleOptions){
+    const label=document.createElement("label"); label.className="check"; label.style.marginTop="0"; label.style.overflowWrap="anywhere";
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=autoSelectedRoles.has(role);
+    cb.onchange=()=>{if(cb.checked)autoSelectedRoles.add(role);else autoSelectedRoles.delete(role);refreshAutoCondition();};
+    label.append(cb,document.createTextNode(role)); list.append(label);
+  }
+}
+function addAutoRole(){const role=$("autoCustomRole").value.trim();if(!role)return;if(!autoRoleOptions.includes(role))autoRoleOptions.push(role);autoSelectedRoles.add(role);$("autoCustomRole").value="";renderAutoRoles();refreshAutoCondition();}
+$("autoAddRole").onclick=addAutoRole;
+$("autoCustomRole").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addAutoRole();}};
+$("autoRolesAll").onclick=()=>{autoSelectedRoles=new Set(autoRoleOptions);renderAutoRoles();refreshAutoCondition();};
+$("autoRolesClear").onclick=()=>{autoSelectedRoles.clear();renderAutoRoles();refreshAutoCondition();};
+renderAutoRoles();
 function autoTargetKind(){
   const metric = $("autoMetric").value;
   return /^(role|faction|room)_/.test(metric) ? metric.split("_")[0] : "";
@@ -455,6 +477,10 @@ function readAutoTarget(){
 }
 function refreshAutoCondition(){
   const kind=autoTargetKind(), isFaction=kind === "faction";
+  const allRoles=$("autoMetric").value === "all_role_wins";
+  $("autoRolesWrap").hidden=!allRoles;
+  $("autoThresholdLabel").textContent=allRoles?"各役職の必要勝利数":"達成必要数";
+  $("autoRolesCount").textContent=autoSelectedRoles.size+"役職を選択中";
   $("autoTargetWrap").hidden=!kind;
   $("autoTarget").hidden=!kind || isFaction;
   $("autoTarget").disabled=!kind || isFaction;
@@ -466,11 +492,14 @@ function refreshAutoCondition(){
   $("autoTargetLabel").htmlFor=isFaction ? "autoFaction" : "autoTarget";
   $("autoTarget").placeholder=kind === "role" ? "例：独裁者" : "例：猫逆";
   const metric=$("autoMetric").value, n=$("autoThreshold").value || "—", target=readAutoTarget() || "（対象未入力）";
-  $("autoConditionPreview").textContent="獲得条件："+(metric === "win_streak" ? n+"連勝" : (kind ? target+"で" : "通算")+n+(metric.endsWith("wins") ? "勝" : "戦"));
+  $("autoConditionPreview").textContent="獲得条件："+(allRoles ? `指定した${autoSelectedRoles.size}役職すべてで${n}勝以上` : metric === "win_streak" ? n+"連勝" : (kind ? target+"で" : "通算")+n+(metric.endsWith("wins") ? "勝" : "戦"));
 }
 function showAutoRule(){
   const r = autoRules.get($("autoAchievement").value);
   $("autoMetric").value = r?.metric || "total_matches";
+  autoSelectedRoles=new Set(Array.isArray(r?.target_roles)?r.target_roles:[]);
+  autoRoleOptions=[...new Set([...autoBaseRoles,...autoSelectedRoles])];
+  $("autoCustomRole").value="";renderAutoRoles();
   $("autoThreshold").value = r?.threshold || 1;
   $("autoEnabled").checked = r?.is_enabled || false;
   $("autoTarget").value = r?.target || "";
@@ -510,10 +539,12 @@ $("autoRuleForm").onsubmit=async e=>{
   const threshold=Number($("autoThreshold").value);
   if(!Number.isInteger(threshold)||threshold<1||threshold>2147483647) return;
   const target=readAutoTarget();
+  const targetRoles=$("autoMetric").value==="all_role_wins"?[...autoSelectedRoles]:null;
+  if(targetRoles && !targetRoles.length){$("autoStatus").textContent="対象役職を1つ以上選択してください。";return;}
   if(autoTargetKind() && !target){$("autoStatus").textContent="対象を指定してください。";return;}
   autoBusy=true; $("autoSave").disabled=$("autoSync").disabled=true;
   try {
-    const {error}=await db.rpc("admin_set_auto_rule",{p_achievement_id:Number($("autoAchievement").value),p_metric:$("autoMetric").value,p_threshold:threshold,p_enabled:$("autoEnabled").checked,p_target:target});
+    const {error}=await db.rpc("admin_set_auto_rule",{p_achievement_id:Number($("autoAchievement").value),p_metric:$("autoMetric").value,p_threshold:threshold,p_enabled:$("autoEnabled").checked,p_target:target,p_target_roles:targetRoles});
     if(error) throw error;
     $("autoStatus").textContent="保存しました。既存戦績への適用は一括再判定を押してください。";
   }catch(e){$("autoStatus").textContent="保存失敗："+e.message;}
