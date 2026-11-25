@@ -2143,7 +2143,7 @@ footer{color:#a19cab;border-color:#45434e}
        height="100"
        style="display:none;border-radius:50%;object-fit:cover;">
 
-  <div id="publicFollowPanel" class="followPanel" hidden><div class="followRow"><span id="publicFollowCounts"></span><button id="publicFollowButton" type="button" hidden>フォローする</button></div><p id="publicFollowStatus" role="status"></p></div>
+  <div id="publicFollowPanel" class="followPanel" hidden><div class="followRow"><span id="publicFollowCounts"></span><button id="publicFollowButton" type="button" hidden>フォローする</button></div><div id="publicTimelineNotifyRow" class="followRow" hidden><button id="publicTimelineNotify" type="button" aria-pressed="false">タイムライン通知：OFF</button><button id="publicRecruitNotify" type="button" hidden>募集開始通知</button><button id="publicRunningNotify" type="button" hidden>試合開始通知</button></div><p id="publicFollowStatus" role="status"></p></div>
   <h3><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5zM8 8h8m-8 4h8m-8 4h5"/></svg> 自己紹介</h3>
   <p id="publicProfileBio"
      style="white-space:pre-wrap;overflow-wrap:anywhere;">
@@ -3746,7 +3746,7 @@ async function loadAnnouncements() {
     
 
 
-.select("id, user_id, room_type, players, title, event_date, body, created_at, is_closed")
+.select("id, user_id, room_type, players, title, event_date, body, created_at, is_closed, live_status")
 
 
 
@@ -3791,8 +3791,8 @@ async function loadAnnouncements() {
 
     
 
-const endedA = a.is_closed || timeA + 2 * 60 * 60 * 1000 <= now;
-const endedB = b.is_closed || timeB + 2 * 60 * 60 * 1000 <= now;
+const endedA = a.live_status !== "running" && (a.is_closed || a.live_status === "finished" || (a.live_status === "scheduled" && timeA + 2 * 60 * 60 * 1000 <= now));
+const endedB = b.live_status !== "running" && (b.is_closed || b.live_status === "finished" || (b.live_status === "scheduled" && timeB + 2 * 60 * 60 * 1000 <= now));
 
 
 
@@ -3808,7 +3808,8 @@ data.forEach(item => {
     card.dataset.calendarDate = announcementCalendar.dateKey(item.event_date);
     card.dataset.calendarType = item.room_type || "";
 const eventTime = new Date(item.event_date).getTime();
-const recruitmentOpen = !item.is_closed && eventTime > Date.now();
+const liveStatus = item.live_status === "scheduled" && item.is_closed ? "closed" : item.live_status;
+const recruitmentOpen = liveStatus === "recruiting" || (liveStatus === "scheduled" && eventTime > Date.now());
 card.style.position = "relative";
 
 
@@ -4103,59 +4104,11 @@ card.append(typeLabel, title, infoRow, date, body);
 
     
 
-if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <= Date.now()) {
-
-
-      const endedLabel = document.createElement("span");
-      endedLabel.textContent = item.is_closed && eventTime > Date.now() ? "募集終了" : "終了";
-      endedLabel.style.cssText = `
-        display: inline-block;
-        width: fit-content;
-        padding: 5px 12px;
-        margin-bottom: 12px;
-        border-radius: 20px;
-        background: #2a2935;
-        color: #b0adbc;
-        border: 1px solid #766044;
-        font-size: 12px;
-        font-weight: bold;
-      `;
-
-      endedLabel.className = "announcementState";
-      card.append(endedLabel);
-    
-    } else {
-      const upcomingLabel = document.createElement("span");
-      upcomingLabel.textContent =
-  new Date(item.event_date).getTime() > Date.now()
-    ? "開催予定"
-    : "開催中";
-      upcomingLabel.style.cssText = `
-position: absolute;
-top: 16px;
-right: 16px;
-
-        display: inline-block;
-        width: fit-content;
-        padding: 5px 12px;
-        margin-bottom: 12px;
-        border-radius: 20px;
-        
-        
-background: #193d32;
-color: #70e0a4;
-
-
-        border: 1px solid #348866;
-        font-size: 12px;
-        font-weight: bold;
-      `;
-
-      upcomingLabel.className = "announcementState";
-      card.append(upcomingLabel);
-    }
-
-
+const stateLabel = document.createElement("span");
+stateLabel.className = "announcementState";
+stateLabel.textContent = ({scheduled:"募集予定",recruiting:"募集中",running:"試合進行中",finished:"終了",closed:"募集終了"})[liveStatus] || "募集予定";
+stateLabel.style.cssText = "display:inline-block;padding:5px 12px;border-radius:20px;margin:8px 0;color:#d0d2df;background:#2a2935;font-size:12px;border:1px solid #56515f;";
+card.append(stateLabel);
 
 const participantBtn = document.createElement("button");
 participantBtn.type = "button";
@@ -4232,8 +4185,7 @@ async function setupParticipantButton() {
 
     
 const ended =
-  item.is_closed ||
-  new Date(item.event_date) <= new Date();
+  !recruitmentOpen;
 
 participantBtn.disabled = ended && !joined;
 participantBtn.hidden = ended && !joined;
@@ -4370,33 +4322,11 @@ editBtn.addEventListener("click", () => {
 
 
       
-      if (recruitmentOpen) {
-
-        const closeBtn = document.createElement("button");
-        closeBtn.type = "button";
-        closeBtn.innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> 募集を終了する';
-
-        closeBtn.addEventListener("click", async () => {
-          if (!confirm("この部屋の募集を終了しますか？")) return;
-
-          closeBtn.disabled = true;
-
-          const { error } = await db
-            .from("room_announcements")
-            .update({ is_closed: true })
-            .eq("id", item.id)
-            .eq("user_id", currentUserId);
-
-          if (error) {
-            alert("募集終了に失敗しました：" + error.message);
-            closeBtn.disabled = false;
-            return;
-          }
-
-          await loadAnnouncements();
-        });
-
-        actions.append(closeBtn);
+      const transitions = {scheduled:[["recruiting","募集開始"],["running","試合開始"],["closed","募集終了"]],recruiting:[["running","試合開始"],["closed","募集終了"]],running:[["finished","試合終了"]],closed:[["running","試合開始"]],finished:[]};
+      for(const [state,label] of transitions[liveStatus] || []) {
+        const b=document.createElement("button");b.type="button";b.textContent=label;
+        b.onclick=async()=>{if(!confirm(label+"しますか？"))return;for(const x of actions.querySelectorAll("button"))x.disabled=true;try{const {error}=await db.rpc("room_live_set",{p_id:String(item.id),p_status:state});if(error)throw error;await loadAnnouncements();}catch(e){alert("操作失敗："+e.message);for(const x of actions.querySelectorAll("button"))x.disabled=false;}};
+        actions.append(b);
       }
 
 const rightActions = document.createElement("div");
@@ -5655,14 +5585,20 @@ html body .followPanel button{width:auto!important;min-height:32px!important;pad
 html body #myFollowPanel .followRow button{background:transparent!important;border:0!important;box-shadow:none!important;color:#d0d2df!important}
 html body #myFollowList button{display:block;width:100%!important;text-align:left;margin:4px 0!important}
 html body #publicFollowButton:not(.following){background:#d0d2df!important;color:#161720!important}
+html body #publicTimelineNotifyRow{margin-top:8px}
+html body #publicTimelineNotify[aria-pressed="true"]{background:#d0d2df!important;color:#161720!important}
 html body #publicFollowStatus:empty{display:none!important}
 html body #publicFollowStatus{font-size:12px;margin:4px 0}
 </style>
 <script>
-(()=>{const el=id=>document.getElementById(id);const mine=el('myFollowPanel'), pub=el('publicFollowPanel'), btn=el('publicFollowButton'), list=el('myFollowList');let target=null,owner=null,seq=0,mySeq=0,listSeq=0,mode=null,following=false,busy=false;
+(()=>{const el=id=>document.getElementById(id);const mine=el('myFollowPanel'), pub=el('publicFollowPanel'), btn=el('publicFollowButton'), list=el('myFollowList'), notify=el('publicTimelineNotify'), notifyRow=el('publicTimelineNotifyRow');let notifyEnabled=false,notifyBusy=false;let target=null,owner=null,seq=0,mySeq=0,listSeq=0,mode=null,following=false,busy=false;
 async function refreshMine(){const n=++mySeq;try{const {data:{user}}=await db.auth.getUser();if(n!==mySeq)return;owner=user?.id||null;if(!owner){mine.hidden=true;return;}const {data,error}=await db.rpc('follow_status',{p_target:owner});if(n!==mySeq)return;if(error)throw error;if(!data){mine.hidden=true;return;}el('myFollowing').textContent='フォロー中 '+data.following_count;el('myFollowers').textContent='フォロワー '+data.follower_count;mine.hidden=false;}catch(e){mine.hidden=true;console.error('follow status',e);}}
-async function show(id){const n=++seq;target=id;pub.hidden=true;btn.hidden=true;el('publicFollowStatus').textContent='';el('publicFollowCounts').textContent='';try{const {data:{user}}=await db.auth.getUser();if(n!==seq||!user||user.id===id)return;const {data,error}=await db.rpc('follow_status',{p_target:id});if(n!==seq)return;if(error)throw error;if(!data)return;following=!!data.following;el('publicFollowCounts').textContent=data.follower_count==null?'':`フォロー中 ${data.following_count}　フォロワー ${data.follower_count}`;btn.hidden=!(data.can_follow||following);btn.textContent=following?'フォロー解除':'＋ フォローする';btn.classList.toggle('following',following);btn.disabled=busy;pub.hidden=btn.hidden&&data.follower_count==null;}catch(e){console.error('follow status',e);}}
+async function show(id){const n=++seq;target=id;pub.hidden=true;btn.hidden=true;notifyRow.hidden=true;el('publicFollowStatus').textContent='';el('publicFollowCounts').textContent='';try{const {data:{user}}=await db.auth.getUser();if(n!==seq||!user||user.id===id)return;const {data,error}=await db.rpc('follow_status',{p_target:id});if(n!==seq)return;if(error)throw error;if(!data)return;following=!!data.following;notifyEnabled=!!data.notify_timeline;notifyRow.hidden=!following;void showRoomPrefs(id,n);notify.textContent='タイムライン通知：'+(notifyEnabled?'ON':'OFF');notify.setAttribute('aria-pressed',String(notifyEnabled));notify.disabled=notifyBusy;el('publicFollowCounts').textContent=data.follower_count==null?'':`フォロー中 ${data.following_count}　フォロワー ${data.follower_count}`;btn.hidden=!(data.can_follow||following);btn.textContent=following?'フォロー解除':'＋ フォローする';btn.classList.toggle('following',following);btn.disabled=busy;pub.hidden=btn.hidden&&data.follower_count==null;}catch(e){console.error('follow status',e);}}
 btn.addEventListener('click',async()=>{if(busy||!target)return;const id=target,wanted=!following;busy=true;btn.disabled=true;try{const {error}=await db.rpc('follow_set',{p_target:id,p_follow:wanted});if(error)throw error;await refreshMine();if(mode!==null&&!list.hidden)await loadList(mode);if(target===id)await show(id);}catch(e){if(target===id)el('publicFollowStatus').textContent='操作できませんでした：'+e.message;}finally{busy=false;btn.disabled=false;}});
+const roomPrefs = [[el('publicRecruitNotify'),'recruiting','募集開始通知'],[el('publicRunningNotify'),'running','試合開始通知']];
+async function showRoomPrefs(id,n){roomPrefs.forEach(([b])=>{b.hidden=true;});if(!following)return;const {data,error}=await db.rpc('follow_room_preferences',{p_target:id});if(n!==seq||target!==id||error||!data)return;for(const [b,k,label] of roomPrefs){b.hidden=false;b.textContent=label+'：'+(data[k]?'ON':'OFF');b.setAttribute('aria-pressed',String(!!data[k]));}}
+for(const [b,k] of roomPrefs)b.onclick=async()=>{if(!target||!following||b.disabled)return;const id=target,n=seq;b.disabled=true;try{const {error}=await db.rpc('follow_room_preference_set',{p_target:id,p_kind:k,p_enabled:b.getAttribute('aria-pressed')!=='true'});if(error)throw error;if(n===seq)await showRoomPrefs(id,n);}catch(e){if(n===seq)el('publicFollowStatus').textContent='通知設定を保存できませんでした：'+e.message;}finally{b.disabled=false;}};
+notify.addEventListener('click',async()=>{if(notifyBusy||busy||!target||!following)return;const id=target,n=seq;notifyBusy=true;notify.disabled=true;try{const {error}=await db.rpc('follow_timeline_set',{p_target:id,p_enabled:!notifyEnabled});if(error)throw error;if(n===seq&&target===id)await show(id);}catch(e){if(n===seq&&target===id)el('publicFollowStatus').textContent='通知設定を保存できませんでした：'+e.message;}finally{notifyBusy=false;notify.disabled=false;}});
 async function loadList(which){const n=++listSeq;mode=which;list.hidden=false;list.textContent='読み込み中…';try{const {data,error}=await db.rpc('follow_my_list',{p_followers:which});if(n!==listSeq)return;if(error)throw error;list.replaceChildren();if(!data?.length){list.textContent='まだいません。';return;}for(const p of data){const b=document.createElement('button');b.type='button';b.textContent=(p.username||'名前未設定')+(p.is_private?'（非公開）':'');b.addEventListener('click',()=>{el('publicProfile').dataset.returnTo='playerSearch';el('backToAnnouncements').textContent='← プレイヤー検索に戻る';openPlayerProfile(p.player_id);});list.append(b);}}catch(e){if(n===listSeq)list.textContent='取得できませんでした。';}}
 function toggle(which){if(!list.hidden&&mode===which){++listSeq;list.hidden=true;mode=null;}else void loadList(which);}
 el('myFollowing').addEventListener('click',()=>toggle(false));el('myFollowers').addEventListener('click',()=>toggle(true));window.followUI={show};db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','INITIAL_SESSION'].includes(event)){++seq;++listSeq;pub.hidden=true;list.hidden=true;mode=null;setTimeout(refreshMine,0);}});void refreshMine();})();
