@@ -2083,17 +2083,18 @@ window.addEventListener('focus',refreshHostBadges);document.addEventListener('vi
 
 <div class="portalSectionDivider" aria-hidden="true"><span>◆ MAIN MENU ◆</span></div>
 <nav class="homeMenu" aria-label="メインメニュー">
+  <a href="#roomAnnouncements" class="homeMenuItem">
+    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg></span>
+    <strong>部屋告知</strong><div class="menuEnglish" aria-hidden="true">ROOMS</div>
+    <small>募集・開催情報をチェック</small>
+  </a>
   <a href="#playerSearch" class="homeMenuItem">
     <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></span>
     <strong>プレイヤー検索</strong><div class="menuEnglish" aria-hidden="true">PLAYERS</div>
     <small>他のプレイヤーを探す</small>
   </a>
 
-  <a href="#roomAnnouncements" class="homeMenuItem">
-    <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg></span>
-    <strong>部屋告知</strong><div class="menuEnglish" aria-hidden="true">ROOMS</div>
-    <small>募集・開催情報をチェック</small>
-  </a>
+  
 
   <a href="#matchCenter" class="homeMenuItem">
     <span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l5 1 11 11-4 4L4 8 3 3zm12 12 6 6m-3-3 3-3M21 3l-5 1-4 4m-4 4-3 3 4 4m-3-1-3 3m0-6 6 6"/></svg></span><strong>戦績</strong><div class="menuEnglish" aria-hidden="true">BATTLE RECORDS</div><small>対戦記録</small>
@@ -5745,7 +5746,9 @@ window.timelinePrefs={openUser};db.auth.onAuthStateChange((event,session)=>{togg
 .homeMenu .homeMenuItem small{font-size:11px;line-height:1.4}
 .homeMenu .homeMenuItem span{min-height:26px}
 .homeMenu .homeMenuItem .portalIcon{width:24px;height:24px}
-.homeMenu .homeMenuItem[href="#roomAnnouncements"]{grid-column:1/-1;order:-1;min-height:94px}
+html body nav.homeMenu > a.homeMenuItem{grid-column:auto!important;order:0!important}
+html body nav.homeMenu > a.homeMenuItem[href="#roomAnnouncements"]{grid-column:1/-1!important;min-height:94px}
+html body nav.homeMenu > a.homeMenuItem[href="#beginnerGuide"]{grid-column:auto!important}
 </style>
 </body>
 </html>
