@@ -1588,9 +1588,9 @@ body > header {
   position: relative;
   padding: 0;
   width: 100%;
-  aspect-ratio: 1150 / 419;
+  aspect-ratio: 16 / 9;
   background: #101116 url("./reverse-header.jpg")
-    center center / 100% 100% no-repeat;
+    center center / contain no-repeat;
   border-bottom: 1px solid #806238;
   box-shadow: 0 8px 30px #0008;
 }
@@ -1805,25 +1805,6 @@ footer{color:#b4a38c;border-color:#534230}
 /* Remove decorative button shadow from the password reset text link only. */
 #userAuth #forgotPasswordBtn {box-shadow:none!important;border:0!important;background:transparent!important;border-radius:0!important;}
 #userAuth #forgotPasswordBtn:focus-visible {outline:2px solid #e5c99a;outline-offset:3px;}
-</style>
-<style id="portal-hangyaku-font">
-@font-face {
-  font-family: "Hangyaku";
-  src: local("Hangyaku"), local("叛逆明朝"), url("./Hangyaku-0vRGR.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-body > header, body > header * {
-  font-family: "Hangyaku", "Hiragino Mincho ProN", "Yu Mincho", serif !important;
-}
-body > header > .portal-header-subtitle {
-  font-size: 12px;
-  letter-spacing: .24em;
-  color: #ad956c;
-  margin: 8px 0 0;
-}
-body > header > .portal-header-subtitle::after { content: none; }
 </style>
 </head>
 <body>
