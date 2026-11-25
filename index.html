@@ -2896,6 +2896,30 @@ document.getElementById(id).addEventListener("input",render));
 const SUPABASE_URL = "https://qwmraeabwlnkwsaqwqqg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FQnGEfpt440nFZzYcLYosQ_F7WEPE6f";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Private avatar bucket: resolve stored legacy public URL or object path at read time.
+async function privateAvatarUrl(value, ownerId) {
+  if (!value || !ownerId) return null;
+  try {
+    let path = String(value);
+    if (/^https?:\/\//i.test(path)) {
+      const u = new URL(path);
+      if (u.origin !== new URL(SUPABASE_URL).origin) return null;
+      const m = u.pathname.match(/^\/storage\/v1\/object\/(?:public|sign|authenticated)\/avatars\/(.+)$/);
+      if (!m) return null;
+      path = decodeURIComponent(m[1]);
+    }
+    if (!path.startsWith(ownerId + '/')) return null;
+    const {data,error}=await db.storage.from('avatars').createSignedUrl(path,60);
+    return error ? null : data?.signedUrl || null;
+  } catch { return null; }
+}
+async function paintPrivateAvatar(img,value,ownerId) {
+  const token=String((Number(img.dataset.avatarVersion)||0)+1);
+  img.dataset.avatarVersion=token; img.removeAttribute('src'); img.style.display='none';
+  const url=await privateAvatarUrl(value,ownerId);
+  if(img.dataset.avatarVersion!==token||!url)return;
+  img.src=url; img.style.display='block';
+}
 (() => {
  const el=id=>document.getElementById(id);
  let busy=false;
@@ -3145,11 +3169,7 @@ const avatar = document.getElementById("profileAvatar");
 const headerAvatar = document.getElementById("profileHeaderAvatar");
 
 if (data.avatar_url) {
-  avatar.src = data.avatar_url;
-  avatar.style.display = "block";
-
-  headerAvatar.src = data.avatar_url;
-  headerAvatar.style.display = "block";
+  await Promise.all([paintPrivateAvatar(avatar,data.avatar_url,user.id),paintPrivateAvatar(headerAvatar,data.avatar_url,user.id)]);
 } else {
   avatar.removeAttribute("src");
   avatar.style.display = "none";
@@ -3418,7 +3438,7 @@ if (saveError) {
   return;
 }
 const avatar = document.getElementById("profileAvatar");
-    avatar.src = url;
+    await paintPrivateAvatar(avatar,url,user.id);
     avatar.style.display = "block";
 
     message.textContent = "プロフィール画像を保存しました！";
@@ -3594,11 +3614,11 @@ const { error } = await db.from("profiles").upsert(profileData);
 
 if (avatarUrl) {
   const headerAvatar = document.getElementById("profileHeaderAvatar");
-  headerAvatar.src = avatarUrl;
+  await paintPrivateAvatar(headerAvatar,avatarUrl,user.id);
   headerAvatar.style.display = "block";
 
   const profileAvatar = document.getElementById("profileAvatar");
-  profileAvatar.src = avatarUrl;
+  await paintPrivateAvatar(profileAvatar,avatarUrl,user.id);
   document.getElementById("avatarInput").value = "";
 }
 
@@ -3959,159 +3979,10 @@ author.style.cssText = `
   cursor: pointer;
   text-align: left;
 `;
-author.addEventListener("click", async () => {
-  window.followUI?.show(item.user_id);
-  const matchStatsRequest = clearPublicMatchStats();
-  document.getElementById("backToAnnouncements").textContent = "← 部屋告知に戻る";
-  const profileSection = document.getElementById("publicProfile");
-  const profileName = document.getElementById("publicProfileName");
-  const profileBio = document.getElementById("publicProfileBio");
-  const profileAvatar = document.getElementById("publicProfileAvatar");
-
-  profileName.textContent = "👤 読み込み中...";
-  profileBio.textContent = "";
-  profileAvatar.style.display = "none";
-  profileAvatar.removeAttribute("src");
-
-document.getElementById("publicRoleStats").style.display = "none";
-
-  profileSection.hidden = false;
-  document.getElementById("roomAnnouncements").hidden = true;
-  profileSection.scrollIntoView({ behavior: "smooth" });
-
-  
-const { data: publicProfiles, error: publicError } = await db
-  .rpc("get_public_profile", {
-    target_user_id: item.user_id
-  });
-
-const publicData = publicProfiles?.[0];
-const publicTrophyStats = document.getElementById("publicTrophyStats");
-
-if (publicTrophyStats) {
-  publicTrophyStats.style.display =
-    publicData && (!publicData.is_private || item.user_id === currentUserId)
-      ? "flex"
-      : "none";
-}
-
-const unlockedDisplay = document.getElementById("publicProfileUnlocked");
-const rateDisplay = document.getElementById("publicProfileRate");
-
-unlockedDisplay.textContent = "—";
-rateDisplay.textContent = "—";
-
-if (publicData && (!publicData.is_private || item.user_id === currentUserId)) {
-  void loadPublicMatchStats(item.user_id, matchStatsRequest);
-  const { data: trophyData, error: trophyError } = await db
-    .from("user_achievements")
-    .select("achievement_id")
-    .eq("user_id", item.user_id);
-
-  if (!trophyError) {
-    const unlockedIds = new Set(
-      (trophyData || []).map(trophy => String(trophy.achievement_id))
-    );
-
-    const visible = visibleTrophies(id=>unlockedIds.has(String(id)));
-    const total = visible.length;
-    const unlocked = visible.filter(
-      achievement => unlockedIds.has(String(achievement.id))
-    ).length;
-
-    
-const pct =
-  total === 0 || unlocked === 0 ? 0 :
-  unlocked === total ? 100 :
-  Math.min(99, Math.max(1, Math.round(unlocked / total * 100)));
-
-unlockedDisplay.textContent = unlocked;
-rateDisplay.textContent = pct + "%";
-
-const progressClass =
-  pct === 0 ? "progress-white" :
-  pct === 100 ? "progress-rainbow" :
-  pct >= 80 ? "progress-gold" :
-  pct >= 50 ? "progress-silver" :
-  "progress-bronze";
-
-[unlockedDisplay, rateDisplay].forEach(el => {
-  el.classList.remove(
-    "progress-white",
-    "progress-bronze",
-    "progress-silver",
-    "progress-gold",
-    "progress-rainbow"
-  );
-
-  el.classList.add(progressClass);
-});
-
-  } else {
-    console.error("トロフィー取得失敗:", trophyError);
-  }
-}
-
-
-const { data, error } = publicError || !publicData
-  ? { data: null, error: publicError || new Error("プロフィールが見つかりません") }
-  : publicData.is_private && item.user_id !== currentUserId
-    ? {
-        data: {
-          username: publicData.username,
-          avatar_url: publicData.avatar_url,
-          bio: "このプロフィールは非公開です。"
-        },
-        error: null
-      }
-    : await db
-        .from("profiles")
-        
-.select("username, avatar_url, bio, favorite_role, disliked_role, favorite_character")
-
-        .eq("id", item.user_id)
-        .maybeSingle();
-
-
-  if (error || !data) {
-    profileName.textContent = "プロフィールを表示できません";
-    profileBio.textContent = error
-      ? "プロフィールの読み込みに失敗しました。"
-      : "プロフィールが見つかりません。";
-    return;
-  }
-
-  
-profileName.textContent =
-  "👤 " +
-  (data.username || "名前未設定") +
-  "のプロフィール" +
-  (publicData.is_private ? "（非公開）" : "");
-
-
-  profileBio.textContent =
-    data.bio || "自己紹介はまだありません。";
-
-const roleStats = document.getElementById("publicRoleStats");
-
-const canViewRoles =
-  !publicData.is_private || item.user_id === currentUserId;
-
-roleStats.style.display = canViewRoles ? "grid" : "none";
-
-document.getElementById("publicFavoriteCharacter").textContent =
-  canViewRoles ? (data.favorite_character || "未設定") : "未設定";
-
-document.getElementById("publicFavoriteRole").textContent =
-  canViewRoles ? (data.favorite_role || "未設定") : "未設定";
-
-document.getElementById("publicDislikedRole").textContent =
-  canViewRoles ? (data.disliked_role || "未設定") : "未設定";
-
-  if (data.avatar_url) {
-    profileAvatar.src = data.avatar_url;
-    profileAvatar.style.display = "block";
-  }
+author.addEventListener("click", () => {
+  delete document.getElementById("publicProfile").dataset.returnTo;
+  document.getElementById("backToAnnouncements").textContent="← 部屋告知に戻る";
+  void openPlayerProfile(item.user_id);
 });
 
 
@@ -4450,6 +4321,7 @@ roleStats.style.display = "none";
   name.textContent = "👤 読み込み中...";
   bio.textContent = "";
   avatar.style.display = "none";
+  avatar.dataset.avatarVersion=String((Number(avatar.dataset.avatarVersion)||0)+1);
   avatar.removeAttribute("src");
   stats.style.display = "none";
 
@@ -4460,10 +4332,11 @@ roleStats.style.display = "none";
   const { data: { user } } = await db.auth.getUser();
 
   const { data: profiles, error } = await db.rpc(
-    "get_public_profile",
-    { target_user_id: userId }
+    "get_player_profile",
+    { p_target: userId }
   );
 
+  if (titleRequest !== publicTitleRequest) return;
   const profile = profiles?.[0];
 
   if (error || !profile) {
@@ -4473,7 +4346,7 @@ roleStats.style.display = "none";
   }
 
   const isOwner = user?.id === userId;
-  const canView = !profile.is_private || isOwner;
+  const canView = profile.can_view === true;
 
   name.textContent =
     "👤 " + (profile.username || "名前未設定") +
@@ -4481,8 +4354,7 @@ roleStats.style.display = "none";
   name.append(playerBadge(userId));
 
   if (canView && profile.avatar_url) {
-    avatar.src = profile.avatar_url;
-    avatar.style.display = "block";
+    void paintPrivateAvatar(avatar,profile.avatar_url,userId);
   }
 
   if (!canView) {
@@ -4492,13 +4364,7 @@ roleStats.style.display = "none";
 
   void loadPublicMatchStats(userId, matchStatsRequest);
   void loadPublicTrophyTitle(userId, titleRequest);
-  const { data: details } = await db
-    .from("profiles")
-    
-.select("bio, favorite_role, disliked_role, favorite_character")
-
-    .eq("id", userId)
-    .maybeSingle();
+  const details = profile;
 
   
 bio.textContent =
@@ -4531,6 +4397,7 @@ roleStats.style.display = "grid";
     .select("achievement_id")
     .eq("user_id", userId);
 
+  if (titleRequest !== publicTitleRequest) return;
   if (trophyError) {
     console.error("トロフィー取得失敗:", trophyError);
     return;
@@ -5454,7 +5321,7 @@ function meta(a){let d=new Date(a.updated_at);return [a.category,a.author_name?'
 const $=id=>document.getElementById(id), root=$('reverseTimeline'), list=$('tlList'), status=$('tlStatus'), form=$('tlForm');let uid=null, seq=0, busy=false, limit=20, admin=false, view="all", fingerprint="", refreshing=false;
 const n=(tag,t,cls)=>{const e=document.createElement(tag);if(t!=null)e.textContent=t;if(cls)e.className=cls;return e;};const btn=(t,fn)=>{const b=n('button',t);b.type='button';b.onclick=async()=>{if(b.disabled)return;b.disabled=true;try{await fn();}catch(e){alert(e.message||String(e));}finally{b.disabled=false;}};return b;};
 const get=async q=>{const {data,error}=await q;if(error)throw error;return data;};const date=t=>new Date(t).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});const bucket=db.storage.from('timeline-images');
-async function profile(id){try{const p=(await get(db.rpc('get_public_profile',{target_user_id:id})))?.[0];if(!p)return {};let trophy=null;if(!p.is_private||id===uid){try{const x=await get(db.from('profiles').select('equipped_achievement_id').eq('id',id).maybeSingle());if(x?.equipped_achievement_id)trophy=await get(db.from('achievements').select('name,rarity').eq('id',x.equipped_achievement_id).eq('is_published',true).maybeSingle());}catch{}}return {...p,trophy};}catch{return {};}}
+async function profile(id){try{const p=(await get(db.rpc('get_player_profile',{p_target:id})))?.[0];if(!p)return {};let trophy=null;if(p.can_view===true){try{const x=await get(db.from('profiles').select('equipped_achievement_id').eq('id',id).maybeSingle());if(x?.equipped_achievement_id)trophy=await get(db.from('achievements').select('name,rarity').eq('id',x.equipped_achievement_id).eq('is_published',true).maybeSingle());}catch{}}return {...p,avatar_url:p.can_view?await privateAvatarUrl(p.avatar_url,id):null,trophy};}catch{return {};}}
 let timelineProfileReturn=null;
 function openTimelineProfile(id){
   const section=$('publicProfile');
@@ -5471,7 +5338,7 @@ $('backToAnnouncements').addEventListener('click',e=>{
   $('roomAnnouncements').hidden=previous?.roomsHidden??false;
   requestAnimationFrame(()=>{if(previous)window.scrollTo({top:previous.y,behavior:'instant'});else root.scrollIntoView({block:'start'});});
 },true);
-function author(id,p){const row=n('div',null,'tlAuthor');if(p.avatar_url&&(!p.is_private||id===uid)){try{const u=new URL(p.avatar_url);if(u.protocol==='https:'){const im=n('img');im.src=u.href;im.alt='';im.referrerPolicy='no-referrer';const avatarLink=btn('',()=>openTimelineProfile(id));avatarLink.className='tlProfileAvatarLink';avatarLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');avatarLink.append(im);row.append(avatarLink);}}catch{}}const info=n('div',null,'tlProfileInfo');if(p.trophy){const t=n('div',p.trophy.name,'tlTitle');t.dataset.rarity=p.trophy.rarity;info.append(t);}const nameLink=btn(p.username||'ユーザー',()=>openTimelineProfile(id));nameLink.className='tlProfileNameLink';nameLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');info.append(nameLink);info.append(playerBadge(id));row.append(info);if(uid&&id!==uid){const menu=btn('⋯',()=>window.timelinePrefs.openUser(id,p.username||'ユーザー'));menu.setAttribute('aria-label','ユーザー設定');row.append(menu);}return row;}
+function author(id,p){const row=n('div',null,'tlAuthor');if(p.avatar_url&&p.can_view===true){try{const u=new URL(p.avatar_url);if(u.protocol==='https:'){const im=n('img');im.src=u.href;im.alt='';im.referrerPolicy='no-referrer';const avatarLink=btn('',()=>openTimelineProfile(id));avatarLink.className='tlProfileAvatarLink';avatarLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');avatarLink.append(im);row.append(avatarLink);}}catch{}}const info=n('div',null,'tlProfileInfo');if(p.trophy){const t=n('div',p.trophy.name,'tlTitle');t.dataset.rarity=p.trophy.rarity;info.append(t);}const nameLink=btn((p.username||'ユーザー')+(p.is_private?' 🔒':''),()=>openTimelineProfile(id));nameLink.className='tlProfileNameLink';nameLink.setAttribute('aria-label',(p.username||'ユーザー')+'のプロフィール');info.append(nameLink);info.append(playerBadge(id));row.append(info);if(uid&&id!==uid){const menu=btn('⋯',()=>window.timelinePrefs.openUser(id,p.username||'ユーザー'));menu.setAttribute('aria-label','ユーザー設定');row.append(menu);}return row;}
 const mentionSelections=new WeakMap();
 function savedMentions(input){return (mentionSelections.get(input)||[]).filter(m=>input.value.includes(m.token)).map(({token,player_id,username})=>({token,player_id,username}));}
 function mentionBody(content,mentions){const body=n('p',null,'tlBody');const rows=Array.isArray(mentions)?mentions:[];const parts=String(content||'').split(/(@\[[^\]\n]+\])/gu);for(const part of parts){const m=rows.find(x=>x.token===part&&typeof x.player_id==='string');if(m){const link=btn('@'+m.username,()=>openTimelineProfile(m.player_id));link.className='tlMention';body.append(link);}else body.append(document.createTextNode(part));}return body;}
@@ -5480,7 +5347,7 @@ async function matches(){const select=$('tlMatch');select.replaceChildren(new Op
 const tabs=n("div",null,"tlTabs"); for(const [key,label] of [["all","全体"],["following","フォロー中"],["official","公式"]]){const button=btn(label,async()=>{view=key;limit=20;await load();});button.dataset.view=key;tabs.append(button);} form.before(tabs);
 const images=p=>[...new Set([...(Array.isArray(p.image_urls)?p.image_urls:[]),p.image_url].filter(Boolean))];
 async function queryPosts(){let q=db.from("timeline_posts").select("*");if(view==="official")q=q.eq("is_official",true);if(view==="following"){const f=await get(db.rpc("follow_my_list",{p_followers:false}));const ids=(f||[]).map(x=>x.player_id).filter(Boolean);if(!ids.length)return [];q=q.in("user_id",ids);}return await get(q.order("is_pinned",{ascending:false}).order("created_at",{ascending:false}).order("id",{ascending:false}).limit(limit));}
-async function load(){const token=++seq;status.textContent='読み込み中…';try{const session=await get(db.auth.getSession());const id=session?.session?.user?.id||null;if(token!==seq)return;if(uid!==id){mentionSelections.delete($('tlText'));form.reset();list.replaceChildren();uid=id;limit=20;admin=false;}form.hidden=!uid;await loadOfficialAccount().catch(()=>null);if(token!==seq)return;$('officialPostChoice').hidden=!uid||uid!==officialAccountId;$('tlMore').hidden=true;if(!uid){status.textContent='ログインすると投稿・閲覧できます。';list.replaceChildren();return;}const posts=await queryPosts();fingerprint=JSON.stringify(posts);tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));if(token!==seq)return;const ids=posts.map(p=>p.id);const [likes,replies,a]=await Promise.all([ids.length?get(db.from('timeline_likes').select('post_id,user_id').in('post_id',ids)):[],ids.length?get(db.from('timeline_replies').select('*').in('post_id',ids).order('created_at')):[],db.from('admin_users').select('user_id').eq('user_id',uid).maybeSingle()]);if(token!==seq)return;admin=!!a.data;const profiles=new Map(await Promise.all([...new Set([...posts,...replies,...likes].map(p=>p.user_id))].map(async id=>[id,await profile(id)])));if(token!==seq)return;const frag=document.createDocumentFragment();for(const p of posts){const card=n('article',null,'tlCard');if(p.is_official&&p.is_pinned)card.append(n('div','📌 固定投稿','muted'));if(p.is_official===true)card.append(n('div','公式のお知らせ','officialPostLabel'));const head=author(p.user_id,profiles.get(p.user_id)||{}); const stamp=n('small',date(p.created_at)+(p.updated_at!==p.created_at?' ・編集済み':''),'tlStamp'); head.querySelector('.tlProfileInfo').append(stamp); card.append(head,mentionBody(p.content,p.mentions));for(const path of images(p)){const im=n('img',null,'tlImage');im.alt='投稿画像';im.loading='lazy';card.append(im);bucket.createSignedUrl(path,3600).then(({data})=>{if(data)im.src=data.signedUrl;else im.remove();});}if(p.match_id){const m=n('p','試合実績を読み込み中…','tlMatchCard');card.append(m);db.rpc('get_timeline_match',{p_post_id:p.id}).then(({data})=>{const x=data?.[0];m.textContent=x?`${date(x.played_at)} ｜ ${x.room_type} ｜ ${x.role} ｜ ${x.result}`:'試合実績は利用できません';});}const actions=n('div',null,'tlActions'), pl=likes.filter(x=>x.post_id===p.id), liked=pl.some(x=>x.user_id===uid), pr=replies.filter(x=>x.post_id===p.id);actions.append(btn(`${liked?'♥':'♡'} ${pl.length}`,async()=>{if(liked)await get(db.from('timeline_likes').delete().eq('post_id',p.id).eq('user_id',uid));else await get(db.from('timeline_likes').insert({post_id:p.id,user_id:uid}));await load();}));if(pl.length)actions.append(btn('いいね一覧',()=>{const panel=n('div',null,'tlLikesPanel');for(const x of pl)panel.append(author(x.user_id,profiles.get(x.user_id)||{}));card.querySelector('.tlLikesPanel')?.remove();card.append(panel);openPortalList('いいねしたユーザー（'+pl.length+'）',panel,()=>panel.remove());}));if(p.is_official&&p.user_id===uid&&uid===officialAccountId)actions.append(btn(p.is_pinned?'固定解除':'固定する',async()=>{await get(db.from('timeline_posts').update({is_pinned:!p.is_pinned}).eq('id',p.id).select('id').single());await load();}));const thread=n('div',null,'tlThread');thread.hidden=true;actions.append(btn(`返信 ${pr.length}`,()=>{thread.hidden=false;openPortalList('返信（'+pr.length+'）',thread,()=>{thread.hidden=true;});}));if(p.user_id===uid){actions.append(btn('編集',async()=>{const t=prompt('投稿を編集（280文字以内）',p.content);if(t===null)return;if(t.length>280||(!t.trim()&&!images(p).length))throw Error('本文を確認してください。');await get(db.from('timeline_posts').update({content:t.trim(),mentions:(Array.isArray(p.mentions)?p.mentions:[]).filter(m=>m.token&&t.includes(m.token))}).eq('id',p.id).select('id').single());await load();}));}if(p.user_id===uid||admin)actions.append(btn('削除',async()=>{if(!confirm('投稿を削除しますか？'))return;await get(db.from('timeline_posts').delete().eq('id',p.id).select('id').single());if(p.user_id===uid&&images(p).length)await bucket.remove(images(p));await load();}));if(p.user_id!==uid)actions.append(btn('通報',async()=>{const reason=prompt('通報理由（500文字以内）');if(!reason?.trim())return;await get(db.from('timeline_reports').insert({post_id:p.id,reason:reason.trim()}));alert('通報しました。');}));const icons={heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',reply:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/>',users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/><circle cx="9" cy="7" r="4"/>'};const menu=n('details',null,'tlPostMenu'), summary=n('summary','⋯'), menuItems=n('div',null,'tlPostMenuItems');summary.setAttribute('aria-label','投稿の操作');menu.append(summary,menuItems);const previousMenu=head.querySelector('button[aria-label="ユーザー設定"]');if(previousMenu){previousMenu.textContent='ミュート・ブロック';menuItems.append(previousMenu);}for(const b of [...actions.children]){const text=b.textContent;const kind=/^[♡♥]/.test(text)?'heart':text.startsWith('返信 ')?'reply':text==='いいね一覧'?'users':null;if(kind){b.classList.add('tlIconAction');b.setAttribute('aria-label',kind==='heart'?(liked?'いいねを取り消す':'いいね')+' '+pl.length:kind==='reply'?text:'いいねしたユーザーの一覧');b.title=b.getAttribute('aria-label');b.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+icons[kind]+'</svg>';if(kind!=='users')b.append(n('span',String(kind==='heart'?pl.length:pr.length)));if(kind==='heart'){b.classList.toggle('tlLiked',liked);b.setAttribute('aria-pressed',String(liked));}}else menuItems.append(b);}if(menuItems.childElementCount){head.append(menu);menuItems.addEventListener('click',()=>{menu.open=false;});}card.append(actions);for(const r of pr){const line=n('div',null,'tlReply');line.append(author(r.user_id,profiles.get(r.user_id)||{}),n('small',date(r.created_at),'muted'),mentionBody(r.content,r.mentions));if(r.user_id===uid||admin)line.append(btn('返信を削除',async()=>{if(!confirm('返信を削除しますか？'))return;await get(db.from('timeline_replies').delete().eq('id',r.id).select('id').single());await load();}));thread.append(line);}const input=n('textarea');input.maxLength=280;input.rows=2;input.placeholder='返信する';const replyHints=attachMentions(input);thread.append(input,replyHints,btn('返信を送信',async()=>{if(!input.value.trim())return;await get(db.from('timeline_replies').insert({post_id:p.id,content:input.value.trim(),mentions:savedMentions(input)}));document.querySelectorAll('dialog.portalListDialog[open]').forEach(d=>d.close());await load();}));card.append(thread);frag.append(card);}if(token!==seq)return;list.replaceChildren(frag);status.textContent=posts.length?'新着順':'まだ投稿はありません。';$('tlMore').hidden=posts.length<limit; }catch(e){if(token===seq)status.textContent='取得できません：'+e.message;}}
+async function load(){const token=++seq;status.textContent='読み込み中…';try{const session=await get(db.auth.getSession());const id=session?.session?.user?.id||null;if(token!==seq)return;if(uid!==id){mentionSelections.delete($('tlText'));form.reset();list.replaceChildren();uid=id;limit=20;admin=false;}form.hidden=!uid;await loadOfficialAccount().catch(()=>null);if(token!==seq)return;$('officialPostChoice').hidden=!uid||uid!==officialAccountId;$('tlMore').hidden=true;if(!uid){status.textContent='ログインすると投稿・閲覧できます。';list.replaceChildren();return;}const posts=await queryPosts();fingerprint=JSON.stringify(posts);tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));if(token!==seq)return;const ids=posts.map(p=>p.id);const [likes,replies,a]=await Promise.all([ids.length?get(db.from('timeline_likes').select('post_id,user_id').in('post_id',ids)):[],ids.length?get(db.from('timeline_replies').select('*').in('post_id',ids).order('created_at')):[],db.from('admin_users').select('user_id').eq('user_id',uid).maybeSingle()]);if(token!==seq)return;admin=!!a.data;const profiles=new Map(await Promise.all([...new Set([...posts,...replies,...likes].map(p=>p.user_id))].map(async id=>[id,await profile(id)])));if(token!==seq)return;const frag=document.createDocumentFragment();for(const p of posts){const card=n('article',null,'tlCard');if(p.is_official&&p.is_pinned)card.append(n('div','📌 固定投稿','muted'));if(p.is_official===true)card.append(n('div','公式のお知らせ','officialPostLabel'));const head=author(p.user_id,profiles.get(p.user_id)||{}); const stamp=n('small',date(p.created_at)+(p.updated_at!==p.created_at?' ・編集済み':''),'tlStamp'); head.querySelector('.tlProfileInfo').append(stamp); card.append(head,mentionBody(p.content,p.mentions));for(const path of images(p)){const im=n('img',null,'tlImage');im.alt='投稿画像';im.loading='lazy';card.append(im);bucket.createSignedUrl(path,60).then(({data})=>{if(data)im.src=data.signedUrl;else im.remove();});}if(p.match_id){const m=n('p','試合実績を読み込み中…','tlMatchCard');card.append(m);db.rpc('get_timeline_match',{p_post_id:p.id}).then(({data})=>{const x=data?.[0];m.textContent=x?`${date(x.played_at)} ｜ ${x.room_type} ｜ ${x.role} ｜ ${x.result}`:'試合実績は利用できません';});}const actions=n('div',null,'tlActions'), pl=likes.filter(x=>x.post_id===p.id), liked=pl.some(x=>x.user_id===uid), pr=replies.filter(x=>x.post_id===p.id);actions.append(btn(`${liked?'♥':'♡'} ${pl.length}`,async()=>{if(liked)await get(db.from('timeline_likes').delete().eq('post_id',p.id).eq('user_id',uid));else await get(db.from('timeline_likes').insert({post_id:p.id,user_id:uid}));await load();}));if(pl.length)actions.append(btn('いいね一覧',()=>{const panel=n('div',null,'tlLikesPanel');for(const x of pl)panel.append(author(x.user_id,profiles.get(x.user_id)||{}));card.querySelector('.tlLikesPanel')?.remove();card.append(panel);openPortalList('いいねしたユーザー（'+pl.length+'）',panel,()=>panel.remove());}));if(p.is_official&&p.user_id===uid&&uid===officialAccountId)actions.append(btn(p.is_pinned?'固定解除':'固定する',async()=>{await get(db.from('timeline_posts').update({is_pinned:!p.is_pinned}).eq('id',p.id).select('id').single());await load();}));const thread=n('div',null,'tlThread');thread.hidden=true;actions.append(btn(`返信 ${pr.length}`,()=>{thread.hidden=false;openPortalList('返信（'+pr.length+'）',thread,()=>{thread.hidden=true;});}));if(p.user_id===uid){actions.append(btn('編集',async()=>{const t=prompt('投稿を編集（280文字以内）',p.content);if(t===null)return;if(t.length>280||(!t.trim()&&!images(p).length))throw Error('本文を確認してください。');await get(db.from('timeline_posts').update({content:t.trim(),mentions:(Array.isArray(p.mentions)?p.mentions:[]).filter(m=>m.token&&t.includes(m.token))}).eq('id',p.id).select('id').single());await load();}));}if(p.user_id===uid||admin)actions.append(btn('削除',async()=>{if(!confirm('投稿を削除しますか？'))return;await get(db.from('timeline_posts').delete().eq('id',p.id).select('id').single());if(p.user_id===uid&&images(p).length)await bucket.remove(images(p));await load();}));if(p.user_id!==uid)actions.append(btn('通報',async()=>{const reason=prompt('通報理由（500文字以内）');if(!reason?.trim())return;await get(db.from('timeline_reports').insert({post_id:p.id,reason:reason.trim()}));alert('通報しました。');}));const icons={heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',reply:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/>',users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/><circle cx="9" cy="7" r="4"/>'};const menu=n('details',null,'tlPostMenu'), summary=n('summary','⋯'), menuItems=n('div',null,'tlPostMenuItems');summary.setAttribute('aria-label','投稿の操作');menu.append(summary,menuItems);const previousMenu=head.querySelector('button[aria-label="ユーザー設定"]');if(previousMenu){previousMenu.textContent='ミュート・ブロック';menuItems.append(previousMenu);}for(const b of [...actions.children]){const text=b.textContent;const kind=/^[♡♥]/.test(text)?'heart':text.startsWith('返信 ')?'reply':text==='いいね一覧'?'users':null;if(kind){b.classList.add('tlIconAction');b.setAttribute('aria-label',kind==='heart'?(liked?'いいねを取り消す':'いいね')+' '+pl.length:kind==='reply'?text:'いいねしたユーザーの一覧');b.title=b.getAttribute('aria-label');b.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+icons[kind]+'</svg>';if(kind!=='users')b.append(n('span',String(kind==='heart'?pl.length:pr.length)));if(kind==='heart'){b.classList.toggle('tlLiked',liked);b.setAttribute('aria-pressed',String(liked));}}else menuItems.append(b);}if(menuItems.childElementCount){head.append(menu);menuItems.addEventListener('click',()=>{menu.open=false;});}card.append(actions);for(const r of pr){const line=n('div',null,'tlReply');line.append(author(r.user_id,profiles.get(r.user_id)||{}),n('small',date(r.created_at),'muted'),mentionBody(r.content,r.mentions));if(r.user_id===uid||admin)line.append(btn('返信を削除',async()=>{if(!confirm('返信を削除しますか？'))return;await get(db.from('timeline_replies').delete().eq('id',r.id).select('id').single());await load();}));thread.append(line);}const input=n('textarea');input.maxLength=280;input.rows=2;input.placeholder='返信する';const replyHints=attachMentions(input);thread.append(input,replyHints,btn('返信を送信',async()=>{if(!input.value.trim())return;await get(db.from('timeline_replies').insert({post_id:p.id,content:input.value.trim(),mentions:savedMentions(input)}));document.querySelectorAll('dialog.portalListDialog[open]').forEach(d=>d.close());await load();}));card.append(thread);frag.append(card);}if(token!==seq)return;list.replaceChildren(frag);status.textContent=posts.length?'新着順':'まだ投稿はありません。';$('tlMore').hidden=posts.length<limit; }catch(e){if(token===seq)status.textContent='取得できません：'+e.message;}}
 const mainHints=attachMentions($('tlText'));$('tlText').after(mainHints);$('tlText').oninput=()=>{$('tlCount').textContent=$('tlText').value.length+' / 280';};$('tlRefresh').onclick=()=>{void load();};$('tlMore').onclick=()=>{limit+=20;void load();};$('tlLoadMatches').onclick=()=>void matches();form.onsubmit=async e=>{e.preventDefault();if(busy||!uid)return;const owner=uid,text=$('tlText').value.trim(),files=Array.from($('tlFile').files),match=$('tlMatch').value||null;if(!text&&!files.length){alert('本文または画像を入力してください。');return;}if(files.length>4||files.some(file=>!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)||file.size>5242880)){alert('JPEG・PNG・WebP・GIF、5MB以内の画像を選択してください。');return;}busy=true;$('tlSubmit').disabled=true;let paths=[];try{for(const file of files){const path=owner+'/'+crypto.randomUUID()+'.'+({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'}[file.type]);await get(bucket.upload(path,file,{contentType:file.type}));paths.push(path);}await get(db.from('timeline_posts').insert({user_id:owner,content:text,mentions:savedMentions($('tlText')),image_url:paths[0]||null,image_urls:paths,match_id:match,...(owner===officialAccountId?{is_official:$('officialPostType').value==='official'}:{})}).select('id').single());paths=[];mentionSelections.delete($('tlText'));form.reset();$('tlCount').textContent='0 / 280';await load();}catch(e){if(paths.length)await bucket.remove(paths);alert(e.message||String(e));}finally{busy=false;$('tlSubmit').disabled=false;}};
 db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){++seq;uid=null;form.reset();form.hidden=true;list.replaceChildren();status.textContent='ログインすると投稿・閲覧できます。';}if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event))setTimeout(load,0);});setInterval(async()=>{if(!uid||busy||refreshing||document.hidden||list.querySelector(".tlThread:not([hidden]),.tlLikesPanel")||document.querySelector('dialog.portalListDialog[open]')||root.contains(document.activeElement))return;refreshing=true;try{const before=seq;const posts=await queryPosts();if(before===seq&&JSON.stringify(posts)!==fingerprint)await load();}catch(e){console.warn("Timeline auto refresh",e);}finally{refreshing=false;}},15000);window.addEventListener("timeline-preferences-changed",()=>void load());void load();})();
 </script>
@@ -5703,9 +5570,9 @@ html body #publicFollowStatus:empty{display:none!important}
 html body #publicFollowStatus{font-size:12px;margin:4px 0}
 </style>
 <script>
-(()=>{const el=id=>document.getElementById(id);const mine=el('myFollowPanel'), pub=el('publicFollowPanel'), btn=el('publicFollowButton'), list=el('myFollowList'), notify=el('publicTimelineNotify'), notifyRow=el('publicTimelineNotifyRow');let notifyEnabled=false,notifyBusy=false;let target=null,owner=null,seq=0,mySeq=0,listSeq=0,mode=null,following=false,busy=false;
+(()=>{const el=id=>document.getElementById(id);const mine=el('myFollowPanel'), pub=el('publicFollowPanel'), btn=el('publicFollowButton'), list=el('myFollowList'), notify=el('publicTimelineNotify'), notifyRow=el('publicTimelineNotifyRow');let notifyEnabled=false,notifyBusy=false;let listTarget=null;let target=null,owner=null,seq=0,mySeq=0,listSeq=0,mode=null,following=false,busy=false;
 async function refreshMine(){const n=++mySeq;try{const {data:{user}}=await db.auth.getUser();if(n!==mySeq)return;owner=user?.id||null;if(!owner){mine.hidden=true;closeList();return;}const {data,error}=await db.rpc('follow_status',{p_target:owner});if(n!==mySeq)return;if(error)throw error;if(!data){mine.hidden=true;return;}el('myFollowing').querySelector('.pcFollowNumber').textContent=data.following_count;el('myFollowers').querySelector('.pcFollowNumber').textContent=data.follower_count;mine.hidden=false;}catch(e){mine.hidden=true;console.error('follow status',e);}}
-async function show(id){const n=++seq;target=id;pub.hidden=true;btn.hidden=true;notifyRow.hidden=true;el('publicFollowStatus').textContent='';el('publicFollowCounts').textContent='';try{const {data:{user}}=await db.auth.getUser();if(n!==seq||!user||user.id===id)return;const {data,error}=await db.rpc('follow_status',{p_target:id});if(n!==seq)return;if(error)throw error;if(!data)return;following=!!data.following;notifyEnabled=!!data.notify_timeline;notifyRow.hidden=!following;void showRoomPrefs(id,n);notify.textContent='タイムライン通知：'+(notifyEnabled?'ON':'OFF');notify.setAttribute('aria-pressed',String(notifyEnabled));notify.disabled=notifyBusy;el('publicFollowCounts').textContent=data.follower_count==null?'':`フォロー中 ${data.following_count}　フォロワー ${data.follower_count}`;btn.hidden=!(data.can_follow||following);btn.textContent=following?'フォロー解除':'＋ フォローする';btn.classList.toggle('following',following);btn.disabled=busy;pub.hidden=btn.hidden&&data.follower_count==null;}catch(e){console.error('follow status',e);}}
+async function show(id){const n=++seq;target=id;pub.hidden=true;btn.hidden=true;notifyRow.hidden=true;el('publicFollowStatus').textContent='';el('publicFollowCounts').textContent='';try{const {data:{user}}=await db.auth.getUser();if(n!==seq||!user||user.id===id)return;const {data,error}=await db.rpc('follow_status',{p_target:id});if(n!==seq)return;if(error)throw error;if(!data)return;following=!!data.following;notifyEnabled=!!data.notify_timeline;notifyRow.hidden=!following;void showRoomPrefs(id,n);notify.textContent='タイムライン通知：'+(notifyEnabled?'ON':'OFF');notify.setAttribute('aria-pressed',String(notifyEnabled));notify.disabled=notifyBusy;const counts=el('publicFollowCounts');counts.replaceChildren();if(data.can_view&&data.follower_count!=null){for(const [which,label,count] of [[false,'フォロー中',data.following_count],[true,'フォロワー',data.follower_count]]){const b=document.createElement('button');b.type='button';b.textContent=label+' '+count;b.onclick=()=>{listTarget=id;lastList=which;void loadList(which);};counts.append(b);}}btn.hidden=!(data.can_follow||following);btn.textContent=following?'フォロー解除':'＋ フォローする';btn.classList.toggle('following',following);btn.disabled=busy;pub.hidden=btn.hidden&&data.follower_count==null;}catch(e){console.error('follow status',e);}}
 btn.addEventListener('click',async()=>{if(busy||!target)return;const id=target,wanted=!following;busy=true;btn.disabled=true;try{const {error}=await db.rpc('follow_set',{p_target:id,p_follow:wanted});if(error)throw error;await refreshMine();if(mode!==null&&!list.hidden)await loadList(mode);if(target===id)await show(id);}catch(e){if(target===id)el('publicFollowStatus').textContent='操作できませんでした：'+e.message;}finally{busy=false;btn.disabled=false;}});
 const roomPrefs = [[el('publicRecruitNotify'),'recruiting','募集開始通知'],[el('publicRunningNotify'),'running','試合開始通知']];
 async function showRoomPrefs(id,n){roomPrefs.forEach(([b])=>{b.hidden=true;});if(!following)return;const {data,error}=await db.rpc('follow_room_preferences',{p_target:id});if(n!==seq||target!==id||error||!data)return;for(const [b,k,label] of roomPrefs){b.hidden=false;b.textContent=label+'：'+(data[k]?'ON':'OFF');b.setAttribute('aria-pressed',String(!!data[k]));}}
@@ -5715,10 +5582,10 @@ const screen=el('followScreen');
 function closeList(){++listSeq;list.hidden=true;mode=null;if(screen.open)screen.close();}
 el('fsClose').onclick=closeList;screen.addEventListener('cancel',e=>{e.preventDefault();closeList();});
 el('fsFollowing').onclick=()=>loadList(false);el('fsFollowers').onclick=()=>loadList(true);
-async function loadList(which){const n=++listSeq;mode=which;list.hidden=false;if(!screen.open)screen.showModal();el('fsFollowing').textContent='フォロー中 '+el('myFollowing').querySelector('.pcFollowNumber').textContent;el('fsFollowers').textContent='フォロワー '+el('myFollowers').querySelector('.pcFollowNumber').textContent;el('fsFollowing').setAttribute('aria-selected',String(!which));el('fsFollowers').setAttribute('aria-selected',String(which));list.textContent='読み込み中…';try{const {data,error}=await db.rpc('follow_my_list',{p_followers:which});if(n!==listSeq)return;if(error)throw error;list.replaceChildren();if(!data?.length){list.textContent='まだいません。';return;}for(const p of data){const row=document.createElement('div');row.className='fsRow';const b=document.createElement('button');b.type='button';b.className='fsProfile';const av=document.createElement('span');av.className='fsAvatar';av.textContent='●';const name=document.createElement('span');name.textContent=(p.username||'名前未設定')+(p.is_private?'（非公開）':'');const info=document.createElement('span');info.className='fsNameBlock';const relation=document.createElement('small');relation.className='fsRelation';info.append(name,relation);b.append(av,info);b.onclick=()=>{closeList();el('publicProfile').dataset.returnTo='followScreen';el('backToAnnouncements').textContent='← フォロー一覧に戻る';lastList=which;openPlayerProfile(p.player_id);};row.append(b);const action=document.createElement('button');action.type='button';action.className='fsAction';action.hidden=true;row.append(action);list.append(row);void (async()=>{try{const [pr,st]=await Promise.all([db.rpc('get_public_profile',{target_user_id:p.player_id}),db.rpc('follow_status',{p_target:p.player_id})]);if(n!==listSeq)return;const profile=pr.data?.[0];if(profile?.avatar_url&&!profile.is_private&&!p.is_private){const url=new URL(profile.avatar_url);if(url.protocol==='https:'){const img=document.createElement('img');img.className='fsAvatar';img.alt='';img.src=url.href;img.referrerPolicy='no-referrer';av.replaceWith(img);}}if(st.error||!st.data)return;let active=!!st.data.following;if(!active&&!st.data.can_follow)return;const paint=()=>{action.textContent=active?'フォロー中':'フォローする';action.setAttribute('aria-pressed',String(active)); relation.textContent=which?(active?'相互フォロー':'フォローされています'):'';};paint();action.hidden=false;action.onclick=async()=>{if(active&&!confirm('フォローを解除しますか？'))return;action.disabled=true;try{const {error}=await db.rpc('follow_set',{p_target:p.player_id,p_follow:!active});if(error)throw error;active=!active;paint();await refreshMine();if(n===listSeq)await loadList(which);}catch(e){alert('操作できませんでした：'+e.message);}finally{action.disabled=false;}};}catch(e){console.error(e);}})();}}catch(e){if(n===listSeq)list.textContent='取得できませんでした。';}}
-let lastList=false;function toggle(which){lastList=which;void loadList(which);}
+async function loadList(which){const n=++listSeq;mode=which;list.hidden=false;if(!screen.open)screen.showModal();el('fsFollowing').textContent=listTarget?'フォロー中':'フォロー中 '+el('myFollowing').querySelector('.pcFollowNumber').textContent;el('fsFollowers').textContent=listTarget?'フォロワー':'フォロワー '+el('myFollowers').querySelector('.pcFollowNumber').textContent;el('fsFollowing').setAttribute('aria-selected',String(!which));el('fsFollowers').setAttribute('aria-selected',String(which));list.textContent='読み込み中…';try{const {data,error}=listTarget?await db.rpc('follow_player_list',{p_target:listTarget,p_followers:which}):await db.rpc('follow_my_list',{p_followers:which});if(n!==listSeq)return;if(error)throw error;list.replaceChildren();if(!data?.length){list.textContent='まだいません。';return;}for(const p of data){const row=document.createElement('div');row.className='fsRow';const b=document.createElement('button');b.type='button';b.className='fsProfile';const av=document.createElement('span');av.className='fsAvatar';av.textContent='●';const name=document.createElement('span');name.textContent=(p.username||'名前未設定')+(p.is_private?'（非公開）':'');const info=document.createElement('span');info.className='fsNameBlock';const relation=document.createElement('small');relation.className='fsRelation';info.append(name,relation);b.append(av,info);b.onclick=()=>{closeList();el('publicProfile').dataset.returnTo='followScreen';el('backToAnnouncements').textContent='← フォロー一覧に戻る';lastList=which;openPlayerProfile(p.player_id);};row.append(b);const action=document.createElement('button');action.type='button';action.className='fsAction';action.hidden=true;row.append(action);list.append(row);void (async()=>{try{const [pr,st]=await Promise.all([db.rpc('get_public_profile',{target_user_id:p.player_id}),db.rpc('follow_status',{p_target:p.player_id})]);if(n!==listSeq)return;const profile=pr.data?.[0];if(profile?.avatar_url){const signed=await privateAvatarUrl(profile.avatar_url,p.player_id);if(n!==listSeq)return;if(!signed)return;const url=new URL(signed);if(url.protocol==='https:'){const img=document.createElement('img');img.className='fsAvatar';img.alt='';img.src=url.href;img.referrerPolicy='no-referrer';av.replaceWith(img);}}if(st.error||!st.data)return;let active=!!st.data.following;if(!active&&!st.data.can_follow)return;const paint=()=>{action.textContent=active?'フォロー中':'フォローする';action.setAttribute('aria-pressed',String(active)); relation.textContent=which?(active?'相互フォロー':'フォローされています'):'';};paint();action.hidden=false;action.onclick=async()=>{if(active&&!confirm('フォローを解除しますか？'))return;action.disabled=true;try{const {error}=await db.rpc('follow_set',{p_target:p.player_id,p_follow:!active});if(error)throw error;active=!active;paint();await refreshMine();if(n===listSeq)await loadList(which);}catch(e){alert('操作できませんでした：'+e.message);}finally{action.disabled=false;}};}catch(e){console.error(e);}})();}}catch(e){if(n===listSeq)list.textContent='取得できませんでした。';}}
+let lastList=false;function toggle(which){listTarget=null;lastList=which;void loadList(which);}
 el('backToAnnouncements').addEventListener('click',e=>{if(el('publicProfile').dataset.returnTo!=='followScreen')return;e.stopImmediatePropagation();el('publicProfile').hidden=true;delete el('publicProfile').dataset.returnTo;void loadList(lastList);},true);
-el('myFollowing').addEventListener('click',()=>toggle(false));el('myFollowers').addEventListener('click',()=>toggle(true));window.followUI={show};db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','INITIAL_SESSION'].includes(event)){++seq;++listSeq;pub.hidden=true;closeList();setTimeout(refreshMine,0);}});void refreshMine();})();
+el('myFollowing').addEventListener('click',()=>toggle(false));el('myFollowers').addEventListener('click',()=>toggle(true));window.followUI={show};db.auth.onAuthStateChange(event=>{if(['SIGNED_IN','SIGNED_OUT','INITIAL_SESSION'].includes(event)){++seq;++listSeq;pub.hidden=true;closeList();listTarget=null;setTimeout(refreshMine,0);}});void refreshMine();})();
 </script>
 <style>#requestPanel[hidden],#requestAdmin[hidden]{display:none!important}#requestPanel,#requestAdmin{margin:16px 0;border:1px solid #56515f;border-radius:5px;padding:12px}#requestPanel summary,#requestAdmin summary{cursor:pointer;color:#d0d2df}.requestFields{display:grid;gap:10px;margin-top:12px}.requestFields textarea,.requestFields input,.requestFields select{width:100%;box-sizing:border-box}.requestEntry{border:1px solid #56515f;padding:12px;margin:8px 0;overflow-wrap:anywhere}.requestEntry p{white-space:pre-wrap}.requestEntry button{margin:4px 0}</style>
 <script>
