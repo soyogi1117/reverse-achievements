@@ -1719,6 +1719,17 @@ footer{color:#b4a38c;border-color:#534230}
 #achievements #list .achievement:not(.done) h3{color:#b7aa98}
 #profileStats .profileHeader img{max-width:100%;flex-shrink:0}
 #userAuth input,#userAuth select,#userAuth textarea{min-width:0;max-width:100%}
+
+/* Posted announcement cards — warm portal palette */
+#announcementList .announcementCard .announcementAuthor{background:transparent!important;border:0!important;box-shadow:none!important;text-decoration:none!important;color:#e7c68a!important;min-height:36px;padding:4px 0!important;max-width:100%;overflow-wrap:anywhere}
+#announcementList .announcementCard .participantCount{color:#c8b9a4!important}
+#announcementList .announcementCard .participantBtn[hidden]{display:none!important}
+#announcementList .announcementCard .announcementState{position:absolute;top:16px;right:16px;margin:0!important}
+#announcementList .announcementActions{display:flex!important;gap:8px!important;align-items:stretch!important}
+#announcementList .announcementRightActions{display:flex!important;gap:8px!important;flex:1;min-width:0;margin-left:0!important}
+#announcementList .announcementActions button{flex:1;min-width:0;min-height:44px;padding:10px 6px!important;font-size:13px!important;white-space:normal;overflow-wrap:anywhere}
+#announcementList .announcementActions>button{flex:0 0 100%}
+
 </style>
 
 <style>
@@ -3584,7 +3595,9 @@ const endedB = b.is_closed || timeB + 2 * 60 * 60 * 1000 <= now;
   });
 data.forEach(item => {
     const card = document.createElement("article");
-    card.className = "panel";
+    card.className = "panel announcementCard";
+const eventTime = new Date(item.event_date).getTime();
+const recruitmentOpen = !item.is_closed && eventTime > Date.now();
 card.style.position = "relative";
 
 
@@ -3609,7 +3622,8 @@ typeLabel.style.cssText = `
            item.room_type === "特殊逆" ? "#d3a5ff" : "#aeb7c9"};
 `;
 const title = document.createElement("h3");
-    title.textContent = "📢 " + item.title;
+    title.innerHTML = ' <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 9v6"/></svg>';
+    title.append(document.createTextNode(" " + item.title));
 
 const playersDisplay = document.createElement("p");
 playersDisplay.className = "muted";
@@ -3660,14 +3674,14 @@ body.style.cssText = `
 
 const bodyLabel = document.createElement("span");
 bodyLabel.textContent = "募集対象";
-bodyLabel.style.color = "#9ca3af";
+bodyLabel.style.color = "#c8b9a4";
 
 const bodyBadge = document.createElement("span");
 bodyBadge.textContent = item.body;
 bodyBadge.style.cssText = `
   display: inline-block;
-  background: #374151;
-  color: #e5e7eb;
+  background: #43382e;
+  color: #efdfc5;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 13px;
@@ -3680,9 +3694,9 @@ body.append(bodyLabel, bodyBadge);
     
 const author = document.createElement("button");
 author.type = "button";
-author.textContent =
-  "👤 投稿者：" +
-  (authorNames.get(item.user_id) || "名前未設定");
+author.className = "announcementAuthor";
+author.innerHTML = ' <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>';
+author.append(document.createTextNode(" 投稿者：" + (authorNames.get(item.user_id) || "名前未設定")));
 
 author.style.cssText = `
   display: block;
@@ -3690,8 +3704,8 @@ author.style.cssText = `
   border: none;
   padding: 0;
   margin: 4px 0;
-  color: #8bc5ff;
-  text-decoration: underline;
+  color: #e7c68a;
+  text-decoration: none;
   font-size: 14px;
   cursor: pointer;
   text-align: left;
@@ -3881,22 +3895,22 @@ if (item.is_closed || new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 <
 
 
       const endedLabel = document.createElement("span");
-      endedLabel.textContent = "終了";
+      endedLabel.textContent = item.is_closed && eventTime > Date.now() ? "募集終了" : "終了";
       endedLabel.style.cssText = `
         display: inline-block;
         width: fit-content;
         padding: 5px 12px;
         margin-bottom: 12px;
         border-radius: 20px;
-        background: #343c4c;
-        color: #aeb7c9;
-        border: 1px solid #58647a;
+        background: #43382e;
+        color: #c8b9a4;
+        border: 1px solid #766044;
         font-size: 12px;
         font-weight: bold;
       `;
 
+      endedLabel.className = "announcementState";
       card.append(endedLabel);
-      card.style.opacity = "0.7";
     
     } else {
       const upcomingLabel = document.createElement("span");
@@ -3925,6 +3939,7 @@ color: #70e0a4;
         font-weight: bold;
       `;
 
+      upcomingLabel.className = "announcementState";
       card.append(upcomingLabel);
     }
 
@@ -3966,11 +3981,11 @@ card.append(participantBtn);
 
 const participantProgress = document.createElement("div");
 participantProgress.style.cssText =
-  "height:8px;background:#343c4c;border-radius:20px;overflow:hidden;margin:8px 0 14px;";
+  "height:8px;background:#44392d;border-radius:20px;overflow:hidden;margin:8px 0 14px;";
 
 const participantBar = document.createElement("div");
 participantBar.style.cssText =
-  "height:100%;width:0;background:#54d88a;border-radius:20px;transition:width .3s ease;";
+  "height:100%;width:0;background:linear-gradient(90deg,#a17d43,#e7c68a);border-radius:20px;transition:width .3s ease;";
 
 participantProgress.append(participantBar);
 
@@ -3979,6 +3994,7 @@ card.insertBefore(participantProgress, participantBtn);
 
 async function setupParticipantButton() {
   if (!currentUserId) {
+    participantBtn.hidden = !recruitmentOpen;
     participantBtn.textContent = "ログインして参加希望";
     return;
   }
@@ -4008,10 +4024,7 @@ const ended =
   new Date(item.event_date) <= new Date();
 
 participantBtn.disabled = ended && !joined;
-
-if (ended && !joined) {
-  participantBtn.textContent = "募集終了";
-}
+participantBtn.hidden = ended && !joined;
 
   }
 
@@ -4057,11 +4070,12 @@ actions.style.cssText = `
   gap: 10px;
   margin-top: 20px;
   padding-top: 14px;
-  border-top: 1px solid #374151;
+  border-top: 1px solid #665039;
   flex-wrap: wrap;
 `;
 
 
+      actions.className = "announcementActions";
       const editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 12-12 4 4L8 20l-5 1 1-5zm10-10 4 4"/></svg> 編集';
@@ -4116,7 +4130,7 @@ editBtn.addEventListener("click", () => {
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
-      deleteBtn.textContent = "🗑️ 削除";
+      deleteBtn.innerHTML = ' <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg> 削除';
       deleteBtn.addEventListener("click", async () => {
         const confirmed = confirm(
           "この部屋告知を削除しますか？"
@@ -4143,8 +4157,7 @@ editBtn.addEventListener("click", () => {
 
 
       
-      if (!item.is_closed &&
-          new Date(item.event_date).getTime() + 2 * 60 * 60 * 1000 > Date.now()) {
+      if (recruitmentOpen) {
 
         const closeBtn = document.createElement("button");
         closeBtn.type = "button";
@@ -4174,6 +4187,7 @@ editBtn.addEventListener("click", () => {
       }
 
 const rightActions = document.createElement("div");
+rightActions.className = "announcementRightActions";
 rightActions.style.cssText = `
   display: flex;
   align-items: center;
