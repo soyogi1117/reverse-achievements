@@ -1663,6 +1663,32 @@ footer{color:#b4a38c;border-color:#534230}
 .homeMenuItem .portalIcon{width:36px;height:36px;display:block;filter:drop-shadow(0 2px 4px #0008)}
 .homeMenuItem span{display:flex;align-items:center;justify-content:center;min-height:40px}
 #notificationBtn .portalIcon{width:24px;height:24px;vertical-align:middle}
+
+/* Compact portal polish */
+#achievements .rarityLegacyCounts{display:none!important}
+#achievements #rarityProgress{margin-top:0!important}
+#achievements #rarityProgressBars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#achievements #rarityProgressBars .rarityCombinedCard{display:flex!important;flex-direction:column;align-items:stretch!important;gap:8px!important;margin:0!important;padding:12px!important;border:1px solid #665039;border-radius:10px;min-width:0}
+.rarityCardTop{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:13px}
+.rarityCardTop small{color:#d0bfa7;font-size:12px}
+#rarityProgressBars .rarityCombinedCard strong{font-size:22px!important;align-self:flex-start;line-height:1.3}
+.rarityCardTrack{height:5px;background:#4b3e31;border-radius:9px;overflow:hidden}
+.rarityCardTrack>div{height:100%;border-radius:9px}
+#achievements .trophyOverviewGrid>div{padding:8px 4px}
+#achievements .trophyOverviewGrid strong{font-size:clamp(20px,5vw,26px)}
+#profileStats .profileHeader{flex-direction:column;gap:10px;margin-bottom:14px;align-items:center}
+#profileStats .profileHeader>div{width:100%;padding:0}
+#profileStats .profileHeader #profileTitle{margin:5px 0 10px}
+#profileStats #privacyToggleBtn{margin-left:4px!important}
+#profileStats #privacyMessage:empty{display:none}
+#profileStats #editProfileBtn,#profileStats #privacyToggleBtn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:36px;font-size:13px;padding:7px 10px;vertical-align:middle}
+#profileStats #profileBioSection{margin-top:12px!important}
+#profileStats div[style*="font-size:12px"],#publicRoleStats div[style*="font-size:12px"],#signedInEmail{color:#c8b9a4!important}
+#profileRate,#profileRate *,#profileUnlocked,#signedInEmail,#signedInEmail *,a[x-apple-data-detectors]{text-decoration:none!important;-webkit-text-decoration:none!important;border-bottom:0!important}
+#postAnnouncementBtn .portalIcon,#saveAnnouncementEditBtn .portalIcon,#saveProfileBtn .portalIcon,#matchSave .portalIcon{color:currentColor}
+#announcementVersion,#edit_announcementVersion{font-size:14px!important;padding-inline:6px!important}
+#myMatchStats{margin-top:10px}
+
 </style>
 
 </head>
@@ -1882,7 +1908,7 @@ footer{color:#b4a38c;border-color:#534230}
 <button id="privacyToggleBtn" type="button"
   style="margin-left:6px;white-space:nowrap;">
 
-  🌐 公開設定を読み込み中...
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-7 6-7 12 0 18 7-6 7-12 0-18"/></svg> 公開設定を読み込み中...
 </button>
 
 <p id="privacyMessage"
@@ -1908,15 +1934,15 @@ footer{color:#b4a38c;border-color:#534230}
 <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
  
 <div style="grid-column:1 / -1;background:#263249;border-radius:10px;padding:12px;text-align:center;">
-  <div style="font-size:12px;">👤 好きなキャラクター</div>
+  <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> 好きなキャラクター</div>
   <strong id="favoriteCharacterDisplay" style="color:#f1f2f6;">未設定</strong>
 </div>
  <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
-    <div style="font-size:12px;">❤️ 好きな役職</div>
+    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 4 13C-2 5 8 1 12 7c4-6 14-2 8 6z"/></svg> 好きな役職</div>
     <strong id="favoriteRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
   </div>
   <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
-    <div style="font-size:12px;">💔 苦手な役職</div>
+    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 4 13C-2 5 8 1 12 7c4-6 14-2 8 6zM12 7l-3 5 5 2-2 7"/></svg> 苦手な役職</div>
     <strong id="dislikedRoleDisplay" style="display:block;margin-top:6px;">未設定</strong>
   </div>
 </div>
@@ -2042,7 +2068,7 @@ footer{color:#b4a38c;border-color:#534230}
   </button>
 
   <div id="publicTrophyTitle" class="equippedTrophyTitle" hidden></div>
-  <h2 id="publicProfileName">👤 プロフィール</h2>
+  <h2 id="publicProfileName"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> プロフィール</h2>
 
   <img id="publicProfileAvatar"
        alt="プロフィール画像"
@@ -2061,19 +2087,19 @@ footer{color:#b4a38c;border-color:#534230}
   style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;">
 
 <div style="grid-column:1 / -1;background:#263249;border-radius:10px;padding:12px;text-align:center;">
-  <div style="font-size:12px;">👤 好きなキャラクター</div>
+  <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> 好きなキャラクター</div>
   <strong id="publicFavoriteCharacter" style="color:#f1f2f6;">未設定</strong>
 </div>
 
   <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
-    <div style="font-size:12px;">❤️ 好きな役職</div>
+    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 4 13C-2 5 8 1 12 7c4-6 14-2 8 6z"/></svg> 好きな役職</div>
     <strong id="publicFavoriteRole" style="display:block;margin-top:6px;">
       未設定
     </strong>
   </div>
 
   <div style="background:#263249;border-radius:10px;padding:12px 6px;text-align:center;">
-    <div style="font-size:12px;">💔 苦手な役職</div>
+    <div style="font-size:12px;"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 4 13C-2 5 8 1 12 7c4-6 14-2 8 6zM12 7l-3 5 5 2-2 7"/></svg> 苦手な役職</div>
     <strong id="publicDislikedRole" style="display:block;margin-top:6px;">
       未設定
     </strong>
@@ -2184,7 +2210,7 @@ footer{color:#b4a38c;border-color:#534230}
 
 <label for="announcementPlayers"
        style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
-  👥 人数
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 5a3 3 0 0 1 0 6m3 3q3 1 3 5v2"/></svg> 人数
 </label>
 <select id="announcementPlayers"
         style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
@@ -2210,7 +2236,7 @@ footer{color:#b4a38c;border-color:#534230}
  
 <label for="announcementDate"
        style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
-  📅 開催日時
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></svg> 開催日時
 </label>
  <input
     id="announcementDate"
@@ -2224,7 +2250,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   
 <label for="announcementBody"
        style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
-  🎯 募集するプレイヤー
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg> 募集するプレイヤー
 </label>
 <select id="announcementBody"
         style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
@@ -2271,7 +2297,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 <div id="rarityStats" style="margin-top:16px;">
   <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="m8 10-4-7h5l3 5 3-5h5l-4 7"/></svg> レアリティ別獲得状況</h4>
   
-<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
+<div class="rarityLegacyCounts" hidden style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px;">
   <div style="background:#263249;border-radius:8px;padding:10px 2px;text-align:center;">
     <div style="font-size:12px;">🥉 銅</div>
     <strong id="bronzeCount" style="display:block;font-size:22px;margin-top:5px;">0</strong>
@@ -2293,7 +2319,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 
 
 <div id="rarityProgress" style="margin-top:20px;">
-  <h4><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 16v-5m5 5V6m5 10V9"/></svg> レアリティ別達成率</h4>
+  
   <div id="rarityProgressBars"></div>
 </div>
 </div>
@@ -2433,10 +2459,22 @@ raritySettings.forEach(({ name, icon, color }) => {
     "border-radius:8px;";
 
   const label = document.createElement("span");
-  label.textContent = `${icon} ${name}`;
+  label.textContent = name;
 
   const value = document.createElement("strong");
-  value.textContent = `${unlocked}/${total}（${rate}%）`;
+  value.textContent = `${unlocked} / ${total}`;
+  const rateLabel = document.createElement("small");
+  rateLabel.textContent = `${rate}%`;
+  const top = document.createElement("div");
+  top.className = "rarityCardTop";
+  label.style.color = color;
+  top.append(label, rateLabel);
+  const track = document.createElement("div");
+  track.className = "rarityCardTrack";
+  const fill = document.createElement("div");
+  fill.style.width = `${rate}%`;
+  fill.style.background = name === "伝説" ? "linear-gradient(90deg,#ff8383,#ffde83,#85e8bb,#83bcff,#dba0ff)" : color;
+  track.append(fill);
   
 if (name === "伝説") {
   value.classList.add("progress-rainbow");
@@ -2448,7 +2486,8 @@ if (name === "伝説") {
   value.style.fontSize = "14px";
   value.style.whiteSpace = "nowrap";
 
-  row.append(label, value);
+  row.className = "rarityCombinedCard";
+  row.append(top, value, track);
   progressContainer.append(row);
 
 });
@@ -3178,7 +3217,7 @@ async function loadPrivacySetting() {
   privacyToggleBtn.disabled = !user;
 
   if (!user) {
-    privacyToggleBtn.textContent = "🔒 ログインが必要です";
+    privacyToggleBtn.innerHTML = '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> ログインが必要です';
     return;
   }
 
@@ -3189,13 +3228,13 @@ async function loadPrivacySetting() {
     .maybeSingle();
 
   if (error || !data) {
-    privacyToggleBtn.textContent = "設定を取得できません";
+    privacyToggleBtn.innerHTML = "設定を取得できません";
     return;
   }
 
-  privacyToggleBtn.textContent = data.is_private
-    ? "🔒 非公開"
-    : "🌐 公開中";
+  privacyToggleBtn.innerHTML = data.is_private
+    ? '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> 非公開'
+    : '<svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-7 6-7 12 0 18 7-6 7-12 0-18"/></svg> 公開中';
 }
 
 privacyToggleBtn.addEventListener("click", async () => {
@@ -3532,8 +3571,8 @@ const title = document.createElement("h3");
 const playersDisplay = document.createElement("p");
 playersDisplay.className = "muted";
 playersDisplay.textContent = item.players
-  ? "👥 人数：" + item.players + "人"
-  : "👥 人数：未設定";
+  ? "人数：" + item.players + "人"
+  : "人数：未設定";
 
     const date = document.createElement("p");
     date.className = "muted";
@@ -3564,7 +3603,7 @@ const dateText = eventDate.toLocaleString("ja-JP", {
   minute: "2-digit"
 });
 
-date.textContent = "📅 " + dateText;
+date.textContent = "" + dateText;
 
 
     
@@ -3781,8 +3820,8 @@ infoRow.style.cssText = `
 `;
 
 playersDisplay.textContent = item.players
-  ? "👥 " + item.players + "人"
-  : "👥 人数未設定";
+  ? "" + item.players + "人"
+  : "人数未設定";
 
 author.style.margin = "0";
 
@@ -5030,7 +5069,7 @@ function calculateWinStreaks(rows){
 }
 function renderWinStreaks(rows){
  const data=calculateWinStreaks(rows), box=statsNode('section',undefined,'msStreak');
- box.append(statsNode('h4','🔥 連勝記録'));
+ box.append(statsNode('h4','連勝記録'));
  const grid=statsNode('div',undefined,'matchStatsGrid');
  for(const [label,n,color] of [['現在の連勝',data.current,'#ffb45e'],['最高連勝記録',data.best,'#e4bd68']]){const tile=statsNode('div',undefined,'matchStatsTile'),v=statsNode('strong',n+'連勝');v.style.color=color;v.style.fontSize='20px';tile.append(statsNode('span',label),v);grid.append(tile);}box.append(grid);
  box.append(statsNode('h4','直近10戦'));
@@ -5044,7 +5083,7 @@ function renderMatchStats(node, rows){
  node.replaceChildren();node.hidden=false;
  const count=a=>{const w=a.filter(r=>r.result==='勝利').length,l=a.filter(r=>r.result==='敗北').length,c=a.filter(r=>r.result==='廃村').length;return {w,l,c,rate:w+l?100*w/(w+l):null};};
  const fmt=v=>v===null?'—':v.toFixed(1)+'%';const total=count(rows);
- node.append(statsNode('h3','⚔️ 戦績'));
+ if(node.id !== 'myMatchStats') node.append(statsNode('h3','戦績'));
  const grid=statsNode('div',undefined,'matchStatsGrid');
  for(const [label,value,color] of [['総対戦数',rows.length,'#f1f2f6'],['勝率',fmt(total.rate),'#e4bd68'],['勝利',total.w,'#79d3a5'],['敗北',total.l,'#ef8585']]){const tile=statsNode('div',undefined,'matchStatsTile');const v=statsNode('strong',String(value));v.style.color=color;tile.append(statsNode('span',label),v);grid.append(tile);}node.append(grid,statsNode('p','廃村：'+total.c+'件（勝率の計算対象外）','muted'));
  const faction=statsNode('div',undefined,'msFaction');faction.append(statsNode('h4','陣営別勝率'));
