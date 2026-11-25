@@ -1689,6 +1689,19 @@ footer{color:#b4a38c;border-color:#534230}
 #announcementVersion,#edit_announcementVersion{font-size:14px!important;padding-inline:6px!important}
 #myMatchStats{margin-top:10px}
 
+
+/* Final list and announcement polish */
+#achievements #list .achievement{padding:12px;gap:10px;margin-bottom:9px;align-items:flex-start}
+#achievements #list .achievement>div{flex:1;min-width:0}
+#achievements #list .achievement h3{margin:0 0 5px;line-height:1.4;overflow-wrap:anywhere}
+#achievements #list .achievement p{margin:0 0 6px;line-height:1.5;overflow-wrap:anywhere}
+#achievements #list .achievement input{width:21px;height:21px;margin:2px 0 0;flex:none}
+#achievements #list .achievement .tag{padding:2px 8px;margin:0 5px 0 0;font-size:11px;line-height:1.5}
+#achievements #list .achievement .rarityIcon{color:currentColor;width:1.15em;height:1.15em}
+#achievements #list .achievement .tag:empty{display:none}
+#announcementVersion,#edit_announcementVersion{width:36%!important;font-size:14px!important;padding-inline:7px!important}
+#announcementTitle,#edit_announcementTitle{width:60%!important;margin-left:2%!important}
+
 </style>
 
 </head>
@@ -2138,7 +2151,7 @@ footer{color:#b4a38c;border-color:#534230}
 
 <label for="announcementType"
        style="display:block;color:#aeb7c9;font-size:14px;margin-bottom:6px;">
-  🏷️ 部屋の種類
+  <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13 11 22 2 13V3h10l8 8a1.4 1.4 0 0 1 0 2Z"/><circle cx="7" cy="8" r="1.5"/></svg> 部屋の種類
 </label>
 <select id="announcementType"
         style="display:block;width:100%;box-sizing:border-box;margin-bottom:10px;">
@@ -2152,7 +2165,7 @@ footer{color:#b4a38c;border-color:#534230}
 </label>
 
 <select id="announcementVersion">
-  <option value="">バージョンを選択</option>
+  <option value="">Ver. 選択</option>
   <option>N</option>
   <option>SP1</option>
   <option>SP2</option>
@@ -2350,7 +2363,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 <div id="list"></div>
 </section>
 </main>
-<footer>猫逆トロフィー | 獲得は自己申告制</footer>
+<footer>逆村広場 | REVERSE VILLAGE PORTAL</footer>
   
 <div id="trophyEffect" hidden>
   <div id="trophyEffectContent">
@@ -2667,15 +2680,15 @@ const role=document.createElement("span");
 role.className="tag";role.textContent=a.role;
 const level=document.createElement("span");
 level.className = "tag";
-level.textContent = !completed[a.id]
-  ? "未獲得"
-  : ({
-      "銅": "🥉 銅",
-      "銀": "🥈 銀",
-      "金": "🥇 金",
-      "伝説": "🌈 伝説"
-    }[a.rarity]);
-content.append(title,desc,role,level);
+if (!completed[a.id]) {
+  level.textContent = "未獲得";
+} else {
+  level.innerHTML = a.rarity === "伝説" ? `<svg class="portalIcon rarityIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 4-4h10l4 4-9 14L3 7Zm0 0h18M7 3l5 18 5-18"/></svg>` : `<svg class="portalIcon rarityIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="m8 10-4-8h5l3 6 3-6h5l-4 8"/></svg>`;
+  level.append(document.createTextNode(" " + (a.rarity || "")));
+}
+content.append(title,desc);
+if (String(a.role ?? "").trim()) content.append(role);
+content.append(level);
 card.append(check,content);
 list.append(card);
 });
