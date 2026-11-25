@@ -138,6 +138,20 @@ label.check input{width:auto}
 <button id="autoSync" type="button" class="secondary" disabled>全ユーザーの自動獲得条件を一括再判定</button>
 <p id="autoStatus" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
 </section>
+<details id="orderEditor" style="margin-top:28px">
+<summary style="cursor:pointer;font-size:20px;font-weight:bold">トロフィー表示順設定</summary>
+<p>上から順に標準表示されます。非公開の実績も含みます。順位の数字を変更して「移動」を押すか、上下ボタンで移動し、最後に保存してください。</p>
+<div id="orderRows"></div>
+<button id="orderSave" type="button" disabled>表示順を一括保存</button>
+<button id="orderReset" type="button" class="secondary" disabled>変更を取り消す</button>
+<p id="orderStatus" role="status" style="color:#eee;overflow-wrap:anywhere"></p>
+</details>
+<style>
+.order-row{display:grid;grid-template-columns:56px minmax(0,1fr) 48px 42px 42px;gap:5px;align-items:center;padding:7px 0;border-bottom:1px solid #454b60}
+.order-row input,.order-row button{padding:8px 2px;margin:0;min-width:0;width:100%;font-size:14px;text-align:center}
+.order-row span{overflow-wrap:anywhere;color:#eee;font-size:14px}.order-row small{display:block;color:#aeb7c9}
+@media(max-width:390px){.order-row{grid-template-columns:46px minmax(0,1fr) 38px 34px 34px;gap:3px}}
+</style>
   <h2>登録済みの実績</h2>
   <div id="achievementList"></div>
 
@@ -203,6 +217,7 @@ async function loadAchievements(){
   const {data,error} = await db
     .from("achievements")
     .select("*")
+    .order("sort_order",{ascending:true,nullsFirst:false})
     .order("id",{ascending:true});
 
   if(error){
@@ -211,6 +226,7 @@ async function loadAchievements(){
   }
 
   records = data || [];
+  renderOrderEditor(true);
   await loadAutoRules();
   const list = $("achievementList");
   list.replaceChildren();
@@ -510,6 +526,32 @@ $("autoSync").onclick=async()=>{
   try{const {data,error}=await db.rpc("admin_sync_all_auto_achievements");if(error)throw error;$("autoStatus").textContent=`再判定完了：${data}人`;}
   catch(e){$("autoStatus").textContent="再判定失敗："+e.message;}
   finally{autoBusy=false;await loadAutoRules();}
+};
+
+
+let orderDraft=[], orderBusy=false;
+function orderDirty(){return orderDraft.length===records.length && orderDraft.some((a,n)=>String(a.id)!==String(records[n].id));}
+function renderOrderEditor(reset=false){
+  if(reset) orderDraft=records.slice();
+  const rows=$("orderRows"); rows.replaceChildren();
+  orderDraft.forEach((a,n)=>{
+    const row=document.createElement("div"); row.className="order-row";
+    const rank=document.createElement("input"); rank.type="number";rank.min="1";rank.max=String(orderDraft.length);rank.step="1";rank.value=String(n+1);rank.disabled=orderBusy;rank.setAttribute("aria-label",a.name+"の移動先順位");
+    const name=document.createElement("span");name.textContent=a.name;const meta=document.createElement("small");meta.textContent=a.rarity+(a.is_published?"":"・非公開");name.append(meta);
+    function move(to){if(orderBusy||!Number.isInteger(to)||to<0||to>=orderDraft.length){rank.value=String(n+1);return;}const [item]=orderDraft.splice(n,1);orderDraft.splice(to,0,item);renderOrderEditor();}
+    function btn(label,action,disabled=false){const b=document.createElement("button");b.type="button";b.className="secondary";b.textContent=label;b.disabled=orderBusy||disabled;b.onclick=action;return b;}
+    const go=btn("移動",()=>move(Number(rank.value)-1));rank.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();move(Number(rank.value)-1);}});
+    const up=btn("↑",()=>move(n-1),n===0),down=btn("↓",()=>move(n+1),n===orderDraft.length-1);up.setAttribute("aria-label",a.name+"を上へ");down.setAttribute("aria-label",a.name+"を下へ");row.append(rank,name,go,up,down);rows.append(row);
+  });
+  $("orderSave").disabled=orderBusy||!orderDirty();$("orderReset").disabled=orderBusy||!orderDirty();
+}
+$("orderReset").onclick=()=>{renderOrderEditor(true);$("orderStatus").textContent="変更を取り消しました。";};
+$("orderSave").onclick=async()=>{
+  if(orderBusy||!orderDirty())return;
+  orderBusy=true;renderOrderEditor();$("orderStatus").textContent="保存中…";
+  try{const {error}=await db.rpc("admin_reorder_achievements",{p_ids:orderDraft.map(a=>a.id)});if(error)throw error;await loadAchievements();$("orderStatus").textContent="表示順を保存しました。";}
+  catch(e){$("orderStatus").textContent="保存失敗："+e.message;}
+  finally{orderBusy=false;renderOrderEditor();}
 };
 
 checkAdmin();
