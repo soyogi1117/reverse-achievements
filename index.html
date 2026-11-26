@@ -1310,7 +1310,7 @@ header {
   position: relative;
 }
 
-#notificationBtn {
+#notificationBtn,#portalRefreshButton {
   position: absolute;
   top: 18px;
   right: 16px;
@@ -1604,7 +1604,7 @@ body > header p {
 }
 
 /* 通知ベル */
-#notificationBtn {
+#notificationBtn,#portalRefreshButton {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -1627,7 +1627,7 @@ body > header::before{display:none}
 input:not([type=checkbox]):not([type=radio]),select,textarea,#profileEditPanel input[type="text"],#profileEditPanel textarea,#profileEditPanel select,#announcementForm input,#announcementForm select,#announcementEditForm input,#announcementEditForm select,#matchCenter label>input,#matchCenter label>select,#matchCenter textarea{background:#11121a!important;border:1px solid #56515f!important;color:#ede9f1!important}
 button:not([disabled]),label[for="avatarInput"],#profileEditActions #closeProfileBtn,#profileEditPanel #saveProfileBtn,#postAnnouncementBtn,#saveAnnouncementEditBtn,#cancelAnnouncementEditBtn,#readAllNotificationsBtn,#pushNotificationBtn,.participantBtn,.matchStatsPanel .msDetails summary{background:linear-gradient(145deg,#262733,#262733);border:1px solid #56515f;color:#ede9f1;border-radius:9px}
 button:not([disabled]){min-height:40px;padding:9px 12px;cursor:pointer}
-#notificationBtn{background:#17120ed9;border-color:#b89a60;padding:0;min-height:44px}
+#notificationBtn,#portalRefreshButton{background:#17120ed9;border-color:#b89a60;padding:0;min-height:44px}
 #closeNotificationBtn{background:transparent;border:0}
 #notificationBadge{background:#ae3434;color:white}
 #signinBtn,#profileEditPanel #saveProfileBtn,#postAnnouncementBtn,#saveAnnouncementEditBtn,#matchCenter #matchSave,#manageMatchEdit button[type=submit]{background:linear-gradient(145deg,#d2c9dd,#b38b4b);border-color:#e1bb79;color:#21180f;font-weight:700}
@@ -1664,7 +1664,7 @@ footer{color:#a19cab;border-color:#45434e}
 .portalIcon{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.19em;color:#d2c9dd;flex:none;pointer-events:none}
 .homeMenuItem .portalIcon{width:36px;height:36px;display:block;filter:drop-shadow(0 2px 4px #0008)}
 .homeMenuItem span{display:flex;align-items:center;justify-content:center;min-height:40px}
-#notificationBtn .portalIcon{width:24px;height:24px;vertical-align:middle}
+#notificationBtn .portalIcon,#portalRefreshButton .portalIcon{width:24px;height:24px;vertical-align:middle}
 
 /* Compact portal polish */
 #achievements .rarityLegacyCounts{display:none!important}
@@ -1863,12 +1863,16 @@ html body .archiveBody blockquote,html body .wikiRichBody blockquote{margin:.45e
 </style>
 <style id="uiLineIcons20261126">.uiLineIcon{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;flex:none;pointer-events:none}.wikiIconStrip .uiLineIcon{width:19px;height:19px}</style>
 <style id="timelinePagination20261126">#tlPager{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 0}#tlPager button{width:auto!important;min-width:70px;margin:0!important}#tlPager button:disabled{opacity:.35}#tlPageLabel{font-size:13px;white-space:nowrap}html body #reverseTimeline #tlList .tlCard{padding:10px;margin:8px 0}html body #reverseTimeline #tlList .tlOfficialCollapsed{max-height:6.6em;overflow:hidden}html body #reverseTimeline #tlList .tlCard>.tlImage{max-height:220px;object-fit:contain}</style>
+<style id="portalRefreshPosition">html body > header > #portalRefreshButton{left:12px;right:auto;}#portalRefreshButton:disabled{opacity:.65;cursor:wait}#portalRefreshButton:disabled svg{animation:portalRefreshSpin 1s linear infinite}@keyframes portalRefreshSpin{to{transform:rotate(360deg)}}#portalRefreshStatus{position:absolute;top:60px;left:12px;z-index:11;font-size:12px;color:#ede9f1;background:#101116ed;border-radius:6px;padding:5px 8px;max-width:calc(100% - 24px)}#portalRefreshStatus:empty{display:none}@media(prefers-reduced-motion:reduce){#portalRefreshButton:disabled svg{animation:none}}</style>
+<!-- portal release 2026-11-26 22:22 -->
 </head>
 <body>
 <div id="stableMansionBackgroundLayer" aria-hidden="true"></div>
 <header>
 <img id="portalHeaderImage" src="./reverse-header.jpg" alt="逆村広場 — REVERSE VILLAGE PORTAL" width="1536" height="864" fetchpriority="high">
 
+<button id="portalRefreshButton" type="button" aria-label="広場全体を更新" title="広場を更新"><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2.4 5.7"/></svg></button>
+<span id="portalRefreshStatus" role="status" aria-live="polite"></span>
 <button id="notificationBtn" type="button"
         aria-label="通知" aria-expanded="false" hidden>
   <svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8m-9 12a3 3 0 0 0 6 0"/></svg>
@@ -1909,6 +1913,7 @@ html body .archiveBody blockquote,html body .wikiRichBody blockquote{margin:.45e
   <div id="authForm">
     <input id="userEmail" type="email" placeholder="メールアドレス" autocomplete="email" style="width:100%;padding:12px;margin:6px 0">
     <input id="userPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0">
+    <p class="portalNoticeShort">新規登録後、プロフィールのユーザー名は人狼ジャッジメントと統一してください。<a href="#portalOperatingNotice" class="portalNoticeLink">運営からのお願い</a></p>
     <button id="signupBtn" type="button">新規登録</button>
     <button id="signinBtn" type="button">ログイン</button>
     <button id="forgotPasswordBtn" type="button" style="display:block;width:100%;margin-top:12px;background:transparent;color:#e4d7b9;border:0;text-decoration:underline;cursor:pointer">パスワードをお忘れですか？</button>
@@ -2123,6 +2128,12 @@ html body .archiveBody blockquote,html body .wikiRichBody blockquote{margin:.45e
 
 <main>
 
+<style>
+#portalOperatingNotice,.portalNoticeShort{border:1px solid #75664a;background:#1c2232;color:#eee7d8;border-radius:8px;padding:12px;margin:12px 0;line-height:1.7;overflow-wrap:anywhere}#portalOperatingNotice summary{cursor:pointer;list-style:none}#portalOperatingNotice summary::-webkit-details-marker{display:none}#portalOperatingNotice summary strong{display:block;font-size:16px;margin:4px 0}#portalOperatingNotice summary small{display:block;color:#d1c9b9}#portalOperatingNotice h3{font-size:15px;color:#e4d7b9;margin:20px 0 6px}#portalOperatingNotice p{font-size:14px;margin:8px 0}.portalNoticeLink{color:#e4d7b9;text-decoration:underline}.portalNoticeShort{font-size:12px}#portalOperatingNotice:not([open]) .noticeCloseLabel,#portalOperatingNotice[open] .noticeOpenLabel{display:none}#portalOperatingNotice{scroll-margin-top:16px}
+</style>
+<details id="portalOperatingNotice"><summary><small>重要なお知らせ　2026.11.26</small><strong>逆村広場運営からのお願い</strong><small>ユーザー名・トロフィー・ゲーム内での話題について</small><small class="noticeOpenLabel">詳細を読む ›</small><small class="noticeCloseLabel">閉じる</small></summary><article><p>逆村広場は、逆村に関わる皆様の交流や情報共有、実績の記録を通じて、逆村をより楽しんでいただくことを目的としたサービスです。</p><p>今後も皆様に快適にご利用いただくため、以下の点についてご理解とご協力をお願いいたします。</p><h3>利用者同士のトラブルについて</h3><p>特定の利用者に対する誹謗中傷、晒し行為、過度な煽りや対立を助長する投稿はお控えください。</p><p>また、逆村広場内で生じたトラブルや利用者間の対立を、人狼ジャッジメント内の部屋や他のコミュニティに持ち込むこともお控えください。</p><h3>人狼ジャッジメント内での話題について</h3><p>逆村広場の紹介や口コミによる普及は歓迎しております。</p><p>ただし、すべての逆村プレイヤーが逆村広場を利用しているわけではありません。野良部屋においては、広場を利用していない方が疎外感を抱くような内輪話や身内ノリ、過度な宣伝、利用の強要はお控えください。</p><p>また、宣伝や紹介を行う際は、各部屋主の運営方針を尊重し、ゲームの進行を妨げることのないようお願いいたします。</p><h3>ユーザー名について</h3><p>戦績管理およびトロフィーの付与を円滑に行うため、逆村広場でのユーザー名は、原則として人狼ジャッジメント内で使用しているユーザー名と統一していただくようお願いいたします。</p><p>ユーザー名が異なる場合、本人確認や戦績の照合が困難となり、戦績の反映やトロフィーの付与が遅れる可能性がございます。</p><h3>トロフィーを目的とした立ち回りについて</h3><p>トロフィーは、通常のゲームプレイを通じて達成した実績を記録するためのものです。</p><p>トロフィーの獲得のみを目的とした立ち回りや、所属陣営の勝利を度外視した行動、他のプレイヤーを巻き込んだ意図的な実績稼ぎはお控えください。</p><p>不適切な行為が確認された場合、戦績の反映やトロフィーの付与を見送る場合がございます。</p><p>トロフィーの獲得はゲームプレイの結果であり、ゲームそのものの目的ではありません。あくまで所属陣営の勝利を第一に考えていただくようお願いいたします。</p><h3>逆村広場の運営方針について</h3><p>逆村広場は、逆村界隈を統括する組織ではありません。各部屋主の運営方針や各コミュニティの独立性を尊重いたします。</p><p>また、広場の利用有無や戦績、トロフィー、称号の獲得状況によって、プレイヤー間に優劣を設けることを目的としたサービスでもありません。</p><p>逆村広場の存在が、逆村本来のゲーム性を損なうことや、新たな対立・分断を生むことは、運営として望んでおりません。</p><p>より多くの方に逆村を楽しんでいただける場所を目指して、今後も運営を続けてまいります。</p><p>皆様のご理解とご協力をよろしくお願いいたします。</p><p style="text-align:right">逆村広場運営</p></article></details>
+
+
 
 <div class="portalSectionDivider" aria-hidden="true"><span>◆ MAIN MENU ◆</span></div>
 <nav class="homeMenu" aria-label="メインメニュー"><a href="#gachaCenter" class="homeMenuItem" style="grid-column:1/-1"><span><svg class="portalIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55"><path d="M4 8h16v12H4zM3 4h18v4H3zM12 4v16"/></svg></span><strong>称号ガチャ</strong><small>チケットで称号を獲得</small></a>
@@ -2147,6 +2158,7 @@ html body .archiveBody blockquote,html body .wikiRichBody blockquote{margin:.45e
   <a href="#reverseArchive" class="homeMenuItem"><span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3zM12 6v15M6 8h3m-3 4h3m6-4h3m-3 4h3"/></svg></span><strong>逆村Wiki</strong><div class="menuEnglish" aria-hidden="true">ARCHIVES</div><small>配役・ルール・戦術を学ぶ</small></a>
   <a href="#beginnerGuide" class="homeMenuItem"><span><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 4 3c-1 .5-1 1-1 2m0 3h.01"/></svg></span><strong>逆村広場の使い方</strong><div class="menuEnglish" aria-hidden="true">GUIDE</div><small>初めての方はこちら</small></a>
 
+<a href="#portalOperatingNotice" class="homeMenuItem portalNoticeLink"><strong>運営からのお願い</strong><div class="menuEnglish">NOTICE</div><small>ご利用前にご確認ください</small></a>
 </nav>
 <section id="gachaCenter" class="panel"><h2>称号ガチャ</h2><p class="muted">チケット制・均等抽選・重複あり</p><h3>所持チケット：<strong id="gcBalance">—</strong> 枚</h3><p id="gcStatus" role="status">ログインしてください。</p><button id="gcDraw" type="button" disabled>1回引く（1枚）</button><button id="gcDraw10" type="button" disabled>10回引く（10枚）</button><button id="gcRefresh" type="button">更新</button><div class="progress"><div id="gcProgress"></div></div><p id="gcCount"></p><details id="gcCollection"><summary>称号図鑑・装備</summary><div class="gcControls"><input id="gcSearch" type="search" placeholder="称号を検索"><select id="gcFilter"><option value="all">すべて</option><option value="owned">獲得済み</option><option value="missing">未獲得</option></select></div><label>枠の色 <input id="gcColor" type="color" value="#ffffff"></label><div id="gcPreview" class="equippedTrophyTitle" data-rarity="gacha">プレビュー</div><button id="gcUnequip" type="button" disabled>ガチャ称号を外す</button><div id="gcRows"></div><button id="gcMore" type="button" hidden>さらに表示</button></details><details id="gcHistory"><summary>チケット獲得・消費履歴</summary><button id="gcHistoryReload" type="button">履歴を更新</button><div id="gcHistoryRows"></div></details></section>
 <dialog id="gcResult" aria-labelledby="gcResultHeading"><h2 id="gcResultHeading">称号獲得！</h2><button id="gcSkip" type="button" hidden>演出をスキップ</button><div id="gcResultTitle" class="equippedTrophyTitle" data-rarity="gacha"></div><div id="gcMulti" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div><button id="gcResultEquip" type="button">装備する</button><button id="gcClose" type="button">閉じる</button><p id="gcResultStatus" role="status"></p></dialog>
@@ -2448,6 +2460,7 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
 <div class="portalSectionDivider" aria-hidden="true"><span>◆ ACHIEVEMENTS ◆</span></div>
 <section id="achievements" class="panel">
 <h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v8a4 4 0 0 1-8 0V3zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4M12 15v5m-5 1h10"/></svg> トロフィー</h2>
+<p class="portalNoticeShort">トロフィー獲得のみを目的とした立ち回りはお控えください。所属陣営の勝利を第一に。<a href="#portalOperatingNotice" class="portalNoticeLink">運営からのお願い</a></p>
 <div class="trophyOverview">
 <div class="trophyOverviewGrid"><div><small>獲得数</small><strong id="count">0 / 0</strong></div><div><small>達成率</small><strong id="percent">0%</strong></div></div>
 <div class="progress"><div id="bar"></div></div>
@@ -2544,11 +2557,11 @@ style="display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box
   <p id="playerSearchMessage" class="muted"></p>
   <div id="playerSearchResults"></div>
 </section>
-<section id="reverseTimeline" class="panel"><div class="tlHeading"><h2>逆村タイムライン</h2><button id="tlSearchOpen" type="button" aria-label="プレイヤー検索">⌕</button><button id="tlRefresh" type="button" aria-label="投稿一覧を更新">↻</button></div><form id="tlForm" hidden><label id="officialPostChoice" hidden>投稿の種類 <select id="officialPostType"><option value="normal">通常投稿</option><option value="official">公式のお知らせ</option></select></label><textarea id="tlText" rows="4" maxlength="280" placeholder="今日の逆村はどうでしたか？" aria-label="投稿本文"></textarea><div class="tlComposerFooter"><details class="tlAttachments"><summary>画像・戦績を添付</summary><div class="tlAttachmentFields"><label for="tlFile">画像（任意・最大4枚、各5MBまで）</label><input id="tlFile" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif"><button id="tlLoadMatches" type="button">試合実績を読み込む</button><select id="tlMatch" aria-label="添付する試合"><option value="">試合実績を添付しない</option></select></div></details><small id="tlCount" class="muted">0 / 280</small><button id="tlSubmit" type="submit">投稿する</button></div></form><p id="tlStatus" role="status" class="muted"></p><div id="tlList"></div><nav id="tlPager" hidden aria-label="タイムラインのページ切り替え"><button id="tlPrev" type="button">前へ</button><span id="tlPageLabel" aria-live="polite"></span><button id="tlNext" type="button">次へ</button></nav></section>
+<section id="reverseTimeline" class="panel"><div class="tlHeading"><h2>逆村タイムライン</h2><button id="tlSearchOpen" type="button" aria-label="プレイヤー検索">⌕</button><button id="tlRefresh" type="button" aria-label="投稿一覧を更新">↻</button></div><p class="portalNoticeShort">重要なお知らせ：<a href="#portalOperatingNotice" class="portalNoticeLink">運営からのお願い</a></p><form id="tlForm" hidden><label id="officialPostChoice" hidden>投稿の種類 <select id="officialPostType"><option value="normal">通常投稿</option><option value="official">公式のお知らせ</option></select></label><textarea id="tlText" rows="4" maxlength="280" placeholder="今日の逆村はどうでしたか？" aria-label="投稿本文"></textarea><div class="tlComposerFooter"><details class="tlAttachments"><summary>画像・戦績を添付</summary><div class="tlAttachmentFields"><label for="tlFile">画像（任意・最大4枚、各5MBまで）</label><input id="tlFile" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif"><button id="tlLoadMatches" type="button">試合実績を読み込む</button><select id="tlMatch" aria-label="添付する試合"><option value="">試合実績を添付しない</option></select></div></details><small id="tlCount" class="muted">0 / 280</small><button id="tlSubmit" type="submit">投稿する</button></div></form><p id="tlStatus" role="status" class="muted"></p><div id="tlList"></div><nav id="tlPager" hidden aria-label="タイムラインのページ切り替え"><button id="tlPrev" type="button">前へ</button><span id="tlPageLabel" aria-live="polite"></span><button id="tlNext" type="button">次へ</button></nav></section>
 <div class="portalSectionDivider" aria-hidden="true"><span>◆ ARCHIVES ◆</span></div>
 <section id="reverseArchive" class="panel"><h2><svg class="portalIcon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3zM12 6v15M6 8h3m-3 4h3m6-4h3m-3 4h3"/></svg> 逆村Wiki</h2><div class="archiveCategoryCards" aria-label="資料カテゴリー"><div class="archiveShelf"><button type="button" class="archiveCategoryCard" data-category="入門編" aria-expanded="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3zM12 6v15M6 8h3m-3 4h3m6-4h3m-3 4h3"/></svg><span><strong>入門編</strong><small>逆村の基礎知識・基本的な立ち回り</small></span><span class="archiveCategoryCount"></span><span class="archiveCategoryArrow" aria-hidden="true">›</span></button><div class="archiveShelfList" hidden></div></div><div class="archiveShelf"><button type="button" class="archiveCategoryCard" data-category="応用編" aria-expanded="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7 2 11 11-5 5L5 10 3 3Zm18 0-7 2-3 3m-3 3-5 5 5 5 4-4M3 21l4-4m10 0 4 4"/></svg><span><strong>応用編</strong><small>応用戦術・盤面考察・進行論</small></span><span class="archiveCategoryCount"></span><span class="archiveCategoryArrow" aria-hidden="true">›</span></button><div class="archiveShelfList" hidden></div></div><div class="archiveShelf"><button type="button" class="archiveCategoryCard" data-category="特殊逆配役等" aria-expanded="false"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h13a2 2 0 0 1 2 2v13h-5a2 2 0 0 1-2 3H5a2 2 0 0 1-2-2v-3h12V5a2 2 0 0 0-2-2M6 3a3 3 0 0 0-3 3v2h12M8 11h4"/></svg><span><strong>特殊逆配役等</strong><small>特殊逆村の配役・ルール・進行方法</small></span><span class="archiveCategoryCount"></span><span class="archiveCategoryArrow" aria-hidden="true">›</span></button><div class="archiveShelfList" hidden></div></div></div><p id="archiveStatus" class="muted" role="status">読み込み中…</p><article id="archiveDetail" hidden></article></section>
 </main>
-<footer>逆村広場 | REVERSE VILLAGE PORTAL</footer>
+<footer>逆村広場 | REVERSE VILLAGE PORTAL<br><a href="#portalOperatingNotice" class="portalNoticeLink">運営からのお願い</a></footer>
   
 <div id="trophyEffect" hidden>
   <div id="trophyEffectContent">
@@ -5566,7 +5579,7 @@ body > header{border-bottom:1px solid #56515f}
 .portalIcon{color:#d2c9dd;filter:none}button,input,select,textarea{font-family:var(--body-font)}
 button:not([disabled]),#matchCenter button:not([disabled]),#profileEditActions #closeProfileBtn,#profileEditPanel #saveProfileBtn,#postAnnouncementBtn,#saveAnnouncementEditBtn,#cancelAnnouncementEditBtn,#readAllNotificationsBtn,#pushNotificationBtn,.participantBtn,.matchStatsPanel .msDetails summary,#matchCenter #matchOpen:not([disabled]),#reverseArchive button,#announcementBrowser button{background:#262733;border:1px solid #56515f;color:#ede9f1;border-radius:4px;box-shadow:none}
 #signinBtn,#profileEditPanel #saveProfileBtn,#postAnnouncementBtn,#saveAnnouncementEditBtn,#matchCenter #matchSave,#manageMatchEdit button[type=submit],#userAuth #forgotSend,#userAuth #recoverySave{background:#d2c6af!important;color:#181720!important;border-color:#d2c6af!important;border-radius:4px!important}
-#notificationBtn{background:#101116d9;border-color:#858092;border-radius:6px}#closeNotificationBtn,#userAuth #forgotPasswordBtn{background:transparent!important;border:0!important;box-shadow:none!important}#userAuth #accountGuideBack,#userAuth #recoveryCancel{background:transparent!important;border-color:#56515f!important;color:#ede9f1!important}
+#notificationBtn,#portalRefreshButton{background:#101116d9;border-color:#858092;border-radius:6px}#closeNotificationBtn,#userAuth #forgotPasswordBtn{background:transparent!important;border:0!important;box-shadow:none!important}#userAuth #accountGuideBack,#userAuth #recoveryCancel{background:transparent!important;border-color:#56515f!important;color:#ede9f1!important}
 input:not([type=checkbox]):not([type=radio]),select,textarea{border-radius:4px!important;background:#11121a!important;border-color:#56515f!important;color:#ede9f1!important}input[type=checkbox]{accent-color:#b6a587}
 #profileStats > p,#rarityStats > p,.matchStatsTile,.matchPlayerCard,#manageMatchesList .manageCard,#matchAuditView details,.notificationItem,.matchStatsPanel .msDetails[open],.matchStatsPanel details:not(.msDetails),#achievements .trophyOverviewGrid>div,#achievements #rarityProgressBars>div,.tlCard,.tlReply,.tlMatchCard{background:#1b1c26!important;border-color:#45434e!important;border-radius:4px!important;box-shadow:none}
 #profileUnlocked,#profileRate,.matchStatsTile strong,#achievements .trophyOverviewGrid strong,#rarityProgressBars .rarityCombinedCard strong{font-family:var(--number-font);font-variant-numeric:tabular-nums;font-weight:600}
@@ -6033,5 +6046,30 @@ function session(s){const id=s?.user?.id||null;if(id===owner)return;owner=id;epo
 db.auth.getSession().then(({data})=>session(data?.session));db.auth.onAuthStateChange((event,s)=>{setTimeout(()=>session(s),0);});})();
 </script>
 <style id="guideUiPolish">html body #matchCenter #matchOpen{font-family:var(--body-font),serif!important;}html body #reverseTimeline #tlSettingsIcon{display:inline-flex!important;align-items:center;justify-content:center;color:inherit!important;}#tlSettingsIcon svg{display:block;flex:none;}</style>
+<script>
+(function(){const notice=document.getElementById('portalOperatingNotice');function reveal(){if(location.hash==='#portalOperatingNotice'){notice.open=true;notice.scrollIntoView({block:'start'});}}document.addEventListener('click',function(e){const a=e.target.closest('a[href="#portalOperatingNotice"]');if(a){notice.open=true;}});window.addEventListener('hashchange',reveal);if(location.hash==='#portalOperatingNotice')reveal();})();
+</script>
+<script id="portalRefreshScript">
+(function(){
+  const button=document.getElementById('portalRefreshButton');
+  const status=document.getElementById('portalRefreshStatus');
+  button.addEventListener('click',async function(){
+    if(button.disabled)return;
+    if(navigator.onLine===false){status.textContent='通信環境を確認してください。';return;}
+    button.disabled=true;
+    button.setAttribute('aria-label','更新中…'); button.setAttribute('aria-busy','true');
+    status.textContent='最新版を確認しています。';
+    try{
+      if('serviceWorker' in navigator){
+        await Promise.race([navigator.serviceWorker.getRegistration().then(function(reg){return reg?reg.update():undefined;}),new Promise(function(resolve){setTimeout(resolve,2500);})]);
+      }
+    }catch(error){console.warn('更新確認:',error);}
+    const url=new URL(location.href);
+    url.searchParams.set('_refresh',String(Date.now()));
+    url.hash='';
+    location.replace(url.href);
+  });
+})();
+</script>
 </body>
 </html>
