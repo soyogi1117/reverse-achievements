@@ -6071,5 +6071,53 @@ db.auth.getSession().then(({data})=>session(data?.session));db.auth.onAuthStateC
   });
 })();
 </script>
+ 
+<style>
+#portalRefreshButton {
+  position: absolute !important;
+  top: 12px !important;
+  left: 12px !important;
+  right: auto !important;
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  border: 1px solid #b89a60;
+  border-radius: 12px;
+  background: #101116cc;
+  color: #f1f2f6;
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+</style>
+
+<script>
+(() => {
+  const header = document.querySelector("body > header");
+  if (!header) return;
+
+  if (document.getElementById("portalRefreshButton")) return;
+
+  const button = document.createElement("button");
+  button.id = "portalRefreshButton";
+  button.type = "button";
+  button.setAttribute("aria-label", "広場を更新");
+  button.innerHTML = `<svg width="22" height="22"
+    viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 11a8 8 0 1 0-2 6"/>
+    <path d="M20 4v7h-7"/>
+  </svg>`;
+
+  button.onclick = () => {
+    const url = new URL(location.href);
+    url.searchParams.set("v", Date.now());
+    location.replace(url.href);
+  };
+
+  header.appendChild(button);
+})();
+</script>
 </body>
 </html>
