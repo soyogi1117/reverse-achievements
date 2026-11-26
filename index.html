@@ -1866,6 +1866,25 @@ html body .archiveBody blockquote,html body .wikiRichBody blockquote{margin:.45e
 <style id="portalRefreshPosition">html body > header > #portalRefreshButton{left:12px;right:auto;}#portalRefreshButton:disabled{opacity:.65;cursor:wait}#portalRefreshButton:disabled svg{animation:portalRefreshSpin 1s linear infinite}@keyframes portalRefreshSpin{to{transform:rotate(360deg)}}#portalRefreshStatus{position:absolute;top:60px;left:12px;z-index:11;font-size:12px;color:#ede9f1;background:#101116ed;border-radius:6px;padding:5px 8px;max-width:calc(100% - 24px)}#portalRefreshStatus:empty{display:none}@media(prefers-reduced-motion:reduce){#portalRefreshButton:disabled svg{animation:none}}</style>
 <!-- portal release 2026-11-26 notice-cleanup -->
 <style>.wikiRelation{margin:10px 0;max-width:100%;min-width:0;white-space:normal}.wikiRelationScroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid #63563e;border-radius:8px;background:#10131d;touch-action:pan-x pan-y}.wikiRelationTools{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 5px}.wikiRelationTools small{opacity:.75;font-size:11px}.wikiRelationTools button{font-size:11px;padding:5px 8px;min-height:0}.wikiRelation svg{flex:none}.wikiRichObject:has(.wikiRelation){max-width:100%;min-width:0}</style>
+<style id="wikiWanaLayoutFix">
+#reverseArchive .wikiWanaGuide{white-space:normal;min-width:0}
+#reverseArchive .wikiWanaGroup{display:grid;gap:10px;margin:16px 0;min-width:0}
+#reverseArchive .wikiWanaGroup .wikiSection{display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid #786441;border-radius:7px;background:#131722e8;min-width:0;white-space:normal}
+#reverseArchive .wikiWana-v .wikiSection{border-color:#415f82;background:linear-gradient(135deg,#14263b,#131923)}
+#reverseArchive .wikiWana-w .wikiSection{border-color:#804954;background:linear-gradient(135deg,#35202a,#1c1720)}
+#reverseArchive .wikiWanaGroup .wikiSectionPic{float:none!important;flex:0 0 76px;width:76px;max-width:26%;margin:0!important}
+#reverseArchive .wikiWanaGroup .wikiSectionPic img{display:block;width:100%!important;height:auto!important;margin:0!important;float:none!important}
+#reverseArchive .wikiWanaGroup .wikiSectionCopy{flex:1;min-width:0;overflow-wrap:anywhere}
+#reverseArchive .wikiWanaGroup .wikiSectionCopy h4{font-size:16px;line-height:1.5;margin:0 0 7px;color:#f0e3c7}
+#reverseArchive .wikiWanaGroup .wikiSectionCopy .archiveBody{font-size:14px;line-height:1.65;white-space:pre-line;margin:0!important;padding:0!important}
+#reverseArchive .wikiWanaGroup .wikiSectionCopy .archiveBody p{margin:0 0 7px!important;line-height:1.65}
+#reverseArchive .wikiWanaGroup .wikiSectionCopy .archiveBody p:last-child{margin-bottom:0!important}
+#reverseArchive .wikiWanaFaction{margin:4px 0!important;padding:9px 12px;border-left:3px solid #719acb;background:#15243a;color:#b9d4f5!important;font-size:18px}
+#reverseArchive .wikiWana-w .wikiWanaFaction{border-color:#c47880;background:#351f29;color:#f0b5b9!important}
+#reverseArchive .wikiWanaGuide>.archiveBody>ul{margin:8px 0 12px;padding-left:1.3em;line-height:1.65}
+#reverseArchive .wikiWanaGuide>.archiveBody>ul>li{margin:3px 0!important}
+@media(max-width:480px){#reverseArchive .wikiWanaGroup .wikiSection{gap:9px;padding:10px}#reverseArchive .wikiWanaGroup .wikiSectionPic{flex-basis:62px;width:62px} }
+</style>
 </head>
 <body>
 <div id="stableMansionBackgroundLayer" aria-hidden="true"></div>
@@ -5417,7 +5436,7 @@ async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(erro
 async function session(){const {data}=await db.auth.getSession();return data.session?.user?.id||null;}
 function requireUser(){if(!uid)throw Error('ログインしてください');}
 function renderArchiveBody(value, allowed=[]){
- const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(renderArchiveBody(parsed.text,allowed));root.append(wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed));return root;}
+ const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(renderArchiveBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed);if(parsed.text.includes('[[poster:wana-v2]]')||parsed.text.includes('[[roster:wana-v1]]'))wikiOrganizeWana(root,sections);else root.append(sections);return root;}
  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n');
  const cells=l=>l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());
  const divider=l=>!!l&&l.includes('|')&&cells(l).every(x=>/^:?-{3,}:?$/.test(x));
@@ -5546,6 +5565,30 @@ function wikiFormatToolbar(t,render){
 
 function wikiBlockParse(value){const s=String(value||'');const re=/^<!--wiki-section-v1-->\n([^\n]*)\n([\s\S]*?)\n<!--\/wiki-section-v1-->\s*(?=<!--wiki-section-v1-->|$)/gm;let blocks=[],start=-1;for(const m of s.matchAll(re)){try{const h=JSON.parse(m[1]);if(typeof h.title!=='string'||typeof h.image!=='string')continue;let body=m[2];const token=h.image?'![画像]('+( /^[a-f0-9-]{36}\//.test(h.image)?'wiki-image:':'')+h.image+')\n':'';if(token&&body.startsWith(token))body=body.slice(token.length);if(start<0)start=m.index;blocks.push({title:h.title,image:h.image,body});}catch{}}return {text:start<0?s:s.slice(0,start).trimEnd(),blocks};}
 function wikiBlockSerialize(text,blocks){return [text.trimEnd(),...blocks.map(b=>'<!--wiki-section-v1-->\n'+JSON.stringify({title:b.title,image:b.image})+'\n'+(b.image?'![画像]('+( /^[a-f0-9-]{36}\//.test(b.image)?'wiki-image:':'')+b.image+')\n':'')+b.body.replace(/<!--\/?wiki-section-v1-->/g,'')+'\n<!--/wiki-section-v1-->')].filter(Boolean).join('\n\n');}
+function wikiOrganizeWana(root,sections){
+ const villagers=['罠師','賢者','独裁者','暗殺者','わら人形','藁人形','魔女'];
+ const wolves=['賢狼','窮地の人狼','ささやく狂人','狂信者','狼少年','妖術師','ギャンブル狂','狂人','人狼'];
+ const main=root.firstElementChild; if(!main){root.append(sections);return;}
+ root.classList.add('wikiWanaGuide');
+ const groups={v:document.createElement('div'),w:document.createElement('div'),other:document.createElement('div'),notes:document.createElement('div')};
+ for(const [k,g] of Object.entries(groups))g.className='wikiWanaGroup wikiWana-'+k;
+ for(const row of [...sections.children]){
+  const title=(row.querySelector('.wikiSectionCopy h4')?.textContent||'').trim();
+  const clean=title.replace(/^[【\[「]+|[】\]」]+$/g,'').trim();
+  const names=clean.split(/[・、／/\s]+/).filter(Boolean);
+  let k=names.length&&names.every(n=>villagers.includes(n))?'v':names.length&&names.every(n=>wolves.includes(n))?'w':/注意|補足|まとめ/.test(clean)?'notes':'other';
+  groups[k].append(row);
+ }
+ // Faction headings are rendered with the role cards below; remove redundant standalone labels.
+ for(const h of [...main.querySelectorAll('h1,h2,h3,h4,h5,h6,p,div')]){
+  if(!['市民陣営','人狼陣営'].includes(h.textContent.trim()))continue;
+  if(h.querySelector('img,svg,iframe,video'))continue;
+  h.remove();
+ }
+ if(groups.other.children.length)root.append(groups.other);
+ for(const [k,label] of [['v','市民陣営'],['w','人狼陣営']])if(groups[k].children.length){const h=document.createElement('h3');h.className='wikiWanaFaction';h.textContent=label;groups[k].prepend(h);root.append(groups[k]);}
+ if(groups.notes.children.length)root.append(groups.notes);
+}
 function wikiBlockRender(blocks,img,body,allowed){const root=document.createElement('div');root.className='wikiSections';for(const b of blocks){const row=document.createElement('section');row.className='wikiSection';if(b.image&&allowed.includes(b.image)){const pic=document.createElement('div');pic.className='wikiSectionPic';pic.append(img(b.image));row.append(pic)}const copy=document.createElement('div');copy.className='wikiSectionCopy';if(b.title){const h=document.createElement('h4');h.textContent=b.title;copy.append(h)}copy.append(body(b.body,allowed));row.append(copy);root.append(row)}return root;}
 function wikiImportFlow(lines){
  const nodes=new Map(), edges=[];function node(s){const m=s.trim().match(/^([A-Za-z][\w-]*)(?:\[([^\]]+)\]|\{([^}]+)\})?$/);if(!m)throw Error('フロー項目の形式が不正：'+s);if(!nodes.has(m[1]))nodes.set(m[1],{text:'',decision:false});const n=nodes.get(m[1]);if(m[2]||m[3]){const label=(m[2]||m[3]).replace(/<br\s*\/?>/gi,'\n');if(n.text&&n.text!==label)throw Error('項目名が重複：'+m[1]);n.text=label;n.decision=!!m[3];}return m[1];}
