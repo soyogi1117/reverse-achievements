@@ -5436,7 +5436,7 @@ async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(erro
 async function session(){const {data}=await db.auth.getSession();return data.session?.user?.id||null;}
 function requireUser(){if(!uid)throw Error('ログインしてください');}
 function renderArchiveBody(value, allowed=[]){
- const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(renderArchiveBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed);if(parsed.text.includes('[[poster:wana-v2]]')||parsed.text.includes('[[roster:wana-v1]]'))wikiOrganizeWana(root,sections);else root.append(sections);return root;}
+ const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(renderArchiveBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed);if(parsed.text.includes('[[poster:wana-v2]]')||parsed.text.includes('[[roster:wana-v1]]')||(/市民陣営/.test(parsed.text)&&/人狼陣営/.test(parsed.text)))wikiOrganizeWana(root,sections);else root.append(sections);return root;}
  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n');
  const cells=l=>l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());
  const divider=l=>!!l&&l.includes('|')&&cells(l).every(x=>/^:?-{3,}:?$/.test(x));
@@ -5581,7 +5581,7 @@ function wikiOrganizeWana(root,sections){
  }
  // Faction headings are rendered with the role cards below; remove redundant standalone labels.
  for(const h of [...main.querySelectorAll('h1,h2,h3,h4,h5,h6,p,div')]){
-  if(!['市民陣営','人狼陣営'].includes(h.textContent.trim()))continue;
+  if(!['市民陣営','人狼陣営'].includes(h.textContent.replace(/[\s\u200b\u3000【】■◆:：]/g,'')))continue;
   if(h.querySelector('img,svg,iframe,video'))continue;
   h.remove();
  }
