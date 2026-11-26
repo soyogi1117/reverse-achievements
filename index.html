@@ -6119,5 +6119,220 @@ db.auth.getSession().then(({data})=>session(data?.session));db.auth.onAuthStateC
   header.appendChild(button);
 })();
 </script>
+
+<style>
+#portalNotice {
+  background: #161720;
+  border: 1px solid #806238;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  color: #ede9f1;
+}
+#portalNotice summary {
+  cursor: pointer;
+  list-style: none;
+}
+#portalNotice summary::-webkit-details-marker {
+  display: none;
+}
+#portalNotice .noticeLabel {
+  color: #dfc28b;
+  font-size: 12px;
+  font-weight: bold;
+}
+#portalNotice h3 {
+  font-size: 16px;
+  margin: 8px 0;
+}
+#portalNotice h4 {
+  color: #dfc28b;
+  font-size: 14px;
+  margin: 24px 0 8px;
+}
+#portalNotice p {
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 10px 0;
+}
+#portalNotice .noticeToggle {
+  display: block;
+  text-align: right;
+  color: #b0adbc;
+  font-size: 12px;
+  margin-top: 10px;
+}
+#portalNotice .noticeToggle::after {
+  content: "詳細を読む ▾";
+}
+#portalNotice[open] .noticeToggle::after {
+  content: "閉じる ▴";
+}
+#portalNotice .noticeBody {
+  border-top: 1px solid #45434e;
+  margin-top: 14px;
+  padding-top: 10px;
+}
+.portalNoticeLink {
+  color: #dfc28b;
+  text-decoration: underline;
+}
+.portalNoticeHint {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #b0adbc;
+  margin: 10px 0;
+}
+</style>
+
+<script>
+(() => {
+  if (document.getElementById("portalNotice")) return;
+
+  const notice = document.createElement("details");
+  notice.id = "portalNotice";
+
+  notice.innerHTML = `
+    <summary>
+      <span class="noticeLabel">
+        重要なお知らせ
+      </span>
+      <h3>逆村広場運営からのお願い</h3>
+      <small style="color:#b0adbc">
+        ご利用の皆様へ
+      </small>
+      <span class="noticeToggle"></span>
+    </summary>
+
+    <div class="noticeBody">
+
+      <p>逆村広場は、逆村に関わる皆様の交流や情報共有、実績の記録を通じて、逆村をより楽しんでいただくことを目的としたサービスです。</p>
+
+      <p>今後も皆様に快適にご利用いただくため、以下の点についてご理解とご協力をお願いいたします。</p>
+
+      <h4>■ 利用者同士のトラブルについて</h4>
+
+      <p>特定の利用者に対する誹謗中傷、晒し行為、過度な煽りや対立を助長する投稿はお控えください。</p>
+
+      <p>また、逆村広場内で生じたトラブルや利用者間の対立を、人狼ジャッジメント内の部屋や他のコミュニティに持ち込むこともお控えください。</p>
+
+      <h4>■ 人狼ジャッジメント内での話題について</h4>
+
+      <p>逆村広場の紹介や口コミによる普及は歓迎しております。</p>
+
+      <p>ただし、すべての逆村プレイヤーが逆村広場を利用しているわけではありません。野良部屋においては、広場を利用していない方が疎外感を抱くような内輪話や身内ノリ、過度な宣伝、利用の強要はお控えください。</p>
+
+      <p>また、宣伝や紹介を行う際は、各部屋主の運営方針を尊重し、ゲームの進行を妨げることのないようお願いいたします。</p>
+
+      <h4>■ ユーザー名について</h4>
+
+      <p>戦績管理およびトロフィーの付与を円滑に行うため、逆村広場でのユーザー名は、原則として人狼ジャッジメント内で使用しているユーザー名と統一していただくようお願いいたします。</p>
+
+      <p>ユーザー名が異なる場合、本人確認や戦績の照合が困難となり、戦績の反映やトロフィーの付与が遅れる可能性がございます。</p>
+
+      <h4>■ トロフィーを目的とした立ち回りについて</h4>
+
+      <p>トロフィーは、通常のゲームプレイを通じて達成した実績を記録するためのものです。</p>
+
+      <p>トロフィーの獲得のみを目的とした立ち回りや、所属陣営の勝利を度外視した行動、他のプレイヤーを巻き込んだ意図的な実績稼ぎはお控えください。</p>
+
+      <p>不適切な行為が確認された場合、戦績の反映やトロフィーの付与を見送る場合がございます。</p>
+
+      <p>トロフィーの獲得はゲームプレイの結果であり、ゲームそのものの目的ではありません。あくまで所属陣営の勝利を第一に考えていただくようお願いいたします。</p>
+
+      <h4>■ 逆村広場の運営方針について</h4>
+
+      <p>逆村広場は、逆村界隈を統括する組織ではありません。各部屋主の運営方針や各コミュニティの独立性を尊重いたします。</p>
+
+      <p>また、広場の利用有無や戦績、トロフィー、称号の獲得状況によって、プレイヤー間に優劣を設けることを目的としたサービスでもありません。</p>
+
+      <p>逆村広場の存在が、逆村本来のゲーム性を損なうことや、新たな対立・分断を生むことは、運営として望んでおりません。</p>
+
+      <p>より多くの方に逆村を楽しんでいただける場所を目指して、今後も運営を続けてまいります。</p>
+
+      <p>皆様のご理解とご協力をよろしくお願いいたします。</p>
+
+      <p style="text-align:right">
+        逆村広場運営
+      </p>
+    </div>
+  `;
+
+  const menu = document.querySelector(".homeMenu");
+  const main = document.querySelector("main");
+
+  if (menu) {
+    menu.before(notice);
+  } else if (main) {
+    main.prepend(notice);
+  } else {
+    return;
+  }
+
+  function openNotice(event) {
+    event.preventDefault();
+    notice.open = true;
+    notice.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
+  function makeLink() {
+    const link = document.createElement("a");
+    link.href = "#portalNotice";
+    link.className = "portalNoticeLink";
+    link.textContent = "運営からのお願い";
+    link.addEventListener("click", openNotice);
+    return link;
+  }
+
+  const footer = document.querySelector("footer");
+  if (footer) {
+    const row = document.createElement("p");
+    row.appendChild(makeLink());
+    footer.appendChild(row);
+  }
+
+  const username = document.getElementById(
+    "profileUsername"
+  );
+
+  if (username) {
+    const hint = document.createElement("p");
+    hint.className = "portalNoticeHint";
+    hint.textContent =
+      "戦績管理のため、人狼ジャッジメント内のユーザー名と統一してください。";
+    username.after(hint);
+  }
+
+  const trophyList = document.getElementById("list");
+
+  if (trophyList) {
+    const hint = document.createElement("p");
+    hint.className = "portalNoticeHint";
+    hint.textContent =
+      "トロフィーの獲得のみを目的とした立ち回りはお控えください。";
+    trophyList.before(hint);
+  }
+
+  const timeline = document.getElementById(
+    "reverseTimeline"
+  );
+
+  if (timeline) {
+    const hint = document.createElement("p");
+    hint.className = "portalNoticeHint";
+    hint.appendChild(makeLink());
+    const heading = timeline.querySelector("h2");
+    if (heading) heading.after(hint);
+  }
+
+  if (location.hash === "#portalNotice") {
+    notice.open = true;
+    notice.scrollIntoView();
+  }
+})();
+</script>
 </body>
 </html>
