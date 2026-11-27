@@ -5508,13 +5508,26 @@ function wikiPlaceRoleSections(root,sections){
  main.append(sections);
 }
 function renderArchiveBody(value, allowed=[]){
- const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length && /市民陣営の役職別指南/.test(parsed.text) && /人狼陣営の役職別指南/.test(parsed.text) && /一匹狼/.test(parsed.text)){
- const city=['指導者','聖騎士','暗殺者','マッチ売り','罠師','わら人形'], wolf=['一匹狼','人狼の末裔','ささやく狂人','狂信者','黒い占い師','狂人'];
- const groups=[city,wolf,['天邪鬼']]; const headings=['市民陣営の役職別指南','人狼陣営の役職別指南','天邪鬼の立ち回り'];
- const lines=parsed.text.split('\n'); let chunk=[]; let active=-1;
- const flush=()=>{if(chunk.join('\n').trim())root.append(renderArchiveBody(chunk.join('\n'),allowed));chunk=[];if(active>=0){const list=groups[active].flatMap(name=>parsed.blocks.filter(b=>b.title.trim().replace(/^【|】$/g,'')===name));if(list.length){const section=wikiBlockRender(list,archiveImg,renderArchiveBody,allowed);section.classList.add('aggroChapterRoles');root.append(section);}active=-1;}};
- for(const line of lines){if(/^\s*(?:#{1,6}\s*)?\d+[.．、]\s*\S/.test(line)){flush();active=headings.findIndex(h=>line.trim().endsWith(h));}if(!/^\s*\[\[個別解説\]\]\s*$/.test(line))chunk.push(line);}flush();return root;
- }const marker=/^[ \t]*\[\[個別解説\]\][ \t]*\r?$/m;const match=marker.exec(parsed.text)|| (parsed.blocks.length && /本配役における重要/.test(parsed.text) ? /(?=^[ \t]*(?:#{1,6}[ \t]*)?ハウスルール[ \t]*$)/m.exec(parsed.text):null);if(match){const before=parsed.text.slice(0,match.index),after=parsed.text.slice(match.index+match[0].length).replace(new RegExp(marker.source,'gm'),'');if(before.trim())root.append(renderArchiveBody(before,allowed));if(parsed.blocks.length)root.append(wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed));if(after.trim())root.append(renderArchiveBody(after,allowed));return root;}if(parsed.blocks.length){if(parsed.text)root.append(renderArchiveBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed);if((/ハウスルール/.test(parsed.text)&&/本配役における重要|指導者/.test(parsed.text))||(/おわりに|終わりに|最後に/.test(parsed.text)&&/指導者|役職別指南|個別解説/.test(parsed.text))){wikiPlaceRoleSections(root,sections);}else if(parsed.text.includes('[[poster:wana-v2]]')||parsed.text.includes('[[roster:wana-v1]]')||(/市民陣営/.test(parsed.text)&&/人狼陣営/.test(parsed.text)))wikiOrganizeWana(root,sections);else root.append(sections);return root;}
+ const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);
+ if(parsed.blocks.length){
+ const main=parsed.text.replace(/\r\n?/g,'\n');
+ const names=[['指導者','聖騎士','暗殺者','マッチ売り','罠師','わら人形'],['一匹狼','人狼の末裔','ささやく狂人','狂信者','黒い占い師','狂人']];
+ const clean=x=>String(x||'').normalize('NFKC').replace(/^【|】$/g,'').trim();
+ const groups=names.map(list=>list.flatMap(n=>parsed.blocks.filter(b=>clean(b.title)===n)));
+ const lines=main.split('\n');
+ const heading=l=>l.trim().replace(/^#{1,6}\s*/,'').replace(/^\d+[.．、]\s*/,'').replace(/\[\[\/?(?:b|color)(?:=[^\]]+)?\]\]/g,'').trim();
+ const a=lines.findIndex(l=>heading(l)==='市民陣営の役職別指南');
+ const b=lines.findIndex((l,i)=>i>a&&heading(l)==='人狼陣営の役職別指南');
+ const c=lines.findIndex((l,i)=>i>b&&heading(l)==='両陣営の勝ち筋・応用戦術');
+ if(a>=0&&b>a&&c>b&&groups.every(g=>g.length===6)&&parsed.blocks.length===12){
+ const part=(from,to)=>lines.slice(from,to).filter(l=>l.trim()!=='[[個別解説]]').join('\n');
+ const mainBody=renderArchiveBody(part(0,b),allowed);
+ const add=(g)=>{const section=wikiBlockRender(g,archiveImg,renderArchiveBody,allowed);section.classList.add('aggroChapterRoles');mainBody.append(section);};
+ const appendPart=(from,to)=>{const fragment=renderArchiveBody(part(from,to),allowed);mainBody.append(...Array.from(fragment.childNodes));};
+ add(groups[0]);appendPart(b,c);add(groups[1]);appendPart(c,lines.length);return mainBody;
+ }
+ }
+ const marker=/^[ \t]*\[\[個別解説\]\][ \t]*\r?$/m;const match=marker.exec(parsed.text)|| (parsed.blocks.length && /本配役における重要/.test(parsed.text) ? /(?=^[ \t]*(?:#{1,6}[ \t]*)?ハウスルール[ \t]*$)/m.exec(parsed.text):null);if(match){const before=parsed.text.slice(0,match.index),after=parsed.text.slice(match.index+match[0].length).replace(new RegExp(marker.source,'gm'),'');if(before.trim())root.append(renderArchiveBody(before,allowed));if(parsed.blocks.length)root.append(wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed));if(after.trim())root.append(renderArchiveBody(after,allowed));return root;}if(parsed.blocks.length){if(parsed.text)root.append(renderArchiveBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,archiveImg,renderArchiveBody,allowed);if((/ハウスルール/.test(parsed.text)&&/本配役における重要|指導者/.test(parsed.text))||(/おわりに|終わりに|最後に/.test(parsed.text)&&/指導者|役職別指南|個別解説/.test(parsed.text))){wikiPlaceRoleSections(root,sections);}else if(parsed.text.includes('[[poster:wana-v2]]')||parsed.text.includes('[[roster:wana-v1]]')||(/市民陣営/.test(parsed.text)&&/人狼陣営/.test(parsed.text)))wikiOrganizeWana(root,sections);else root.append(sections);return root;}
  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n');
  const cells=l=>l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());
  const divider=l=>!!l&&l.includes('|')&&cells(l).every(x=>/^:?-{3,}:?$/.test(x));
