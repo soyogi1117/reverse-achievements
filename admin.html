@@ -99,6 +99,22 @@ html body .archiveBody blockquote,html body .wikiRichBody blockquote{margin:.45e
 </style>
 <style id="uiLineIcons20261126">.uiLineIcon{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;flex:none;pointer-events:none}.wikiIconStrip .uiLineIcon{width:19px;height:19px}</style>
 <style id="wikiSectionMultiImages">html body .wikiBlockGallery,html body .wikiSectionGallery{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:start;width:100%!important;max-width:100%!important;float:none!important;margin:8px 0!important}html body .wikiBlockGallery>div{min-width:0;text-align:center}html body .wikiBlockGallery img,html body .wikiSectionGallery img{display:block!important;width:100%!important;max-width:100px!important;height:auto!important;max-height:150px!important;object-fit:contain;margin:0 auto!important}html body .wikiBlockImageActions{display:flex;gap:2px}html body .wikiBlockImageActions button{flex:1;min-width:0;width:auto!important;padding:5px 1px!important;font-size:11px!important}html body .wikiSectionHasGallery{display:block!important}html body .wikiSectionHasGallery .wikiSectionGallery{float:none!important;width:100%!important;max-width:100%!important}</style>
+<style id="wikiRoleHeaderLayout20261127">
+html body .wikiSection.wikiRoleCard,html body #reverseArchive .wikiWanaGroup .wikiSection.wikiRoleCard{display:block!important;min-width:0}
+html body .wikiRoleHeader{display:flex;align-items:center;gap:12px;min-width:0;padding:0 0 10px;border-bottom:1px solid #80695780;margin:0 0 10px}
+html body .wikiRolePortrait{flex:0 0 min(100px,32%);min-width:0}
+html body .wikiRoleHeader img{display:block!important;width:100%!important;max-width:100px!important;height:auto!important;max-height:150px!important;object-fit:contain;float:none!important;margin:0 auto!important}
+html body .wikiRoleHeading{flex:1;min-width:0;overflow-wrap:anywhere}
+html body .wikiRoleHeader h4{font-size:16px!important;line-height:1.4;margin:0!important;color:inherit}
+html body .wikiRoleHeader small{display:block;font-size:11px;line-height:1.4;opacity:.8;margin-top:4px}
+html body .wikiRoleMulti{display:block}
+html body .wikiRoleGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;justify-items:center}
+html body .wikiRoleTile{width:100%;min-width:0;text-align:center;overflow-wrap:anywhere}
+html body .wikiRoleTile h4{font-size:12px!important;margin-top:5px!important}
+html body .wikiRoleMulti .wikiRoleHeading{text-align:center;margin-top:8px}
+html body .wikiRoleCard .wikiSectionCopy{width:100%;min-width:0}
+@media(max-width:380px){html body .wikiRolePortrait{flex-basis:min(100px,calc((100% - 12px)/3))}}
+</style>
 </head>
 <body>
 <main>
@@ -863,7 +879,18 @@ function wikiBlockImages(b){return [...new Set((Array.isArray(b.images)?b.images
 function wikiBlockToken(x){return '![画像]('+( /^[a-f0-9-]{36}\//.test(x)?'wiki-image:':'')+x+')\n';}
 function wikiBlockParse(value){const s=String(value||'');const re=/^<!--wiki-section-v1-->\n([^\n]*)\n([\s\S]*?)\n<!--\/wiki-section-v1-->\s*(?=<!--wiki-section-v1-->|$)/gm;let blocks=[],start=-1;for(const m of s.matchAll(re)){try{const h=JSON.parse(m[1]);if(typeof h.title!=='string'||typeof h.image!=='string')continue;let body=m[2];const images=wikiBlockImages(h);for(const x of images){const token=wikiBlockToken(x);if(body.startsWith(token))body=body.slice(token.length);}if(start<0)start=m.index;blocks.push({title:h.title,image:images[0]||'',images,body});}catch{}}return {text:start<0?s:s.slice(0,start).trimEnd(),blocks};}
 function wikiBlockSerialize(text,blocks){return [text.trimEnd(),...blocks.map(b=>'<!--wiki-section-v1-->\n'+JSON.stringify({title:b.title,image:wikiBlockImages(b)[0]||'',images:wikiBlockImages(b)})+'\n'+wikiBlockImages(b).map(wikiBlockToken).join('')+b.body.replace(/<!--\/?wiki-section-v1-->/g,'')+'\n<!--/wiki-section-v1-->')].filter(Boolean).join('\n\n');}
-function wikiBlockRender(blocks,img,body,allowed){const root=document.createElement('div');root.className='wikiSections';for(const b of blocks){const row=document.createElement('section');row.className='wikiSection';const images=wikiBlockImages(b).filter(x=>allowed.includes(x));if(images.length){const pic=document.createElement('div');pic.className='wikiSectionPic';if(images.length>1){row.classList.add('wikiSectionHasGallery');pic.classList.add('wikiSectionGallery');}for(const x of images)pic.append(img(x));row.append(pic)}const copy=document.createElement('div');copy.className='wikiSectionCopy';if(b.title){const h=document.createElement('h4');h.textContent=b.title;copy.append(h)}copy.append(body(b.body,allowed));row.append(copy);root.append(row)}return root;}
+function wikiBlockRender(blocks,img,body,allowed){
+ const root=document.createElement('div');root.className='wikiSections';
+ const roles={'狼少年':'占い結果の攪乱','賢狼':'襲撃結果の把握','窮地の人狼':'護衛貫通・罠回避','ささやく狂人':'人狼のサポート','狂信者':'人狼の把握','妖術師':'占い能力','ギャンブル狂':'投票の蓄積','狂人':'人狼のサポート','罠師':'罠による護衛','賢者':'役職の把握','独裁者':'処刑先の決定','暗殺者':'暗殺能力','魔女':'毒薬・蘇生薬','藁人形':'道連れ','わら人形':'道連れ'};
+ for(const b of blocks){const row=document.createElement('section');row.className='wikiSection wikiRoleCard';row.dataset.roleTitle=b.title||'';
+ const images=wikiBlockImages(b).filter(x=>allowed.includes(x));const names=(b.title||'').replace(/^[【\[「]+|[】\]」]+$/g,'').trim().split(/[・、／/\s]+/).filter(Boolean);
+ const header=document.createElement('div');header.className='wikiRoleHeader';
+ const exact=images.length>1&&names.length===images.length&&names.every(n=>roles[n]);
+ if(images.length>1){header.classList.add('wikiRoleMulti');const gallery=document.createElement('div');gallery.className='wikiRoleGrid';for(const [i,x] of images.entries()){const tile=document.createElement('div');tile.className='wikiRoleTile';tile.append(img(x));if(exact){const h=document.createElement('h4');h.textContent=names[i];tile.append(h);const desc=document.createElement('small');desc.textContent=roles[names[i]];tile.append(desc)}gallery.append(tile)}header.append(gallery);}
+ else if(images.length===1){const pic=document.createElement('div');pic.className='wikiRolePortrait';pic.append(img(images[0]));header.append(pic)}
+ if(!exact&&b.title){const title=document.createElement('div');title.className='wikiRoleHeading';const h=document.createElement('h4');h.textContent=b.title;title.append(h);if(images.length===1&&roles[names[0]]&&names.length===1){const desc=document.createElement('small');desc.textContent=roles[names[0]];title.append(desc)}header.append(title)}
+ if(header.children.length)row.append(header);const copy=document.createElement('div');copy.className='wikiSectionCopy';copy.append(body(b.body,allowed));row.append(copy);root.append(row)}return root;}
+
 function wikiImportFlow(lines){
  const nodes=new Map(), edges=[];function node(s){const m=s.trim().match(/^([A-Za-z][\w-]*)(?:\[([^\]]+)\]|\{([^}]+)\})?$/);if(!m)throw Error('フロー項目の形式が不正：'+s);if(!nodes.has(m[1]))nodes.set(m[1],{text:'',decision:false});const n=nodes.get(m[1]);if(m[2]||m[3]){const label=(m[2]||m[3]).replace(/<br\s*\/?>/gi,'\n');if(n.text&&n.text!==label)throw Error('項目名が重複：'+m[1]);n.text=label;n.decision=!!m[3];}return m[1];}
  for(const l of lines){if(!l.trim()||/^(graph|flowchart)\s+(TD|TB)$/.test(l.trim()))continue;const m=l.match(/^(.+?)\s*-->\s*(?:\|([^|]+)\|\s*)?(.+)$/);if(m)edges.push({a:node(m[1]),b:node(m[3]),label:(m[2]||'').trim().toUpperCase()});else node(l);}
