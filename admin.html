@@ -853,8 +853,21 @@ function wikiFormatToolbar(t,render){
  button('ソース編集（互換用）','&lt;/&gt;',()=>{if(!sourceMode){sync();sourceMode=true;ed.hidden=true;t.hidden=false;t.style.removeProperty('display');t.focus()}else{sourceMode=false;t.hidden=true;t.style.setProperty('display','none','important');ed.hidden=false;load(vd.get.call(t))}});t.addEventListener('input',()=>{if(sourceMode)return});load(vd.get.call(t));
 }
 
+function wikiPlaceRoleSections(root,sections){
+ const main=root.firstElementChild;
+ if(!main){root.append(sections);return;}
+ const headings=Array.from(main.children);
+ const label=e=>e.textContent.normalize('NFKC').trim().replace(/^第?\s*\d+\s*[.、:章)）]\s*/, '').replace(/^[【「]+|[】」]+$/g,'').trim();
+ const find=(n,re)=>headings.find(e=>/^(H[3-6]|P|OL)$/.test(e.tagName)&&(re.test(label(e))||(e.tagName==='OL'&&e.children.length===1&&e.firstElementChild.value===n)));
+ const end=find(12,/^(おわりに|終わりに|最後に)$/);
+ const citizen=find(7,/^市民陣営の役職別/), wolf=find(8,/^人狼陣営の役職別/), other=find(9,/^天邪鬼の立ち回り/), notes=find(10,/^注意事項/);
+ const aggro=!!(citizen&&wolf&&other);
+ const groups=aggro?[[wolf,/^(指導者|聖騎士|暗殺者|罠師|わら人形|藁人形|マッチ売り)/],[other,/^(一匹狼|人狼の末裔|末裔|ささやく狂人|狂信者|黒い占い師|黒占い|狂人)/],[notes||end,/^天邪鬼/]]:[];
+ for(const [anchor,re] of groups){if(!anchor)continue;const wrap=document.createElement('div');wrap.className='wikiSections';for(const row of Array.from(sections.children)){if(re.test((row.dataset.roleTitle||'').replace(/^[【「\s]+/,'')))wrap.append(row);}if(wrap.children.length)anchor.before(wrap);}
+ if(sections.children.length){if(end)end.before(sections);else main.append(sections);}
+}
 function wikiAdminFormatBody(value, allowed=[]){
- const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(wikiAdminFormatBody(parsed.text,allowed));root.append(wikiBlockRender(parsed.blocks,wikiAdminFormatImage,wikiAdminFormatBody,allowed));return root;}
+ const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(wikiAdminFormatBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,wikiAdminFormatImage,wikiAdminFormatBody,allowed);if(/おわりに|終わりに|最後に/.test(parsed.text)&&/指導者|役職別指南/.test(parsed.text))wikiPlaceRoleSections(root,sections);else root.append(sections);return root;}
  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n');
  const cells=l=>l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());
  const divider=l=>!!l&&l.includes('|')&&cells(l).every(x=>/^:?-{3,}:?$/.test(x));
@@ -867,7 +880,7 @@ function wikiAdminFormatBody(value, allowed=[]){
  if(l.includes('|')&&divider(lines[i+1])&&cells(l).length===cells(lines[i+1]).length){const wrap=document.createElement('div');wrap.className='archiveTableScroll';wrap.tabIndex=0;wrap.setAttribute('role','region');wrap.setAttribute('aria-label','資料の表（横スクロール可能）');const t=document.createElement('table'),head=t.createTHead(),hr=head.insertRow(),cols=cells(l).length;for(const c of cells(l)){const th=document.createElement('th');th.scope='col';inline(th,c);hr.append(th);}i+=2;const body=t.createTBody();while(i<lines.length&&lines[i].trim()&&lines[i].includes('|')&&cells(lines[i]).length===cols){const row=body.insertRow();for(const c of cells(lines[i]))inline(row.insertCell(),c);i++;}wrap.append(t);root.append(wrap);continue;}
  const h=l.match(/^(#{1,6})\s+(.+)$/);if(h){const e=document.createElement('h'+Math.min(6,h[1].length+2));inline(e,h[2]);root.append(e);i++;continue;}
  if(/^\s*---+\s*$/.test(l)){root.append(document.createElement('hr'));i++;continue;}
- const lm=l.match(/^\s*([-*+]|\d+\.)\s+(.+)$/);if(lm){const ordered=/\d/.test(lm[1]),list=document.createElement(ordered?'ol':'ul');while(i<lines.length){const m=lines[i].match(/^\s*([-*+]|\d+\.)\s+(.+)$/);if(!m||/\d/.test(m[1])!==ordered)break;const li=document.createElement('li');inline(li,m[2]);list.append(li);i++;}root.append(list);continue;}
+ const lm=l.match(/^\s*([-*+]|\d+\.)\s+(.+)$/);if(lm){const ordered=/\d/.test(lm[1]),list=document.createElement(ordered?'ol':'ul');while(i<lines.length){const m=lines[i].match(/^\s*([-*+]|\d+\.)\s+(.+)$/);if(!m||/\d/.test(m[1])!==ordered)break;const li=document.createElement('li');if(ordered)li.value=parseInt(m[1],10);inline(li,m[2]);list.append(li);i++;}root.append(list);continue;}
  if(/^\s*>\s?/.test(l)){const b=document.createElement('blockquote');while(i<lines.length&&/^\s*>\s?/.test(lines[i])){if(b.childNodes.length)b.append(document.createElement('br'));inline(b,lines[i].replace(/^\s*>\s?/,''));i++;}root.append(b);continue;}
  const p=document.createElement('p');inline(p,l);root.append(p);i++;
  }return root;
@@ -1043,5 +1056,6 @@ html body .wikiSection{border-color:#45434e;margin:18px 0;padding-block:16px}
 html body .wikiFormatBar,html body .wikiBlockEditCard,html body .wikiImportDialog{border-color:#56515f!important}
 @media(max-width:480px){html body main{padding-inline:12px}html body #login,html body #admin>section,html body #admin>details,html body #achievementForm{padding:15px}}
 </style>
+<style id="wikiSyncSpacing">html body .archiveBody.archiveMarkdown{line-height:1.9!important}html body .archiveBody.archiveMarkdown>p{margin:0 0 16px!important;line-height:1.9!important}html body .archiveBody.archiveMarkdown>h3,html body .archiveBody.archiveMarkdown>.wikiChapterHeading{margin:40px 0 18px!important}html body .archiveBody.archiveMarkdown>h4,html body .archiveBody.archiveMarkdown>.wikiSubHeading{margin:28px 0 14px!important}html body .archiveBody .wikiSection{margin:20px 0!important;padding-block:18px!important}html body .archiveBody .wikiSectionCopy .archiveBody{line-height:1.9!important}html body .archiveBody .wikiSectionCopy .archiveBody p{margin:0 0 16px!important;line-height:1.9!important}html body .archiveBody.archiveMarkdown>ol:has(>li:only-child){margin:32px 0 16px!important}</style>
 </body>
 </html>
