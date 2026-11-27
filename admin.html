@@ -856,18 +856,17 @@ function wikiFormatToolbar(t,render){
 function wikiPlaceRoleSections(root,sections){
  const main=root.firstElementChild;
  if(!main){root.append(sections);return;}
- const headings=Array.from(main.children);
- const label=e=>e.textContent.normalize('NFKC').trim().replace(/^第?\s*\d+\s*[.、:章)）]\s*/, '').replace(/^[【「]+|[】」]+$/g,'').trim();
- const find=(n,re)=>headings.find(e=>/^(H[3-6]|P|OL)$/.test(e.tagName)&&(re.test(label(e))||(e.tagName==='OL'&&e.children.length===1&&e.firstElementChild.value===n)));
- const end=find(12,/^(おわりに|終わりに|最後に)$/);
- const citizen=find(7,/^市民陣営の役職別/), wolf=find(8,/^人狼陣営の役職別/), other=find(9,/^天邪鬼の立ち回り/), notes=find(10,/^注意事項/);
- const aggro=!!(citizen&&wolf&&other);
- const groups=aggro?[[wolf,/^(指導者|聖騎士|暗殺者|罠師|わら人形|藁人形|マッチ売り)/],[other,/^(一匹狼|人狼の末裔|末裔|ささやく狂人|狂信者|黒い占い師|黒占い|狂人)/],[notes||end,/^天邪鬼/]]:[];
- for(const [anchor,re] of groups){if(!anchor)continue;const wrap=document.createElement('div');wrap.className='wikiSections';for(const row of Array.from(sections.children)){if(re.test((row.dataset.roleTitle||'').replace(/^[【「\s]+/,'')))wrap.append(row);}if(wrap.children.length)anchor.before(wrap);}
+ const clean=t=>String(t||'').normalize('NFKC').replace(/[\u200b-\u200d\ufeff]/g,'').trim().replace(/^[#*【「〔\[\s]+/,'').replace(/^(?:第\s*)?\d+\s*[.、:章)）-]?\s*/,'').replace(/[】」〕\]*\s]+$/,'').trim();
+ const candidates=Array.from(main.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li')).filter(e=>!e.closest('.wikiSections,blockquote,table'));
+ const find=(n,re)=>{const e=candidates.find(e=>{const t=clean(e.textContent);return t.length<85&&re.test(t);});if(!e)return null;if(e.tagName==='LI'&&e.parentElement.children.length===1)return e.parentElement;return e;};
+ const end=find(12,/^(?:おわりに|終わりに|最後に)(?:\s*[:：].*)?$/);
+ const citizen=find(7,/^市民陣営.*(?:役職|個別|指南)/),wolf=find(8,/^人狼陣営.*(?:役職|個別|指南)/),other=find(9,/^天邪鬼.*(?:立ち回り|解説|指南)/),notes=find(10,/^注意事項/);
+ const groups=[[citizen,wolf,/^(指導者|聖騎士|暗殺者|罠師|わら人形|藁人形|マッチ売り)/],[wolf,other,/^(一匹狼|人狼の末裔|末裔|ささやく狂人|狂信者|黒い占い師|黒占い|狂人)/],[other,notes||end,/^天邪鬼/]];
+ for(const [start,anchor,re] of groups){if(!start||!anchor)continue;const wrap=document.createElement('div');wrap.className='wikiSections';for(const row of Array.from(sections.children)){if(re.test(clean(row.dataset.roleTitle)))wrap.append(row);}if(wrap.children.length)anchor.before(wrap);}
  if(sections.children.length){if(end)end.before(sections);else main.append(sections);}
 }
 function wikiAdminFormatBody(value, allowed=[]){
- const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(wikiAdminFormatBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,wikiAdminFormatImage,wikiAdminFormatBody,allowed);if(/おわりに|終わりに|最後に/.test(parsed.text)&&/指導者|役職別指南/.test(parsed.text))wikiPlaceRoleSections(root,sections);else root.append(sections);return root;}
+ const root=document.createElement('div');root.className='archiveBody';const parsed=wikiBlockParse(value);if(parsed.blocks.length){if(parsed.text)root.append(wikiAdminFormatBody(parsed.text,allowed));const sections=wikiBlockRender(parsed.blocks,wikiAdminFormatImage,wikiAdminFormatBody,allowed);if(/おわりに|終わりに|最後に/.test(parsed.text)&&/指導者|役職別指南|個別解説/.test(parsed.text))wikiPlaceRoleSections(root,sections);else root.append(sections);return root;}
  const lines=String(value??'').replace(/\r\n?/g,'\n').split('\n');
  const cells=l=>l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>x.trim());
  const divider=l=>!!l&&l.includes('|')&&cells(l).every(x=>/^:?-{3,}:?$/.test(x));
