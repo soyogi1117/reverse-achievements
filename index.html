@@ -5629,7 +5629,7 @@ function wikiOrganizeWana(root,sections){
 }
 function wikiBlockRender(blocks,img,body,allowed){
  const root=document.createElement('div');root.className='wikiSections';
- const roles={'狼少年':'占い結果の攪乱','賢狼':'襲撃結果の把握','窮地の人狼':'護衛貫通・罠回避','ささやく狂人':'人狼のサポート','狂信者':'人狼の把握','妖術師':'占い能力','ギャンブル狂':'投票の蓄積','狂人':'人狼のサポート','罠師':'罠による護衛','賢者':'役職の把握','独裁者':'処刑先の決定','暗殺者':'暗殺能力','魔女':'毒薬・蘇生薬','藁人形':'道連れ','わら人形':'道連れ'};
+ const roles={'狼少年':'占い結果の攪乱','賢狼':'襲撃結果の把握','窮地の人狼':'護衛貫通','ささやく狂人':'人狼のサポート','狂信者':'人狼の把握・黒側進行','妖術師':'占い能力','ギャンブル狂':'村PP阻害','狂人':'弾受け','罠師':'罠による護衛','賢者':'役職の把握','独裁者':'処刑者の決定・村側進行','暗殺者':'暗殺能力','魔女':'毒薬・蘇生薬','藁人形':'道連れ','わら人形':'道連れ'};
  for(const b of blocks){const row=document.createElement('section');row.className='wikiSection wikiRoleCard';row.dataset.roleTitle=b.title||'';
  const images=wikiBlockImages(b).filter(x=>allowed.includes(x));const names=(b.title||'').replace(/^[【\[「]+|[】\]」]+$/g,'').trim().split(/[・、／/\s]+/).filter(Boolean);
  const header=document.createElement('div');header.className='wikiRoleHeader';
