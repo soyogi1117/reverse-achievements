@@ -1017,5 +1017,31 @@ const node=(tag,value)=>{const x=document.createElement(tag);if(value!==undefine
 async function get(q){const {data,error}=await q;if(error)throw error;return data;}
 async function load(){const n=++seq;rows.replaceChildren();status.textContent='読み込み中…';try{const filter=e('wikiReviewFilter').value;const list=await get(db.from('archive_submissions').select('*').eq('status',filter).order('submitted_at',{ascending:false}).limit(100));if(n!==seq||e('admin').hidden)return;status.textContent=list.length+'件（最大100件）';if(filter==='pending')e('wikiReviewCount').textContent='('+list.length+')';if(!list.length)rows.append(node('p','該当する申請はありません。'));for(const a of list){const card=node('section');card.style.cssText='border:1px solid #665039;border-radius:8px;padding:12px;margin:12px 0;overflow-wrap:anywhere';card.append(node('h3',a.title||'無題'),node('p',a.category+' ｜ '+(a.article_id?'公開済み記事の修正':'新規記事')+' ｜ #'+a.id));const author=node('p','執筆者ID：'+a.author_id);card.append(author);void get(db.from('profiles').select('username').eq('id',a.author_id).maybeSingle()).then(p=>{if(p?.username)author.textContent='執筆者：'+p.username;}).catch(()=>{});if(a.submitted_at)card.append(node('p','申請日時：'+new Date(a.submitted_at).toLocaleString('ja-JP')));const coverData=wikiCoverData(a);const parsed=wikiBlockParse(coverData.content);const body=node('div',parsed.text);if(parsed.blocks.length)body.append(wikiBlockRender(parsed.blocks,wikiAdminImages.preview,v=>node('div',v),coverData.refs));body.style.cssText='white-space:pre-wrap;border-top:1px solid #665039;padding:10px 0';card.append(node('strong','概要'),node('p',a.summary||'なし'),node('strong','本文（原文）'),body);if(coverData.covers.length){card.append(node('strong','代表画像'));for(const raw of coverData.covers)card.append(wikiAdminImages.preview(raw));}for(const url of coverData.refs){card.append(wikiAdminImages.preview(url));}if(a.review_comment)card.append(node('p','審査コメント：'+a.review_comment));if(filter==='pending'){const label=node('label','審査コメント（差し戻し時必須）'),comment=node('textarea');comment.rows=3;label.append(comment);card.append(label);const buttons=node('div');for(const [action,text] of [['approve','承認・公開'],['return','差し戻し']]){const b=node('button',text);b.type='button';b.className='secondary';b.onclick=async()=>{if(busy)return;if(action==='return'&&!comment.value.trim()){status.textContent='差し戻し理由を入力してください。';comment.focus();return;}if(!confirm(text+'しますか？'))return;busy=true;for(const btn of buttons.querySelectorAll('button'))btn.disabled=true;try{await get(db.rpc('archive_review_submission',{p_id:a.id,p_action:action,p_comment:comment.value.trim()}));await load();status.textContent=action==='approve'?'承認・公開しました。':'差し戻しました。';if(e('archiveAdmin').open)e('archiveReload').click();}catch(err){status.textContent='審査失敗：'+err.message;}finally{busy=false;for(const btn of buttons.querySelectorAll('button'))btn.disabled=false;}};buttons.append(b);}card.append(buttons);}rows.append(card);}}catch(err){if(n===seq)status.textContent='取得失敗：'+err.message;}}
 e('wikiReviewFilter').onchange=load;e('wikiReviewReload').onclick=load;panel.addEventListener('toggle',()=>{if(panel.open)load();});new MutationObserver(()=>{if(e('admin').hidden){++seq;rows.replaceChildren();status.textContent='';e('wikiReviewCount').textContent='';panel.open=false;}}).observe(e('admin'),{attributes:true,attributeFilter:['hidden']});})();
-</script></body>
+</script><style id="adminPublicTheme20261127">
+:root{color-scheme:dark}
+html body{background:#0c0d13;color:#ede9f1;font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;line-height:1.55;padding:0}
+html body main{max-width:850px;margin:0 auto;padding:16px 14px 32px}
+html body main>h1{font:700 clamp(24px,6vw,36px)/1.3 system-ui,sans-serif;letter-spacing:normal;color:#ede9f1;border-color:#45434e;margin:12px 0}
+html body h2{color:#ede9f1;font-size:19px;border-color:#45434e}
+html body main>p,html body label{color:#b0adbc}
+html body #login,html body #admin>section,html body #achievementForm,html body #admin>details{background:#161720;border:1px solid #45434e;border-radius:12px;padding:16px;margin:14px 0!important;box-shadow:0 8px 25px #0003}
+html body #admin>details>summary{color:#ede9f1;font-size:19px!important}
+html body .item{background:#1b1c26;border-color:#45434e;border-radius:10px}
+html body input:not([type=checkbox]):not([type=radio]):not([type=color]),html body textarea,html body select{background:#11121a;border:1px solid #56515f;color:#ede9f1;border-radius:8px;min-width:0;max-width:100%}
+html body button,html body button.secondary{background:#262733;color:#ede9f1;border:1px solid #56515f;border-radius:9px;box-shadow:inset 0 1px #ffffff12}
+html body button.danger{background:#843b48;color:white;border-color:#a95b63}
+html body .wikiRichBody,html body .wikiFormatPreview{background:#11121a;color:#ede9f1;border-color:#56515f!important}
+html body .archiveBody,html body .wikiRichBody{color:#ede9f1;overflow-wrap:anywhere;line-height:1.8!important}
+html body .archiveBody p,html body .wikiRichBody p{margin:0 0 12px!important}
+html body .archiveBody h3,html body .wikiRichBody h3{margin:36px 0 16px!important;padding-bottom:4px;border-bottom:1px solid #a58b5366;color:#e4bd68!important;font-size:1.15em!important;font-weight:700!important}
+html body .archiveBody h4,html body .wikiRichBody h4{margin:24px 0 12px!important;color:#f1e5ce!important;font-weight:700!important}
+html body .archiveBody h5,html body .archiveBody h6,html body .wikiRichBody h5,html body .wikiRichBody h6{margin:20px 0 10px!important;font-weight:700!important}
+html body .archiveBody ul,html body .archiveBody ol,html body .wikiRichBody ul,html body .wikiRichBody ol{margin:10px 0 18px!important}
+html body .archiveBody li,html body .wikiRichBody li{margin:5px 0!important}
+html body .archiveBody hr,html body .wikiRichBody hr{margin:24px 0!important;border-top-color:#56515f!important}
+html body .wikiSection{border-color:#45434e;margin:18px 0;padding-block:16px}
+html body .wikiFormatBar,html body .wikiBlockEditCard,html body .wikiImportDialog{border-color:#56515f!important}
+@media(max-width:480px){html body main{padding-inline:12px}html body #login,html body #admin>section,html body #admin>details,html body #achievementForm{padding:15px}}
+</style>
+</body>
 </html>
