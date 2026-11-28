@@ -1949,21 +1949,19 @@ html body #reverseArchive #archiveDetail .aggroRole[data-side=other] .aggroRoleL
 
 <script>
 // Image optimization: no persistent cache of private images.
-async function rvCompressImage(file, maxSide, target) {
-  if (!file || !/^image\/(jpeg|png|webp)$/.test(file.type)) return file;
-  const url=URL.createObjectURL(file);
-  try {
-    const img=new Image(); img.src=url; await img.decode();
-    let ratio=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
-    let best=file;
-    for(let i=0;i<5;i++){
-      const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.naturalWidth*ratio)); c.height=Math.max(1,Math.round(img.naturalHeight*ratio));
-      const ctx=c.getContext('2d'); if(!ctx)break; ctx.drawImage(img,0,0,c.width,c.height);
-      const b=await new Promise(resolve=>c.toBlob(resolve,'image/webp',Math.max(.5,.86-i*.08)));
-      if(b&&b.type==='image/webp'&&b.size<best.size)best=new File([b],file.name.replace(/\.[^.]+$/,'')+'.webp',{type:b.type});
-      if(best.size<=target)break; ratio*=.78;
-    } return best;
-  } catch(e){console.warn('画像圧縮失敗',e);return file;} finally{URL.revokeObjectURL(url);}
+async function rvStaticImageType(blob){
+ const a=new Uint8Array(await blob.arrayBuffer()); const str=(p,n)=>String.fromCharCode(...a.subarray(p,p+n));
+ if(a.length>=8&&[137,80,78,71,13,10,26,10].every((v,i)=>a[i]===v)){const d=new DataView(a.buffer);for(let p=8;p+12<=a.length;){const n=d.getUint32(p);if(n>a.length-p-12)throw Error('PNGの構造が不正です');if(str(p+4,4)==='acTL')throw Error('アニメーションPNGは対象外です');p+=n+12;}return 'image/png';}
+ if(a.length>=3&&a[0]===255&&a[1]===216&&a[2]===255)return 'image/jpeg';
+ if(a.length>=12&&str(0,4)==='RIFF'&&str(8,4)==='WEBP'){const d=new DataView(a.buffer);for(let p=12;p+8<=a.length;){const n=d.getUint32(p+4,true);if(n>a.length-p-8)throw Error('WebPの構造が不正です');if(['ANIM','ANMF'].includes(str(p,4))||(str(p,4)==='VP8X'&&n>0&&(a[p+8]&2)))throw Error('アニメーションWebPは対象外です');p+=8+n+(n%2);}return 'image/webp';}
+ throw Error('未対応の画像形式またはアニメーション画像です');
+}
+async function rvCompressImage(file,maxSide,target){
+ if(!file)return file;let actual;try{actual=await rvStaticImageType(file);}catch(e){console.warn('静止画圧縮対象外',e);return file;}
+ const url=URL.createObjectURL(file.slice(0,file.size,actual));
+ try{const img=new Image();img.src=url;await img.decode();let ratio=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));let best=new File([file],file.name.replace(/\.[^.]+$/,'')+'.'+(actual==='image/jpeg'?'jpg':actual.split('/')[1]),{type:actual});
+ for(let i=0;i<5;i++){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*ratio));c.height=Math.max(1,Math.round(img.naturalHeight*ratio));const ctx=c.getContext('2d');if(!ctx)break;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,c.width,c.height);const q=Math.max(.65,.88-i*.05);const encode=(t)=>new Promise(resolve=>c.toBlob(resolve,t,q));let b=await encode('image/webp');if(!b||b.type!=='image/webp'){const pixels=ctx.getImageData(0,0,c.width,c.height).data;let alpha=false;for(let j=3;j<pixels.length;j+=4){if(pixels[j]!==255){alpha=true;break;}}const t=alpha?'image/png':'image/jpeg';b=await encode(t);if(!b||b.type!==t)b=null;}if(b&&b.size<best.size)best=new File([b],file.name.replace(/\.[^.]+$/,'')+'.'+(b.type==='image/jpeg'?'jpg':b.type.split('/')[1]),{type:b.type});if(best.size<=target)break;ratio*=.82;}return best;
+ }catch(e){console.warn('画像圧縮失敗',e);return file;}finally{URL.revokeObjectURL(url);}
 }
 </script>
 </head>
